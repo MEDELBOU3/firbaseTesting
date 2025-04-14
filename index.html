@@ -5,203 +5,782 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CineVerse - Immerse Yourself in Movies & Discussions</title>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+       <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Loading Spinner -->
+     <!-- Loading Spinner -->
     <div class="spinner-overlay" id="spinner">
-        <div class="spinner-border" role="status" style="width: 3.5rem; height: 3.5rem;"><span class="visually-hidden">Loading...</span></div>
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
     </div>
 
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <i class="fas fa-film logo-icon"></i> <span class="logo-text">CineVerse</span>
+                <i class="fas fa-film fa-2x"></i>
+                <span class="logo-text">MoviePulse</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                     <li class="nav-item"><a class="nav-link active" href="#explore"><i class="fas fa-compass"></i> Explore</a></li>
-                     <li class="nav-item"><a class="nav-link" href="#featured"><i class="fas fa-star"></i> Featured</a></li>
-                     <li class="nav-item"><a class="nav-link" href="#reviews"><i class="fas fa-comments"></i> Reviews</a></li>
-                     <li class="nav-item"><a class="nav-link" href="#qandaSection"><i class="fas fa-question-circle"></i> Q&A</a></li>
-                     <li class="nav-item dropdown">
-                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-th-large"></i> Categories</a>
-                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown">
-                             <li><a class="dropdown-item category-nav-link" href="#" data-category="popular">Popular</a></li>
-                             <li><a class="dropdown-item category-nav-link" href="#" data-category="top_rated">Top Rated</a></li>
-                            <li><a class="dropdown-item category-nav-link" href="#" data-category="upcoming">Upcoming</a></li>
-                            <li><a class="dropdown-item category-nav-link" href="#" data-category="now_playing">Now Playing</a></li>
-                         </ul>
-                     </li>
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="homeNav"><i class="fas fa-home me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="trendingNav"><i class="fas fa-fire me-1"></i> Trending</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="topRatedNav"><i class="fas fa-star me-1"></i> Top Rated</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="discussionsNav"><i class="fas fa-comments me-1"></i> Discussions</a>
+                    </li>
                 </ul>
-                 <!-- Auth Area -->
-                 <div id="authArea" class="d-flex align-items-center">
-                     <!-- Logged In State -->
-                    <div id="userInfo" class="d-none me-3"><i class="fas fa-user-circle"></i> <span id="usernameDisplay"></span></div>
-                    <button id="logoutButton" class="btn btn-link text-decoration-none p-0 d-none me-2"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                    <!-- Logged Out State -->
-                    <div class="auth-buttons">
-                         <button id="loginButtonTrigger" class="btn btn-outline-light me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
-                        <button id="signupButtonTrigger" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#signupModal">Sign Up</button>
-                    </div>
-                 </div>
+                <!-- Authentication Buttons -->
+                <div class="d-flex" id="authButtons">
+                    <button class="btn btn-outline-light me-2" data-bs-toggle="modal" data-bs-target="#authModal">
+                        <i class="fas fa-sign-in-alt me-1"></i> Sign In
+                    </button>
+                    <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#authModal" onclick="showSignupTab()">
+                        <i class="fas fa-user-plus me-1"></i> Sign Up
+                    </button>
+                </div>
+                
+                <!-- User Profile Dropdown (Hidden by default) -->
+                <div class="dropdown profile-dropdown d-none" id="userProfileDropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="avatar-container" id="userAvatar">
+                            <!-- Avatar content will be set by JS -->
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                        <li class="px-3 py-2">
+                            <div class="fw-bold" id="dropdownUserName">User Name</div>
+                            <div class="text-muted small" id="dropdownUserEmail">user@example.com</div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> My Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-heart"></i> Favorites</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-history"></i> Watch History</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="logoutButton"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero-section" id="heroSection">
-         <div class="container hero-content">
-             <h1 class="hero-title" id="heroMovieTitle">Discover Movies Effortlessly</h1>
-             <p class="lead hero-tagline" id="heroMovieTagline">Explore the vast universe of cinema</p>
-             <div class="search-container">
-                 <div class="input-group"><input type="text" class="form-control search-input" id="searchInput" placeholder="Search for movies..."><button class="btn search-btn" id="searchButton"><i class="fas fa-search me-1"></i> Search</button></div>
-             </div>
-         </div>
-     </section>
-
-    <!-- Main Content Wrapper -->
-    <div class="container mt-5">
-
-        <!-- Featured Posts Section (Populated by JS) -->
-        <section id="featured">
-             <h2 class="section-title">Featured Insights</h2>
-            <div class="row" id="featuredArticlesContainer"><!-- JS fills this --></div>
-        </section>
-
-        <!-- Movies Gallery Section -->
-        <section id="explore" class="mt-4">
-             <h2 class="section-title" id="moviesSectionTitle">Explore Popular Movies</h2>
-            <div class="row g-sm-4 g-3" id="moviesContainer"><!-- Movie cards --></div>
-            <nav aria-label="Movie Pages"><ul class="pagination" id="pagination"></ul></nav>
-        </section>
-
-        <!-- Recent Reviews Section (Populated by JS) -->
-         <section id="reviews" class="mt-5">
-             <h2 class="section-title">Community Reviews</h2>
-            <div class="row" id="reviewsContainer"><!-- JS fills this --></div>
-         </section>
-
-         <!-- Q&A Section -->
-         <section id="qandaSection" class="mt-5">
-             <h2 class="section-title">Community Q&A</h2>
-
-             <!-- Post New Question Form (Visible only if logged in) -->
-             <div class="card mb-4 hidden" id="postQuestionCard">
-                 <div class="card-body">
-                    <h5 class="card-title">Ask a Question</h5>
-                    <form id="postQuestionForm">
-                         <div class="mb-3">
-                             <textarea class="form-control" id="questionText" rows="3" placeholder="Type your movie-related question here..." required style="background-color: var(--cv-dark-blue-700); color: var(--cv-slate-200); border-color: var(--cv-dark-blue-700);"></textarea>
-                         </div>
-                         <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-1"></i> Post Question</button>
-                         <div id="questionPostStatus" class="form-text mt-2"></div>
-                    </form>
-                 </div>
-             </div>
-             <p id="qandaLoginPrompt" class="text-center text-body-secondary">Please <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">log in</a> to post a question.</p>
-
-
-            <!-- List of Questions -->
-             <div id="questionsList">
-                 <div class="text-center py-4"><div class="spinner-border text-info" role="status"><span class="visually-hidden">Loading questions...</span></div></div>
-             </div>
-         </section>
-
-    </div> <!-- End Main Content Wrapper -->
-
-    <!-- Movie Detail / Q&A Detail Modal -->
-    <div class="modal fade movie-modal" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
-         <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content">
-                 <div class="modal-body p-0">
-                     <div class="modal-header-overlay"><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                     <div id="detailModalContent"><!-- Content loaded via JS for Movie or Q&A --></div>
+    <!-- Main Content Container -->
+    <div id="mainContent">
+        <!-- Home Screen Content -->
+        <div id="homeContent">
+            <!-- Hero Section with Search -->
+            <section class="hero-section">
+                <div class="container text-center">
+                    <h1 class="display-4 fw-bold">Discover Amazing Movies</h1>
+                    <p class="lead">Find information about your favorite movies, actors, and more</p>
+                    
+                    <div class="search-container">
+                        <div class="input-group">
+                            <input type="text" class="form-control search-input" id="searchInput" placeholder="Search for a movie, TV show, person...">
+                            <button class="btn btn-primary search-btn" id="searchButton">
+                                <i class="fas fa-search me-2"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="category-pills">
+                        <button class="category-pill active" data-category="popular">Popular</button>
+                        <button class="category-pill" data-category="top_rated">Top Rated</button>
+                        <button class="category-pill" data-category="upcoming">Upcoming</button>
+                        <button class="category-pill" data-category="now_playing">Now Playing</button>
+                    </div>
                 </div>
-             </div>
-         </div>
-     </div>
+            </section>
 
-    <!-- Login Modal -->
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="background-color: var(--cv-dark-blue-800); border-color: var(--cv-dark-blue-700);">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="loginModalLabel">Login to CineVerse</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <!-- Featured Posts Section -->
+            <section class="container mt-5">
+                <h2 class="section-title">Featured Movie Articles</h2>
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body p-0">
+                                <div class="row g-0">
+                                    <div class="col-md-6">
+                                        <img src="/api/placeholder/600/400" class="img-fluid rounded-start" alt="Featured article image">
+                                    </div>
+                                    <div class="col-md-6 d-flex flex-column">
+                                        <div class="card-body h-100">
+                                            <span class="badge badge-custom mb-2">Featured</span>
+                                            <h3 class="card-title">Top 10 Must-Watch Movies of 2025</h3>
+                                            <p class="card-text">Discover this year's top cinema picks that are captivating audiences worldwide and setting new standards in filmmaking.</p>
+                                            <div class="mt-auto">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <img src="/api/placeholder/40/40" class="rounded-circle me-2" alt="Author">
+                                                    <div>
+                                                        <p class="mb-0 fw-bold">Emma Thompson</p>
+                                                        <small class="text-muted">April 12, 2025</small>
+                                                    </div>
+                                                </div>
+                                                <a href="#" class="btn btn-outline-primary">Read More</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm mb-4">
+                            <img src="/api/placeholder/400/200" class="card-img-top" alt="Blog post image">
+                            <div class="card-body">
+                                <span class="badge badge-custom mb-2">Interviews</span>
+                                <h4 class="card-title">Behind the Scenes: Director's Cut</h4>
+                                <p class="card-text">Exclusive interviews with leading directors about their creative process.</p>
+                                <div class="d-flex align-items-center">
+                                    <img src="/api/placeholder/30/30" class="rounded-circle me-2" alt="Author">
+                                    <small class="text-muted">April 10, 2025</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <form id="loginForm">
-                         <div class="mb-3"><label for="loginEmail" class="form-label">Email address</label><input type="email" class="form-control" id="loginEmail" required style="background-color: var(--cv-dark-blue-700); color: var(--cv-slate-200); border-color: var(--cv-dark-blue-700);"></div>
-                        <div class="mb-3"><label for="loginPassword" class="form-label">Password</label><input type="password" class="form-control" id="loginPassword" required style="background-color: var(--cv-dark-blue-700); color: var(--cv-slate-200); border-color: var(--cv-dark-blue-700);"></div>
-                        <button type="submit" class="btn btn-primary w-100">Login</button>
-                        <div id="loginError" class="text-danger small mt-2"></div>
-                    </form>
-                 </div>
-                 <div class="modal-footer justify-content-center">
-                     <small>Don't have an account? <a href="#" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#signupModal">Sign Up</a></small>
-                 </div>
-            </div>
-         </div>
-     </div>
+            </section>
 
-    <!-- Signup Modal -->
-     <div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-             <div class="modal-content" style="background-color: var(--cv-dark-blue-800); border-color: var(--cv-dark-blue-700);">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="signupModalLabel">Sign Up for CineVerse</h5>
-                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                 </div>
-                <div class="modal-body">
-                    <form id="signupForm">
-                         <div class="mb-3"><label for="signupDisplayName" class="form-label">Display Name</label><input type="text" class="form-control" id="signupDisplayName" required style="background-color: var(--cv-dark-blue-700); color: var(--cv-slate-200); border-color: var(--cv-dark-blue-700);"></div>
-                        <div class="mb-3"><label for="signupEmail" class="form-label">Email address</label><input type="email" class="form-control" id="signupEmail" required style="background-color: var(--cv-dark-blue-700); color: var(--cv-slate-200); border-color: var(--cv-dark-blue-700);"></div>
-                         <div class="mb-3"><label for="signupPassword" class="form-label">Password (min. 6 characters)</label><input type="password" class="form-control" id="signupPassword" required style="background-color: var(--cv-dark-blue-700); color: var(--cv-slate-200); border-color: var(--cv-dark-blue-700);"></div>
-                         <button type="submit" class="btn btn-primary w-100">Sign Up</button>
-                         <div id="signupError" class="text-danger small mt-2"></div>
-                    </form>
+            <!-- Movies Gallery Section -->
+            <section class="container mt-4">
+                <h2 class="section-title">Explore Movies</h2>
+                <div class="row g-4" id="moviesContainer">
+                    <!-- Movies will be loaded here via JavaScript -->
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading amazing movies...</p>
+                    </div>
                 </div>
-                <div class="modal-footer justify-content-center">
-                    <small>Already have an account? <a href="#" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#loginModal">Log In</a></small>
-                 </div>
-             </div>
-         </div>
-     </div>
+                
+                <!-- Pagination -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination" id="pagination">
+                        <!-- Pagination will be dynamically generated -->
+                    </ul>
+                </nav>
+            </section>
 
-
-    <!-- Back to Top Button -->
-    <div class="back-to-top" id="backToTop" title="Back to Top"><i class="fas fa-arrow-up"></i></div>
-
-    <!-- Footer -->
-    <footer class="footer"><!-- Footer HTML from previous response --><div class="container">
-            <div class="row">
-                 <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
-                     <div class="footer-logo mb-3"><i class="fas fa-film"></i> CineVerse</div>
-                    <p class="pe-lg-4">Your portal to the universe of cinema. Explore, discover, and discuss the world of movies and TV shows.</p>
-                    <div class="social-icons mt-4"> <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a> <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a> <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a> <a href="#" aria-label="Youtube"><i class="fab fa-youtube"></i></a> </div>
-                </div>
-                <div class="col-lg-2 col-md-6 mb-4 mb-lg-0"><h5>Quick Links</h5><ul class="list-unstyled footer-links"><li><a href="#explore">Explore</a></li><li><a href="#featured">Featured</a></li><li><a href="#reviews">Reviews</a></li><li><a href="#">Movies A-Z</a></li><li><a href="#">Top Charts</a></li></ul></div><div class="col-lg-2 col-md-6 mb-4 mb-lg-0"><h5>Legal</h5><ul class="list-unstyled footer-links"><li><a href="#">Terms of Use</a></li><li><a href="#">Privacy Policy</a></li><li><a href="#">Cookie Policy</a></li> <li><a href="#">About Us</a></li> <li><a href="#">Contact</a></li></ul></div><div class="col-lg-4 col-md-6 mb-4 mb-lg-0"><h5>Stay Updated</h5><p>Subscribe to our newsletter for the latest movie news and updates.</p><form id="newsletterFormDummy"><div class="input-group mb-3"><input type="email" class="form-control" placeholder="Enter your email" aria-label="Email" required style="background-color: var(--cv-dark-blue-800); border-color: var(--cv-dark-blue-700); color: var(--cv-slate-200);"><button class="btn btn-outline-primary" type="submit" style="border-color: var(--cv-sky-500); color: var(--cv-sky-400);">Subscribe</button></div></form><small id="newsletterMessageDummy" class="d-block mt-2"></small></div></div><hr class="my-4"><div class="row footer-bottom align-items-center"><div class="col-md-6 text-center text-md-start mb-2 mb-md-0"><p class="mb-0">© <script>document.write(new Date().getFullYear())</script> CineVerse. All rights reserved.</p></div><div class="col-md-6 text-center text-md-end"><small>Movie data powered by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer">TMDb</a>.</small></div></div></div>
-        </footer>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+            <!-- Recent Reviews Section -->
+            <section class="container mt-5">
+                <h2 class="section-title">Recent Reviews</h2>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="row g-0">
+                                <div class="col-4">
+                                    <img src="/api/placeholder/150/225" class="img-fluid rounded-start h-100 object-fit-cover" alt="Movie poster">
+                                </div>
+                                <div class="col-8">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h5 class="card-title">Inception</h5>
+                                            <span class="badge bg-primary">9.2</span>
+                                        </div>
+                                        <p class="card-text">A mind-bending journey that blurs the line between dreams and reality...</p>
+                                        <div class="d-flex align-items-center">
+                                            <img src="/api/placeholder/30/30" class="rounded-circle me-2" alt="Reviewer">
+                                            <div>
+                                                <small class="fw-bold">Robert Chen</small>
+                                                <small class="text-muted d-block">April 8, 2025</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="row g-0">
+                                <div class="col-4">
+                                    <img src="/api/placeholder/150/225" class="img-fluid rounded-start h-100 object-fit-cover" alt="Movie poster">
+                                </div>
+                                <div class="col-8">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h5 class="card-title">The Shawshank Redemption</h5>
+                                            <span class="badge bg-primary">9.5</span>
+                                        </div>
+                                        <p class="card-text">A powerful story of hope, friendship, and redemption in the face of adversity...</p>
+                                        <div class="d-flex align-items-center">
+                                            <img src="/api/placeholder/30/30" class="rounded-circle me-2" alt="Reviewer">
+                                            <div>
+                                                <small class="fw-bold">Sarah Johnson</small>
+                                                <small class="text-muted d-block">April 5, 2025</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="row g-0">
+                                <div class="col-4">
+                                    <img src="/api/placeholder/150/225" class="img-fluid rounded-start h-100 object-fit-cover" alt="Movie poster">
+                                </div>
+                                <div class="col-8">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h5 class="card-title">Pulp Fiction</h5>
+                                            <span class="badge bg-primary">8.9</span>
+                                        </div>
+                                        <p class="card-text">A nonlinear narrative that revolutionized filmmaking with its sharp dialogue...</p>
+                                        <div class="d-flex align-items-center">
+                                            <img src="/api/placeholder/30/30" class="rounded-circle me-2" alt="Reviewer">
+                                            <div>
+                                                <small class="fw-bold">Michael Torres</small>
+                                                <small class="text-muted d-block">April 3, 2025</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="row g-0">
+                                <div class="col-4">
+                                    <img src="/api/placeholder/150/225" class="img-fluid rounded-start h-100 object-fit-cover" alt="Movie poster">
+                                </div>
+                                <div class="col-8">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h5 class="card-title">The Dark Knight</h5>
+                                            <span class="badge bg-primary">9.0</span>
+                                        </div>
+                                        <p class="card-text">A masterful crime thriller that transcends the superhero genre...</p>
+                                        <div class="d-flex align-items-center">
+                                            <img src="/api/placeholder/30/30" class="rounded-circle me-2" alt="Reviewer">
+                                            <div>
+                                                <small class="fw-bold">Lisa Wong</small>
+                                                <small class="text-muted d-block">April 1, 2025</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </section>
+                    
+                    <!-- Newsletter Section -->
+                    <section class="bg-light py-5 mt-5">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-lg-6 text-center">
+                                    <h3 class="fw-bold mb-3">Subscribe to Our Newsletter</h3>
+                                    <p class="text-muted mb-4">Get weekly updates on the latest movie reviews, news, and exclusive content</p>
+                                    <form class="row g-2 justify-content-center">
+                                        <div class="col-8">
+                                            <input type="email" class="form-control search-input" placeholder="Your email address">
+                                        </div>
+                                        <div class="col-4">
+                                            <button type="submit" class="btn btn-primary search-btn w-100">Subscribe</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    </div>
+                    
+                    <!-- Trending Movies Content -->
+                    <div id="trendingContent" class="d-none">
+                        <div class="container mt-4 pt-4">
+                            <h1 class="section-title">Trending This Week</h1>
+                            <p class="lead mb-4">Discover what everyone is watching right now</p>
+                            
+                            <div class="row g-4" id="trendingMoviesContainer">
+                                <!-- Trending movies will be loaded here -->
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Loading trending movies...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Pagination for trending -->
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination" id="trendingPagination">
+                                    <!-- Pagination will be dynamically generated -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Rated Movies Content -->
+                    <div id="topRatedContent" class="d-none">
+                        <div class="container mt-4 pt-4">
+                            <h1 class="section-title">Top Rated Movies of All Time</h1>
+                            <p class="lead mb-4">The highest-rated films according to our community</p>
+                            
+                            <div class="row g-4" id="topRatedMoviesContainer">
+                                <!-- Top rated movies will be loaded here -->
+                                <div class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Loading top rated movies...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Pagination for top rated -->
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination" id="topRatedPagination">
+                                    <!-- Pagination will be dynamically generated -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    
+                    <!-- Discussion Board Content -->
+                    <div id="discussionsContent" class="d-none">
+                        <div class="container mt-4 pt-4">
+                            <h1 class="section-title">Movie Discussions</h1>
+                            <p class="lead mb-4">Join conversations about your favorite films and share your thoughts</p>
+                            
+                            <div class="discussion-container">
+                                <button class="new-question-btn mb-4" data-bs-toggle="modal" data-bs-target="#newQuestionModal">
+                                    <i class="fas fa-plus-circle"></i> Start a New Discussion
+                                </button>
+                                
+                                <!-- Sample discussions -->
+                                <div class="question-card card">
+                                    <div class="question-header">
+                                        <h5 class="question-title">What's the most underrated sci-fi movie of the past decade?</h5>
+                                        <span class="badge bg-primary">Hot Topic</span>
+                                    </div>
+                                    <div class="question-body">
+                                        <p>There have been so many sci-fi movies released in the past 10 years, but some amazing ones seem to fly under the radar. Which ones do you think deserve more recognition?</p>
+                                        <div class="question-meta">
+                                            <div class="question-author">
+                                                <img src="/api/placeholder/30/30" alt="User avatar">
+                                                <span>Alex Martinez</span>
+                                            </div>
+                                            <span>Posted 2 days ago</span>
+                                        </div>
+                                        <div class="question-actions mt-3">
+                                            <div class="question-action">
+                                                <i class="far fa-heart"></i>
+                                                <span class="likes-count">24</span> Likes
+                                            </div>
+                                            <div class="question-action">
+                                                <i class="far fa-comment"></i>
+                                                <span>18</span> Comments
+                                            </div>
+                                            <div class="question-action">
+                                                <i class="far fa-bookmark"></i> Save
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="comment-divider"></div>
+                                    <div class="comment-section">
+                                        <h6>Comments (18)</h6>
+                                        <div class="comment">
+                                            <div class="comment-header">
+                                                <div class="comment-author">
+                                                    <img src="/api/placeholder/24/24" alt="User avatar">
+                                                    <span>Jordan Lee</span>
+                                                </div>
+                                                <span class="comment-date">1 day ago</span>
+                                            </div>
+                                            <div class="comment-body">
+                                                <p>I'd say "Arrival" (2016) - while it did get critical acclaim, it never really became a mainstream hit like it deserved.</p>
+                                            </div>
+                                            <div class="comment-actions">
+                                                <div class="comment-action liked">
+                                                    <i class="fas fa-heart"></i> 7
+                                                </div>
+                                                <div class="comment-action">
+                                                    <i class="far fa-comment"></i> Reply
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="comment">
+                                            <div class="comment-header">
+                                                <div class="comment-author">
+                                                    <img src="/api/placeholder/24/24" alt="User avatar">
+                                                    <span>Taylor Kim</span>
+                                                </div>
+                                                <span class="comment-date">1 day ago</span>
+                                            </div>
+                                            <div class="comment-body">
+                                                <p>"Ex Machina" is my pick. Such a thought-provoking film about AI and consciousness.</p>
+                                            </div>
+                                            <div class="comment-actions">
+                                                <div class="comment-action">
+                                                    <i class="far fa-heart"></i> 5
+                                                </div>
+                                                <div class="comment-action">
+                                                    <i class="far fa-comment"></i> Reply
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="new-comment">
+                                            <input type="text" placeholder="Add a comment...">
+                                            <button><i class="fas fa-paper-plane"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="question-card card mt-4">
+                                    <div class="question-header">
+                                        <h5 class="question-title">What's your favorite movie soundtrack of all time?</h5>
+                                        <span class="badge bg-secondary">Music</span>
+                                    </div>
+                                    <div class="question-body">
+                                        <p>A great soundtrack can elevate a movie to another level. Which movie soundtrack do you think is the most memorable or impactful?</p>
+                                        <div class="question-meta">
+                                            <div class="question-author">
+                                                <img src="/api/placeholder/30/30" alt="User avatar">
+                                                <span>Priya Sharma</span>
+                                            </div>
+                                            <span>Posted 3 days ago</span>
+                                        </div>
+                                        <div class="question-actions mt-3">
+                                            <div class="question-action">
+                                                <i class="far fa-heart"></i>
+                                                <span class="likes-count">31</span> Likes
+                                            </div>
+                                            <div class="question-action">
+                                                <i class="far fa-comment"></i>
+                                                <span>23</span> Comments
+                                            </div>
+                                            <div class="question-action">
+                                                <i class="far fa-bookmark"></i> Save
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Movie Modal -->
+                    <div class="modal fade movie-modal" id="movieModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header border-0 p-0">
+                                    <button type="button" class="btn-close position-absolute top-0 end-0 bg-white m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <img src="/api/placeholder/800/250" class="modal-movie-backdrop w-100" alt="Movie backdrop">
+                                </div>
+                                <div class="modal-body">
+                                    <div class="container-fluid">
+                                        <div class="row">
+                                            <div class="col-md-4 text-center">
+                                                <img src="/api/placeholder/150/225" class="modal-movie-poster" alt="Movie poster">
+                                            </div>
+                                            <div class="col-md-8">
+                                                <h3 class="modal-movie-title">Movie Title</h3>
+                                                <p class="modal-movie-tagline text-muted">Movie tagline will appear here</p>
+                                                
+                                                <div class="modal-movie-meta">
+                                                    <div class="meta-item">
+                                                        <i class="fas fa-star meta-icon"></i>
+                                                        <span id="movieRating">8.5/10</span>
+                                                    </div>
+                                                    <div class="meta-item">
+                                                        <i class="fas fa-calendar meta-icon"></i>
+                                                        <span id="movieReleaseDate">2025</span>
+                                                    </div>
+                                                    <div class="meta-item">
+                                                        <i class="fas fa-clock meta-icon"></i>
+                                                        <span id="movieRuntime">120 min</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div id="movieGenres" class="mb-3">
+                                                    <span class="genre-badge">Action</span>
+                                                    <span class="genre-badge">Adventure</span>
+                                                    <span class="genre-badge">Sci-Fi</span>
+                                                </div>
+                                                
+                                                <h5>Overview</h5>
+                                                <p id="movieOverview">Movie description will appear here...</p>
+                                                
+                                                <div class="d-flex gap-2 mt-3">
+                                                    <button class="btn btn-primary">
+                                                        <i class="fas fa-heart me-2"></i> Add to Favorites
+                                                    </button>
+                                                    <button class="btn btn-outline-primary">
+                                                        <i class="fas fa-list me-2"></i> Add to Watchlist
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="cast-section">
+                                            <h5>Cast</h5>
+                                            <div class="cast-scroll" id="movieCast">
+                                                <!-- Cast members will be dynamically added here -->
+                                                <div class="cast-card">
+                                                    <img src="/api/placeholder/120/180" class="cast-image" alt="Actor">
+                                                    <div class="cast-info">
+                                                        <p class="cast-name">Actor Name</p>
+                                                        <p class="cast-character">Character</p>
+                                                    </div>
+                                                </div>
+                                                <div class="cast-card">
+                                                    <img src="/api/placeholder/120/180" class="cast-image" alt="Actor">
+                                                    <div class="cast-info">
+                                                        <p class="cast-name">Actor Name</p>
+                                                        <p class="cast-character">Character</p>
+                                                    </div>
+                                                </div>
+                                                <div class="cast-card">
+                                                    <img src="/api/placeholder/120/180" class="cast-image" alt="Actor">
+                                                    <div class="cast-info">
+                                                        <p class="cast-name">Actor Name</p>
+                                                        <p class="cast-character">Character</p>
+                                                    </div>
+                                                </div>
+                                                <div class="cast-card">
+                                                    <img src="/api/placeholder/120/180" class="cast-image" alt="Actor">
+                                                    <div class="cast-info">
+                                                        <p class="cast-name">Actor Name</p>
+                                                        <p class="cast-character">Character</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Authentication Modal -->
+                    <div class="modal fade auth-modal" id="authModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Welcome to MoviePulse</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <ul class="nav nav-tabs" id="authTabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-pane" type="button" role="tab" aria-controls="login-pane" aria-selected="true">Sign In</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="signup-tab" data-bs-toggle="tab" data-bs-target="#signup-pane" type="button" role="tab" aria-controls="signup-pane" aria-selected="false">Sign Up</button>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content" id="authTabContent">
+                                        <div class="tab-pane fade show active" id="login-pane" role="tabpanel" aria-labelledby="login-tab">
+                                            <form id="loginForm" class="mt-3">
+                                                <div class="mb-3">
+                                                    <input type="email" class="form-control auth-input" id="loginEmail" placeholder="Email address" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <input type="password" class="form-control auth-input" id="loginPassword" placeholder="Password" required>
+                                                </div>
+                                                <div class="mb-3 form-check">
+                                                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                                                    <label class="form-check-label" for="rememberMe">Remember me</label>
+                                                    <a href="#" class="float-end">Forgot password?</a>
+                                                </div>
+                                                <button type="submit" class="btn auth-btn">Sign In</button>
+                                            </form>
+                                            
+                                            <div class="auth-divider">
+                                                <span>or continue with</span>
+                                            </div>
+                                            
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <button class="social-auth-btn">
+                                                        <i class="fab fa-google"></i> Google
+                                                    </button>
+                                                </div>
+                                                <div class="col-6">
+                                                    <button class="social-auth-btn">
+                                                        <i class="fab fa-facebook"></i> Facebook
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="signup-pane" role="tabpanel" aria-labelledby="signup-tab">
+                                            <form id="signupForm" class="mt-3">
+                                                <div class="mb-3">
+                                                    <input type="text" class="form-control auth-input" id="signupName" placeholder="Full name" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <input type="email" class="form-control auth-input" id="signupEmail" placeholder="Email address" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <input type="password" class="form-control auth-input" id="signupPassword" placeholder="Password" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <input type="password" class="form-control auth-input" id="signupConfirmPassword" placeholder="Confirm password" required>
+                                                </div>
+                                                <div class="mb-3 form-check">
+                                                    <input type="checkbox" class="form-check-input" id="termsAgree" required>
+                                                    <label class="form-check-label" for="termsAgree">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                                                </div>
+                                                <button type="submit" class="btn auth-btn">Create Account</button>
+                                            </form>
+                                            
+                                            <div class="auth-divider">
+                                                <span>or sign up with</span>
+                                            </div>
+                                            
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <button class="social-auth-btn">
+                                                        <i class="fab fa-google"></i> Google
+                                                    </button>
+                                                </div>
+                                                <div class="col-6">
+                                                    <button class="social-auth-btn">
+                                                        <i class="fab fa-facebook"></i> Facebook
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- New Discussion Modal -->
+                    <div class="modal fade" id="newQuestionModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Start a New Discussion</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="newQuestionForm">
+                                        <div class="mb-3">
+                                            <label for="questionTitle" class="form-label">Discussion Title</label>
+                                            <input type="text" class="form-control" id="questionTitle" placeholder="What's your question or topic?" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="questionCategory" class="form-label">Category</label>
+                                            <select class="form-select" id="questionCategory" required>
+                                                <option value="" selected disabled>Select a category</option>
+                                                <option value="general">General Discussion</option>
+                                                <option value="reviews">Reviews</option>
+                                                <option value="recommendations">Recommendations</option>
+                                                <option value="news">Movie News</option>
+                                                <option value="theories">Fan Theories</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="questionContent" class="form-label">Content</label>
+                                            <textarea class="form-control" id="questionContent" rows="5" placeholder="Provide details about your discussion topic..." required></textarea>
+                                        </div>
+                                        <div class="mb-3 form-check">
+                                            <input type="checkbox" class="form-check-input" id="notifyReplies">
+                                            <label class="form-check-label" for="notifyReplies">Notify me of replies</label>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-primary">Post Discussion</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Back to Top Button -->
+                    <div class="back-to-top" id="backToTop">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <footer class="footer">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-lg-4 mb-4 mb-lg-0">
+                                    <div class="footer-logo">
+                                        <i class="fas fa-film me-2"></i>
+                                        <span>MoviePulse</span>
+                                    </div>
+                                    <p>Your ultimate destination for movie enthusiasts. Discover, discuss, and dive into the world of cinema.</p>
+                                    <div class="social-icons mt-3">
+                                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                                        <a href="#"><i class="fab fa-twitter"></i></a>
+                                        <a href="#"><i class="fab fa-instagram"></i></a>
+                                        <a href="#"><i class="fab fa-youtube"></i></a>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-lg-2 mb-4 mb-lg-0">
+                                    <h5 class="mb-3">Explore</h5>
+                                    <ul class="list-unstyled footer-links">
+                                        <li><a href="#">Movies</a></li>
+                                        <li><a href="#">TV Shows</a></li>
+                                        <li><a href="#">Celebrities</a></li>
+                                        <li><a href="#">News</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col-6 col-lg-2 mb-4 mb-lg-0">
+                                    <h5 class="mb-3">Community</h5>
+                                    <ul class="list-unstyled footer-links">
+                                        <li><a href="#">Discussions</a></li>
+                                        <li><a href="#">Reviews</a></li>
+                                        <li><a href="#">Lists</a></li>
+                                        <li><a href="#">Events</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col-6 col-lg-2 mb-4 mb-lg-0">
+                                    <h5 class="mb-3">Info</h5>
+                                    <ul class="list-unstyled footer-links">
+                                        <li><a href="#">About Us</a></li>
+                                        <li><a href="#">Contact</a></li>
+                                        <li><a href="#">Careers</a></li>
+                                        <li><a href="#">Press</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col-6 col-lg-2 mb-4 mb-lg-0">
+                                    <h5 class="mb-3">Legal</h5>
+                                    <ul class="list-unstyled footer-links">
+                                        <li><a href="#">Terms of Use</a></li>
+                                        <li><a href="#">Privacy Policy</a></li>
+                                        <li><a href="#">Cookie Policy</a></li>
+                                        <li><a href="#">GDPR</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <hr class="mt-4 mb-3" style="border-color: rgba(255,255,255,0.1);">
+                            <div class="row">
+                                <div class="col-md-6 text-center text-md-start">
+                                    <p class="mb-0">© 2025 MoviePulse. All rights reserved.</p>
+                                </div>
+                                <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                                    <a href="#" class="text-white me-3">Help Center</a>
+                                    <a href="#" class="text-white">Feedback</a>
+                                </div>
+                            </div>
+                        </div>
+                    </footer>
+                    
+                    <!-- JavaScript Dependencies -->
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
   <script scr="main.js"></script>
 </body>
