@@ -14,10 +14,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Loading Spinner -->
+   <!-- Loading Spinner -->
     <div class="spinner-overlay" id="spinner">
         <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
     </div>
@@ -26,19 +26,20 @@
      <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <a class="navbar-brand" href="#" aria-label="CineVerse Home">
-                 <i class="fas fa-meteor logo-icon"></i> 
+                 <i class="fas fa-meteor logo-icon"></i>
                 <span class="logo-text">CineVerse</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                     <li class="nav-item"><a class="nav-link" href="#explore"><i class="fas fa-compass"></i> Explore</a></li>
+                     <li class="nav-item"><a class="nav-link active" href="#explore" data-category-nav="popular"><i class="fas fa-compass"></i> Explore</a></li>
                      <li class="nav-item"><a class="nav-link" href="#featured"><i class="fas fa-star"></i> Featured</a></li>
                      <li class="nav-item"><a class="nav-link" href="#reviews"><i class="fas fa-comments"></i> Reviews</a></li>
                      <li class="nav-item"><a class="nav-link" href="#qandaSection"><i class="fas fa-question-circle"></i> Q&A</a></li>
                     <li class="nav-item dropdown">
                          <a class="nav-link dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-th-large"></i> Categories</a>
                          <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="categoryDropdown" style="background-color: var(--cv-secondary-bg); border-color: var(--cv-border-color);">
+                             <!-- Add data-category attribute for easier JS targeting -->
                              <li><a class="dropdown-item category-nav-link" href="#" data-category="popular">Popular</a></li>
                              <li><a class="dropdown-item category-nav-link" href="#" data-category="top_rated">Top Rated</a></li>
                              <li><a class="dropdown-item category-nav-link" href="#" data-category="upcoming">Upcoming</a></li>
@@ -46,10 +47,16 @@
                          </ul>
                      </li>
                 </ul>
+                <!-- Auth Area -->
                 <div id="authArea" class="d-flex align-items-center ms-lg-auto">
-                    <div id="userInfo" class="d-none align-items-center me-2"> <i class="fas fa-user-astronaut me-2"></i> <span id="usernameDisplay" class="fw-medium"></span></div>
-                    <button id="logoutButton" class="btn btn-link text-decoration-none p-0 d-none ms-2" title="Logout"><i class="fas fa-sign-out-alt fs-5"></i></button>
-                     <div class="auth-buttons">
+                    <!-- Logged In State -->
+                    <div id="userInfo" class="d-none align-items-center me-2">
+                         <i class="fas fa-user-astronaut me-2"></i>
+                        <span id="usernameDisplay" class="fw-medium"></span>
+                         <button id="logoutButton" class="btn btn-link text-decoration-none p-0 ms-2" title="Logout"><i class="fas fa-sign-out-alt fs-5"></i></button>
+                     </div>
+                    <!-- Logged Out State -->
+                     <div id="authButtons" class="auth-buttons">
                          <button id="loginButtonTrigger" class="btn btn-outline-light me-2" data-bs-toggle="modal" data-bs-target="#authModal" onclick="setActiveAuthTab('login')">Login</button>
                         <button id="signupButtonTrigger" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authModal" onclick="setActiveAuthTab('signup')">Sign Up</button>
                      </div>
@@ -64,7 +71,10 @@
              <h1 class="hero-title" id="heroMovieTitle">Your Cinematic Universe</h1>
              <p class="lead hero-tagline" id="heroMovieTagline">Dive deep into films and connect with fellow movie lovers.</p>
              <div class="search-container">
-                 <div class="input-group shadow-lg"><input type="text" class="form-control search-input" id="searchInput" placeholder="Search movies, genres, actors..."><button class="btn search-btn" id="searchButton"><i class="fas fa-search"></i></button></div>
+                 <div class="input-group shadow-lg">
+                    <input type="text" class="form-control search-input" id="searchInput" placeholder="Search movies..." aria-label="Search movies">
+                    <button class="btn search-btn" id="searchButton" aria-label="Search"><i class="fas fa-search"></i></button>
+                </div>
              </div>
         </div>
      </section>
@@ -75,42 +85,96 @@
         <!-- Featured Posts Section -->
         <section id="featured" class="mb-5">
             <h2 class="section-title">Featured Insights</h2>
-            <div class="row" id="featuredArticlesContainer"></div>
+            <!-- Placeholder Content - Replace with dynamic loading logic -->
+            <div class="row g-4" id="featuredArticlesContainer">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card"><span><i class="fas fa-newspaper fa-2x mb-2"></i><br>Featured Article 1 <br> (Dynamic Content Needed)</span></div>
+                </div>
+                 <div class="col-md-6 col-lg-4">
+                    <div class="card"><span><i class="fas fa-newspaper fa-2x mb-2"></i><br>Featured Article 2 <br> (Dynamic Content Needed)</span></div>
+                </div>
+                 <div class="col-lg-4 d-none d-lg-block">
+                    <div class="card"><span><i class="fas fa-newspaper fa-2x mb-2"></i><br>Featured Article 3 <br> (Dynamic Content Needed)</span></div>
+                </div>
+            </div>
         </section>
 
         <!-- Movies Gallery Section -->
         <section id="explore" class="mb-5">
             <h2 class="section-title" id="moviesSectionTitle">Explore Popular</h2>
-            <div class="row g-sm-4 g-3" id="moviesContainer"></div>
+            <div class="row g-sm-4 g-3" id="moviesContainer">
+                <!-- Skeletons will be rendered here by JS -->
+            </div>
             <nav aria-label="Movie Pages"><ul class="pagination" id="pagination"></ul></nav>
         </section>
 
         <!-- Recent Reviews Section -->
         <section id="reviews" class="mb-5">
             <h2 class="section-title">Community Reviews</h2>
-            <div class="row" id="reviewsContainer"></div>
+             <!-- Placeholder Content - Replace with dynamic loading logic -->
+             <div class="row g-4" id="reviewsContainer">
+                 <div class="col-md-6 col-lg-4">
+                    <div class="card"><span><i class="fas fa-star-half-alt fa-2x mb-2"></i><br>Review Snippet 1 <br> (Dynamic Content Needed)</span></div>
+                </div>
+                 <div class="col-md-6 col-lg-4">
+                    <div class="card"><span><i class="fas fa-star-half-alt fa-2x mb-2"></i><br>Review Snippet 2 <br> (Dynamic Content Needed)</span></div>
+                </div>
+                 <div class="col-lg-4 d-none d-lg-block">
+                    <div class="card"><span><i class="fas fa-star-half-alt fa-2x mb-2"></i><br>Review Snippet 3 <br> (Dynamic Content Needed)</span></div>
+                </div>
+            </div>
         </section>
 
          <!-- Q&A Section -->
          <section id="qandaSection" class="mb-5">
-             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                  <h2 class="section-title mt-0 mb-0">Community Q&A</h2>
                 <button id="togglePostQuestionBtn" class="btn btn-sm btn-primary d-none"><i class="fas fa-plus-circle me-1"></i> Ask Question</button>
             </div>
-            <div class="card mb-4 hidden" id="postQuestionCard"><div class="card-body p-4"><h5 class="card-title text-light mb-3">Ask the Community</h5><form id="postQuestionForm"><div class="mb-3"><textarea class="form-control" id="questionText" rows="3" placeholder="What movie question is on your mind?" required style="background-color: var(--cv-tertiary-bg); border-color: var(--cv-border-color); color: var(--cv-primary-text);"></textarea></div><button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Post Question</button><div id="questionPostStatus" class="form-text mt-2 small"></div></form></div></div>
-             <p id="qandaLoginPrompt" class="text-center text-secondary small mt-4">Please <a href="#" class="link-info" data-bs-toggle="modal" data-bs-target="#authModal" onclick="setActiveAuthTab('login')">login</a> or <a href="#" class="link-info" data-bs-toggle="modal" data-bs-target="#authModal" onclick="setActiveAuthTab('signup')">sign up</a> to participate in Q&A.</p>
-             <div id="questionsList"></div>
+            <!-- Ask Question Form -->
+            <div class="card mb-4 hidden" id="postQuestionCard">
+                <div class="card-body p-4">
+                    <h5 class="card-title text-light mb-3">Ask the Community</h5>
+                    <form id="postQuestionForm">
+                        <div class="mb-3">
+                            <label for="questionText" class="form-label visually-hidden">Your Question</label>
+                            <textarea class="form-control" id="questionText" rows="3" placeholder="What movie question is on your mind?" required style="background-color: var(--cv-tertiary-bg); border-color: var(--cv-border-color); color: var(--cv-primary-text);"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Post Question</button>
+                        <div id="questionPostStatus" class="form-text mt-2 small"></div>
+                    </form>
+                </div>
+            </div>
+            <!-- Prompt for logged-out users -->
+             <p id="qandaLoginPrompt" class="text-center text-secondary small mt-4 d-none"> <!-- Initially hidden -->
+                Please <a href="#" class="link-info" data-bs-toggle="modal" data-bs-target="#authModal" onclick="setActiveAuthTab('login')">login</a> or <a href="#" class="link-info" data-bs-toggle="modal" data-bs-target="#authModal" onclick="setActiveAuthTab('signup')">sign up</a> to participate in Q&A.
+            </p>
+            <!-- List of Questions -->
+             <div id="questionsList">
+                 <!-- Skeletons/Questions will be rendered here by JS -->
+             </div>
         </section>
 
     </main>
 
      <!-- Detail Modal (Unified for Movie & Q&A) -->
     <div class="modal fade movie-modal" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
-         <div class="modal-dialog modal-dialog-scrollable modal-xl">
+         <div class="modal-dialog modal-dialog-scrollable modal-xl"> <!-- modal-xl for wider content -->
              <div class="modal-content">
+                 <!-- Close button moved inside for easier absolute positioning relative to content -->
                  <div class="modal-body p-0">
-                     <div class="modal-header-overlay"><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                     <div id="detailModalContent"><div class="text-center p-5 vh-50 d-flex align-items-center justify-content-center"><div class="spinner-border text-primary" role="status"></div></div></div>
+                     <!-- Header Overlay contains only the close button now -->
+                     <div class="modal-header-overlay">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <!-- Content will be loaded here -->
+                     <div id="detailModalContent">
+                        <div class="text-center p-5 vh-50 d-flex align-items-center justify-content-center">
+                            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                                <span class="visually-hidden">Loading details...</span>
+                            </div>
+                        </div>
+                    </div>
                  </div>
              </div>
          </div>
@@ -132,11 +196,39 @@
                          </div>
                     </nav>
                      <div class="tab-content" id="nav-tabContent">
+                        <!-- Login Tab -->
                         <div class="tab-pane fade show active" id="nav-login" role="tabpanel" aria-labelledby="nav-login-tab">
-                             <form id="loginForm"><div class="mb-3"><label for="loginEmail" class="form-label visually-hidden">Email</label><input type="email" class="form-control" id="loginEmail" placeholder="Email Address" required></div><div class="mb-3"><label for="loginPassword" class="form-label visually-hidden">Password</label><input type="password" class="form-control" id="loginPassword" placeholder="Password" required></div><button type="submit" class="btn btn-primary w-100">Login</button><div id="loginError" class="text-danger small mt-2 text-center"></div></form>
+                             <form id="loginForm" novalidate>
+                                 <div class="mb-3">
+                                    <label for="loginEmail" class="form-label visually-hidden">Email</label>
+                                    <input type="email" class="form-control" id="loginEmail" placeholder="Email Address" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="loginPassword" class="form-label visually-hidden">Password</label>
+                                    <input type="password" class="form-control" id="loginPassword" placeholder="Password" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Login</button>
+                                <div id="loginError" class="form-text mt-2 small text-center"></div>
+                             </form>
                         </div>
+                        <!-- Sign Up Tab -->
                         <div class="tab-pane fade" id="nav-signup" role="tabpanel" aria-labelledby="nav-signup-tab">
-                             <form id="signupForm"><div class="mb-3"><label for="signupDisplayName" class="form-label visually-hidden">Display Name</label><input type="text" class="form-control" id="signupDisplayName" placeholder="Display Name" required></div><div class="mb-3"><label for="signupEmail" class="form-label visually-hidden">Email</label><input type="email" class="form-control" id="signupEmail" placeholder="Email Address" required></div><div class="mb-3"><label for="signupPassword" class="form-label visually-hidden">Password</label><input type="password" class="form-control" id="signupPassword" placeholder="Password (min. 6 characters)" required minlength="6"></div><button type="submit" class="btn btn-primary w-100">Sign Up</button><div id="signupError" class="text-danger small mt-2 text-center"></div></form>
+                             <form id="signupForm" novalidate>
+                                 <div class="mb-3">
+                                    <label for="signupDisplayName" class="form-label visually-hidden">Display Name</label>
+                                    <input type="text" class="form-control" id="signupDisplayName" placeholder="Display Name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="signupEmail" class="form-label visually-hidden">Email</label>
+                                    <input type="email" class="form-control" id="signupEmail" placeholder="Email Address" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="signupPassword" class="form-label visually-hidden">Password</label>
+                                    <input type="password" class="form-control" id="signupPassword" placeholder="Password (min. 6 characters)" required minlength="6">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+                                <div id="signupError" class="form-text mt-2 small text-center"></div>
+                             </form>
                         </div>
                      </div>
                  </div>
@@ -146,12 +238,67 @@
 
 
     <!-- Back to Top Button -->
-    <div class="back-to-top" id="backToTop" title="Back to Top"><i class="fas fa-arrow-up"></i></div>
+    <a href="#" class="back-to-top" id="backToTop" title="Back to Top" aria-label="Back to top"><i class="fas fa-arrow-up"></i></a>
 
     <!-- Footer -->
-     <footer class="footer"><div class="container"><div class="row"><div class="col-lg-4 col-md-6 mb-4 mb-lg-0"><div class="footer-logo mb-3"><i class="fas fa-meteor"></i> CineVerse</div><p class="pe-lg-4">Your portal to the universe of cinema. Explore, discover, and discuss the world of movies and TV shows.</p><div class="social-icons mt-4"><a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a><a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a><a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a><a href="#" aria-label="Youtube"><i class="fab fa-youtube"></i></a></div></div><div class="col-lg-2 col-md-6 mb-4 mb-lg-0"><h5>Quick Links</h5><ul class="list-unstyled footer-links"><li><a href="#explore">Explore</a></li><li><a href="#featured">Featured</a></li><li><a href="#reviews">Reviews</a></li><li><a href="#">Top Charts</a></li></ul></div><div class="col-lg-2 col-md-6 mb-4 mb-lg-0"><h5>Community</h5><ul class="list-unstyled footer-links"><li><a href="#qandaSection">Discussions</a></li><li><a href="#">User Reviews</a></li><li><a href="#">Leaderboard</a></li></ul></div><div class="col-lg-4 col-md-6 mb-4 mb-lg-0"><h5>Newsletter</h5><p>Subscribe for weekly movie news and highlights.</p><form id="newsletterFormDummy"><div class="input-group mb-3"><input type="email" class="form-control" placeholder="Enter your email" aria-label="Email" required style="background-color: var(--cv-secondary-bg); border-color: var(--cv-border-color); color: var(--cv-primary-text);"><button class="btn btn-outline-primary" type="submit" style="border-color: var(--cv-primary-accent); color: var(--cv-primary-accent);">Subscribe</button></div></form><small id="newsletterMessageDummy" class="d-block mt-2 text-secondary"></small></div></div><hr class="my-4"><div class="row footer-bottom align-items-center"><div class="col-md-6 text-center text-md-start mb-2 mb-md-0"><p class="mb-0">© <script>document.write(new Date().getFullYear())</script> CineVerse. All Rights Reserved.</p></div><div class="col-md-6 text-center text-md-end"><small>Movie data powered by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" class="link-secondary">TMDb</a>.</small></div></div></div></footer>
+     <footer class="footer">
+         <div class="container">
+             <div class="row">
+                 <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+                     <div class="footer-logo mb-3"><i class="fas fa-meteor"></i> CineVerse</div>
+                     <p class="pe-lg-4">Your portal to the universe of cinema. Explore, discover, and discuss the world of movies and TV shows.</p>
+                     <div class="social-icons mt-4">
+                         <a href="#" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
+                         <a href="#" aria-label="Twitter" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a>
+                         <a href="#" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+                         <a href="#" aria-label="Youtube" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
+                     </div>
+                 </div>
+                 <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+                     <h5>Quick Links</h5>
+                     <ul class="list-unstyled footer-links">
+                         <li><a href="#explore">Explore</a></li>
+                         <li><a href="#featured">Featured</a></li>
+                         <li><a href="#reviews">Reviews</a></li>
+                         <li><a href="#" onclick="loadMovies('top_rated', 1); return false;">Top Rated</a></li>
+                         <li><a href="#" onclick="loadMovies('upcoming', 1); return false;">Upcoming</a></li>
+                     </ul>
+                 </div>
+                 <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+                     <h5>Community</h5>
+                     <ul class="list-unstyled footer-links">
+                         <li><a href="#qandaSection">Discussions</a></li>
+                         <li><a href="#reviews">User Reviews</a></li>
+                         <li><a href="#">Leaderboard</a></li><!-- Placeholder -->
+                         <li><a href="#">Watchlists</a></li> <!-- Placeholder -->
+                     </ul>
+                 </div>
+                 <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+                     <h5>Newsletter</h5>
+                     <p>Subscribe for weekly movie news and highlights.</p>
+                     <form id="newsletterFormDummy">
+                         <div class="input-group mb-3">
+                             <label for="newsletterEmail" class="visually-hidden">Email</label>
+                             <input type="email" id="newsletterEmail" class="form-control" placeholder="Enter your email" aria-label="Email" required>
+                             <button class="btn btn-outline-primary" type="submit">Subscribe</button>
+                         </div>
+                     </form>
+                     <small id="newsletterMessageDummy" class="d-block mt-2 text-secondary"></small>
+                 </div>
+             </div>
+             <hr class="my-4">
+             <div class="row footer-bottom align-items-center">
+                 <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+                     <p class="mb-0">© <script>document.write(new Date().getFullYear())</script> CineVerse. All Rights Reserved.</p>
+                 </div>
+                 <div class="col-md-6 text-center text-md-end">
+                     <small>Movie data provided by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" class="link-secondary">TMDb</a>. This project uses the TMDb API but is not endorsed or certified by TMDb.</small>
+                 </div>
+             </div>
+         </div>
+    </footer>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (ensure these versions are compatible if using older compat libraries) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore-compat.js"></script>
