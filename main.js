@@ -1,4 +1,4 @@
-    document.addEventListener('DOMContentLoaded', () => {
+      document.addEventListener('DOMContentLoaded', () => {
 
             // --- Firebase Config & Initialization ---
             // IMPORTANT: Replace with your actual Firebase configuration
