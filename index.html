@@ -1,312 +1,1226 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineVerse - Immerse Yourself in Movies & Discussions</title>
+    <title>Creative Web Video Editor</title>
+    <style>
+        /* --- THEME & BASE --- */
+        :root {
+            --bg-main: #1e1e1e;
+            --bg-panel: #2a2a2a;
+            --bg-element: #3c3c3c;
+            --bg-element-hover: #4a4a4a;
+            --text-light: #e0e0e0;
+            --text-medium: #b0b0b0;
+            --text-dark: #1e1e1e;
+            --accent: #007bff;
+            --accent-hover: #0056b3;
+            --danger: #dc3545;
+            --border-color: #444;
+            --font-main: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            --clip-bg: #5aa9e6;
+            --clip-border: #7cc4fa;
+            --clip-selected-border: #ffe45e;
+            --handle-bg: rgba(255, 255, 255, 0.5);
+            --playhead-color: var(--danger);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; font-family: var(--font-main); background-color: var(--bg-main); color: var(--text-light); font-size: 14px; }
+        button, input, select { font-family: inherit; font-size: inherit; color: inherit; }
+        button { background-color: var(--bg-element); border: 1px solid var(--border-color); color: var(--text-light); padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        button:hover:not(:disabled) { background-color: var(--bg-element-hover); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button svg { width: 1em; height: 1em; vertical-align: middle; }
+        input[type="file"] { display: none; }
+        input[type="range"] { appearance: none; height: 6px; background: var(--bg-element-hover); border-radius: 3px; outline: none; padding: 0; cursor: pointer; flex-grow: 1; }
+        input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; background: var(--text-light); border-radius: 50%; cursor: grab; margin-top: -4px; }
+        input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: var(--text-light); border-radius: 50%; cursor: grab; border: none; }
+        input[type="range"]:disabled { opacity: 0.5; cursor: not-allowed; }
+        input[type="range"]:disabled::-webkit-slider-thumb { background: #888; }
+        input[type="range"]:disabled::-moz-range-thumb { background: #888; }
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+        /* --- LAYOUT: 3 Columns --- */
+        .editor-container { display: flex; height: 100vh; width: 100%; }
+        .panel { background-color: var(--bg-panel); padding: 15px; display: flex; flex-direction: column; border-left: 1px solid var(--border-color); }
+        #left-panel { flex: 0 0 250px; min-width: 200px; border-left: none; }
+        #center-panel { flex: 1 1 auto; padding: 0; display: flex; flex-direction: column; }
+        #right-panel { flex: 0 0 280px; min-width: 220px; overflow-y: auto; }
+        h3 { margin-bottom: 15px; color: var(--text-medium); font-weight: 500; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; font-size: 1em; text-transform: uppercase; letter-spacing: 0.5px;}
 
-    <link rel="stylesheet" href="style.css">
+        /* --- Left Panel: Media --- */
+        #drop-zone { border: 2px dashed var(--border-color); border-radius: 5px; padding: 30px 15px; text-align: center; margin-bottom: 15px; cursor: pointer; transition: border-color 0.2s, background-color 0.2s; }
+        #drop-zone.dragover { border-color: var(--accent); background-color: rgba(0, 123, 255, 0.1); }
+        #drop-zone p { color: var(--text-medium); margin-top: 10px; }
+        #media-pool { flex-grow: 1; overflow-y: auto; }
+        .media-item { background-color: var(--bg-element); padding: 10px; border-radius: 4px; margin-bottom: 8px; cursor: grab; opacity: 1; transition: opacity 0.2s ease; }
+        .media-item:active { cursor: grabbing; opacity: 0.7;}
+        .media-item strong { display: block; margin-bottom: 4px; font-size: 0.9em; word-break: break-all; }
+        .media-item span { font-size: 0.8em; color: var(--text-medium); }
+
+        /* --- Center Panel: Player & Timeline --- */
+        .player-section { height: 60%; /* Adjust as needed */ display: flex; flex-direction: column; background-color: var(--bg-main); padding: 15px; }
+        .video-container { flex-grow: 1; background-color: #000; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; border-radius: 4px; overflow: hidden;}
+        #video-player { display: block; max-width: 100%; max-height: 100%; object-fit: contain; background-color: #000;}
+        .player-controls { display: flex; align-items: center; gap: 10px; margin-top: 5px; flex-shrink: 0; }
+        #current-time, #total-duration-display { font-size: 0.9em; color: var(--text-medium); min-width: 50px; text-align: center; font-variant-numeric: tabular-nums;}
+        #seek-slider { background: linear-gradient(to right, var(--accent) 0%, var(--accent) var(--seek-progress, 0%), var(--bg-element-hover) var(--seek-progress, 0%), var(--bg-element-hover) 100%); } /* Gradient for progress */
+
+        .timeline-section { flex-grow: 1; display: flex; flex-direction: column; background-color: var(--bg-panel); border-top: 1px solid var(--border-color); padding: 10px 0 0 0; overflow: hidden; }
+        .timeline-toolbar { padding: 0 10px 10px 10px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;}
+        .timeline-toolbar h4 { margin: 0; font-size: 0.9em; text-transform: uppercase; color: var(--text-medium); }
+        .zoom-controls label { font-size: 0.85em; margin-right: 5px; }
+        .zoom-controls input[type="range"] { height: 4px; flex-grow: 0; width: 100px; }
+        #timeline-wrapper { flex-grow: 1; overflow-x: auto; overflow-y: hidden; position: relative; }
+        #timeline { position: relative; height: 80px; /* Fixed height for simplicity */ background-color: var(--bg-element); min-width: 100%; width: fit-content; cursor: pointer; } /* Width adjusted by JS */
+        #time-markers { position: absolute; top: 0; left: 0; width: 100%; height: 20px; pointer-events: none; border-bottom: 1px solid var(--border-color);}
+        .marker { position: absolute; bottom: 0; width: 1px; background-color: var(--text-medium); height: 5px; }
+        .marker.major { height: 10px; background-color: var(--text-light); }
+        .marker span { position: absolute; bottom: 12px; transform: translateX(-50%); color: var(--text-medium); font-size: 0.75em; }
+        #clips-container { position: absolute; top: 20px; /* Below markers */ left: 0; width: 100%; height: calc(100% - 20px); }
+        #playhead { position: absolute; top: 0; left: 0; /* Positioned by JS */ width: 2px; height: 100%; background-color: var(--playhead-color); pointer-events: none; z-index: 10; transform: translateX(0px); }
+
+        .clip {
+            position: absolute; top: 5px; height: calc(100% - 10px); /* Padding */
+            background-color: var(--clip-bg); border: 1px solid var(--clip-border);
+            border-radius: 4px; cursor: grab; user-select: none;
+            padding: 5px 8px; overflow: hidden; color: var(--text-dark); font-size: 0.8em;
+            white-space: nowrap; text-overflow: ellipsis; z-index: 2;
+            transition: border-color 0.1s, box-shadow 0.1s;
+        }
+        .clip:active { cursor: grabbing; }
+        .clip.dragging { opacity: 0.7; border-style: dashed; }
+        .clip.selected { border: 2px solid var(--clip-selected-border); box-shadow: 0 0 5px var(--clip-selected-border); }
+
+        /* Clip Resize Handles */
+        .clip-handle { position: absolute; top: 0; bottom: 0; width: 10px; cursor: ew-resize; z-index: 5; background: transparent; } /* Transparent capture area */
+        .clip-handle::before { /* Visual indicator */
+            content: ''; position: absolute; width: 3px; height: 40%; top: 30%; background: var(--handle-bg); border-radius: 2px;
+        }
+        .clip-handle.left { left: -1px; }
+        .clip-handle.left::before { left: 3px; }
+        .clip-handle.right { right: -1px; }
+        .clip-handle.right::before { right: 3px; }
+        .clip-handle:hover::before { background: var(--accent); }
+
+        /* --- Right Panel: Properties & Actions --- */
+        .panel-section { margin-bottom: 20px; }
+        #clip-properties p { margin-bottom: 8px; font-size: 0.9em; color: var(--text-medium); }
+        #clip-properties strong { color: var(--text-light); min-width: 60px; display: inline-block; }
+        #actions-list button { width: 100%; margin-bottom: 8px; justify-content: flex-start;} /* Align icons left */
+        #actions-list button.danger { background-color: var(--danger); border-color: var(--danger); color: white; }
+        #actions-list button.danger:hover:not(:disabled) { background-color: var(--red-delete-dark); }
+
+        /* --- Context Menu --- */
+        #context-menu { position: fixed; display: none; z-index: 1000; background-color: var(--bg-element-hover); border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 3px 10px rgba(0,0,0,0.3); padding: 5px 0; min-width: 160px; }
+        .context-menu-item { display: block; width: 100%; background: none; border: none; padding: 8px 15px; text-align: left; color: var(--text-light); font-size: 0.9em; cursor: pointer; white-space: nowrap; }
+        .context-menu-item:hover { background-color: var(--accent); color: white; }
+        .context-menu-divider { height: 1px; background-color: var(--border-color); margin: 5px 0; }
+
+        /* --- Loading / Export Overlay --- */
+        #status-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0, 0.7); z-index: 5000;
+            display: none; /* Hidden by default */
+            justify-content: center; align-items: center; flex-direction: column;
+            color: white; text-align: center;
+        }
+        #status-message { font-size: 1.2em; margin-bottom: 15px; }
+        #status-progress { width: 60%; max-width: 400px; height: 10px; accent-color: var(--accent); }
+
+    </style>
 </head>
 <body>
- <!-- Loading Spinner -->
-    <div class="spinner-overlay" id="spinner">
-        <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
+
+    <div class="editor-container">
+        <!-- Left Panel (Media Pool) -->
+        <div class="panel" id="left-panel">
+            <h3>Media Pool</h3>
+            <div id="drop-zone" title="Click or Drop Video Files">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <p>Drop Video File (MP4/WebM)</p>
+                 <input type="file" id="file-input" accept="video/mp4,video/webm">
+            </div>
+            <div id="media-pool">
+                <!-- Loaded media info shown here -->
+                 <p id="media-placeholder" style="color: var(--text-medium); font-style: italic; text-align: center; margin-top: 20px;">No media loaded</p>
+            </div>
+             <button id="reset-project-btn" style="margin-top: auto; background-color: var(--danger);" title="Reset Project">
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59L7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12L5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"/></svg>
+                 Reset Project
+             </button>
+        </div>
+
+        <!-- Center Panel (Player & Timeline) -->
+        <div class="panel" id="center-panel">
+            <div class="player-section">
+                <div class="video-container">
+                    <video id="video-player" preload="metadata"></video>
+                </div>
+                <div class="player-controls">
+                    <button id="play-pause-btn" title="Play/Pause (Space)" disabled>
+                        <svg viewBox="0 0 24 24" id="play-icon"><path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg>
+                        <svg viewBox="0 0 24 24" id="pause-icon" style="display: none;"><path fill="currentColor" d="M14,19H18V5H14M6,19H10V5H6V19Z"></path></svg>
+                    </button>
+                    <span id="current-time">0:00</span>
+                    <input type="range" id="seek-slider" min="0" max="100" value="0" step="0.01" disabled>
+                    <span id="total-duration-display">0:00</span>
+                </div>
+            </div>
+            <div class="timeline-section">
+                <div class="timeline-toolbar">
+                     <h4>Timeline</h4>
+                    <div class="zoom-controls">
+                        <label for="zoom-slider">Zoom:</label>
+                        <input type="range" id="zoom-slider" min="10" max="500" value="50" step="5" title="Timeline Zoom" disabled>
+                    </div>
+                </div>
+                <div id="timeline-wrapper">
+                    <div id="timeline">
+                        <div id="time-markers"></div>
+                        <div id="clips-container">
+                            <!-- Clips added by JS -->
+                        </div>
+                         <div id="playhead"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel (Properties & Actions) -->
+        <div class="panel" id="right-panel">
+            <h3>Properties</h3>
+            <div id="clip-properties" class="panel-section">
+                <p><strong>Selected:</strong> <span id="prop-clip-id">None</span></p>
+                <p><strong>Start:</strong> <span id="prop-clip-start">N/A</span>s</p>
+                <p><strong>End:</strong> <span id="prop-clip-end">N/A</span>s</p>
+                <p><strong>Duration:</strong> <span id="prop-clip-duration">N/A</span>s</p>
+            </div>
+
+            <h3>Actions</h3>
+            <div id="actions-list" class="panel-section">
+                 <button id="action-split" disabled title="Split Selected Clip at Playhead (S)">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 22v-8M6 22v-8M18 22v-8M3 10h18m-4.5-5.5L12 4.5L6.5 10"/></svg>
+                     Split Clip
+                 </button>
+                <button id="action-delete" class="danger" disabled title="Delete Selected Clip (Del)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M9 3v1H4v2h1v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6h1V4h-5V3H9m0 5h2v9H9V8m4 0h2v9h-2V8Z"/></svg>
+                     Delete Clip
+                 </button>
+            </div>
+
+            <h3>Export</h3>
+            <div id="export-controls" class="panel-section">
+                <p style="font-size: 0.85em; color: var(--text-medium); margin-bottom: 10px;">Export as WebM (VP9/Opus) using browser's MediaRecorder.</p>
+                <button id="export-button" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M5 20h14v-2H5v2m14-9h-4V3H9v6H5l7 7l7-7Z"/></svg>
+                     Export Video
+                 </button>
+                 <p id="export-status" style="font-size: 0.8em; color: var(--text-medium); margin-top: 8px; min-height: 1.2em;"></p>
+            </div>
+        </div>
+
+    </div> <!-- End Editor Container -->
+
+    <!-- Context Menu -->
+    <div id="context-menu">
+        <button class="context-menu-item" data-action="split">Split Clip</button>
+        <button class="context-menu-item" data-action="duplicate">Duplicate Clip</button>
+        <hr class="context-menu-divider">
+        <button class="context-menu-item" data-action="delete" style="color: var(--danger)">Delete Clip</button>
     </div>
 
-    <!-- Navigation -->
-     <nav class="navbar navbar-expand-lg fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="#" aria-label="CineVerse Home">
-                 <i class="fas fa-meteor logo-icon"></i>
-                <span class="logo-text">CineVerse</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                     <li class="nav-item"><a class="nav-link active" href="#explore" data-category-nav="popular"><i class="fas fa-compass"></i> Explore</a></li>
-                     <li class="nav-item"><a class="nav-link" href="#featured"><i class="fas fa-star"></i> Featured</a></li>
-                     <li class="nav-item"><a class="nav-link" href="#reviews"><i class="fas fa-comments"></i> Reviews</a></li>
-                     <li class="nav-item"><a class="nav-link" href="#qandaSection"><i class="fas fa-question-circle"></i> Q&A</a></li>
-                    <li class="nav-item dropdown">
-                         <a class="nav-link dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-th-large"></i> Categories</a>
-                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="categoryDropdown" style="background-color: var(--cv-secondary-bg); border-color: var(--cv-border-color);">
-                             <!-- Add data-category attribute for easier JS targeting -->
-                             <li><a class="dropdown-item category-nav-link" href="#" data-category="popular">Popular</a></li>
-                             <li><a class="dropdown-item category-nav-link" href="#" data-category="top_rated">Top Rated</a></li>
-                             <li><a class="dropdown-item category-nav-link" href="#" data-category="upcoming">Upcoming</a></li>
-                             <li><a class="dropdown-item category-nav-link" href="#" data-category="now_playing">Now Playing</a></li>
-                         </ul>
-                     </li>
-                </ul>
-                <!-- Auth Area -->
-                <div id="authArea" class="d-flex align-items-center ms-lg-auto">
-                    <!-- Logged In State -->
-                    <div id="userInfo" class="d-none align-items-center me-2">
-                         <i class="fas fa-user-astronaut me-2"></i>
-                        <span id="usernameDisplay" class="fw-medium"></span>
-                         <button id="logoutButton" class="btn btn-link text-decoration-none p-0 ms-2" title="Logout"><i class="fas fa-sign-out-alt fs-5"></i></button>
-                     </div>
-                    <!-- Logged Out State -->
-                     <div id="authButtons" class="auth-buttons">
-                         <button id="loginButtonTrigger" class="btn btn-outline-light me-2" data-bs-toggle="modal" data-bs-target="#authModal" onclick="setActiveAuthTab('login')">Login</button>
-                        <button id="signupButtonTrigger" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authModal" onclick="setActiveAuthTab('signup')">Sign Up</button>
-                     </div>
-                 </div>
-             </div>
-         </div>
-     </nav>
-
-    <!-- Hero Section -->
-    <section class="hero-section" id="heroSection">
-        <div class="container hero-content">
-             <h1 class="hero-title" id="heroMovieTitle">Your Cinematic Universe</h1>
-             <p class="lead hero-tagline" id="heroMovieTagline">Dive deep into films and connect with fellow movie lovers.</p>
-             <div class="search-container">
-                 <div class="input-group shadow-lg">
-                    <input type="text" class="form-control search-input" id="searchInput" placeholder="Search movies..." aria-label="Search movies">
-                    <button class="btn search-btn" id="searchButton" aria-label="Search"><i class="fas fa-search"></i></button>
-                </div>
-             </div>
-        </div>
-     </section>
-
-    <!-- Main Content Wrapper -->
-    <main class="container mt-5 mb-5">
-
-        <!-- Featured Posts Section -->
-        <section id="featured" class="mb-5">
-            <h2 class="section-title">Featured Insights</h2>
-            <!-- Placeholder Content - Replace with dynamic loading logic -->
-            <div class="row g-4" id="featuredArticlesContainer">
-                <div class="col-md-6 col-lg-4">
-                    <div class="card"><span><i class="fas fa-newspaper fa-2x mb-2"></i><br>Featured Article 1 <br> (Dynamic Content Needed)</span></div>
-                </div>
-                 <div class="col-md-6 col-lg-4">
-                    <div class="card"><span><i class="fas fa-newspaper fa-2x mb-2"></i><br>Featured Article 2 <br> (Dynamic Content Needed)</span></div>
-                </div>
-                 <div class="col-lg-4 d-none d-lg-block">
-                    <div class="card"><span><i class="fas fa-newspaper fa-2x mb-2"></i><br>Featured Article 3 <br> (Dynamic Content Needed)</span></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Movies Gallery Section -->
-        <section id="explore" class="mb-5">
-            <h2 class="section-title" id="moviesSectionTitle">Explore Popular</h2>
-            <div class="row g-sm-4 g-3" id="moviesContainer">
-                <!-- Skeletons will be rendered here by JS -->
-            </div>
-            <nav aria-label="Movie Pages"><ul class="pagination" id="pagination"></ul></nav>
-        </section>
-
-        <!-- Recent Reviews Section -->
-        <section id="reviews" class="mb-5">
-            <h2 class="section-title">Community Reviews</h2>
-             <!-- Placeholder Content - Replace with dynamic loading logic -->
-             <div class="row g-4" id="reviewsContainer">
-                 <div class="col-md-6 col-lg-4">
-                    <div class="card"><span><i class="fas fa-star-half-alt fa-2x mb-2"></i><br>Review Snippet 1 <br> (Dynamic Content Needed)</span></div>
-                </div>
-                 <div class="col-md-6 col-lg-4">
-                    <div class="card"><span><i class="fas fa-star-half-alt fa-2x mb-2"></i><br>Review Snippet 2 <br> (Dynamic Content Needed)</span></div>
-                </div>
-                 <div class="col-lg-4 d-none d-lg-block">
-                    <div class="card"><span><i class="fas fa-star-half-alt fa-2x mb-2"></i><br>Review Snippet 3 <br> (Dynamic Content Needed)</span></div>
-                </div>
-            </div>
-        </section>
-
-         <!-- Q&A Section -->
-         <section id="qandaSection" class="mb-5">
-             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                 <h2 class="section-title mt-0 mb-0">Community Q&A</h2>
-                <button id="togglePostQuestionBtn" class="btn btn-sm btn-primary d-none"><i class="fas fa-plus-circle me-1"></i> Ask Question</button>
-            </div>
-            <!-- Ask Question Form -->
-            <div class="card mb-4 hidden" id="postQuestionCard">
-                <div class="card-body p-4">
-                    <h5 class="card-title text-light mb-3">Ask the Community</h5>
-                    <form id="postQuestionForm">
-                        <div class="mb-3">
-                            <label for="questionText" class="form-label visually-hidden">Your Question</label>
-                            <textarea class="form-control" id="questionText" rows="3" placeholder="What movie question is on your mind?" required style="background-color: var(--cv-tertiary-bg); border-color: var(--cv-border-color); color: var(--cv-primary-text);"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-2"></i>Post Question</button>
-                        <div id="questionPostStatus" class="form-text mt-2 small"></div>
-                    </form>
-                </div>
-            </div>
-            <!-- Prompt for logged-out users -->
-             <p id="qandaLoginPrompt" class="text-center text-secondary small mt-4 d-none"> <!-- Initially hidden -->
-                Please <a href="#" class="link-info" data-bs-toggle="modal" data-bs-target="#authModal" onclick="setActiveAuthTab('login')">login</a> or <a href="#" class="link-info" data-bs-toggle="modal" data-bs-target="#authModal" onclick="setActiveAuthTab('signup')">sign up</a> to participate in Q&A.
-            </p>
-            <!-- List of Questions -->
-             <div id="questionsList">
-                 <!-- Skeletons/Questions will be rendered here by JS -->
-             </div>
-        </section>
-
-    </main>
-
-     <!-- Detail Modal (Unified for Movie & Q&A) -->
-    <div class="modal fade movie-modal" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
-         <div class="modal-dialog modal-dialog-scrollable modal-xl"> <!-- modal-xl for wider content -->
-             <div class="modal-content">
-                 <!-- Close button moved inside for easier absolute positioning relative to content -->
-                 <div class="modal-body p-0">
-                     <!-- Header Overlay contains only the close button now -->
-                     <div class="modal-header-overlay">
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <!-- Content will be loaded here -->
-                     <div id="detailModalContent">
-                        <div class="text-center p-5 vh-50 d-flex align-items-center justify-content-center">
-                            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                                <span class="visually-hidden">Loading details...</span>
-                            </div>
-                        </div>
-                    </div>
-                 </div>
-             </div>
-         </div>
-     </div>
-
-    <!-- Authentication Modal (Combined Login/Signup) -->
-    <div class="modal fade auth-modal" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="authModalLabel">Welcome to CineVerse</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <nav>
-                         <div class="nav nav-tabs nav-fill mb-4" id="nav-tab" role="tablist">
-                             <button class="nav-link active" id="nav-login-tab" data-bs-toggle="tab" data-bs-target="#nav-login" type="button" role="tab" aria-controls="nav-login" aria-selected="true">Login</button>
-                             <button class="nav-link" id="nav-signup-tab" data-bs-toggle="tab" data-bs-target="#nav-signup" type="button" role="tab" aria-controls="nav-signup" aria-selected="false">Sign Up</button>
-                         </div>
-                    </nav>
-                     <div class="tab-content" id="nav-tabContent">
-                        <!-- Login Tab -->
-                        <div class="tab-pane fade show active" id="nav-login" role="tabpanel" aria-labelledby="nav-login-tab">
-                             <form id="loginForm" novalidate>
-                                 <div class="mb-3">
-                                    <label for="loginEmail" class="form-label visually-hidden">Email</label>
-                                    <input type="email" class="form-control" id="loginEmail" placeholder="Email Address" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="loginPassword" class="form-label visually-hidden">Password</label>
-                                    <input type="password" class="form-control" id="loginPassword" placeholder="Password" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Login</button>
-                                <div id="loginError" class="form-text mt-2 small text-center"></div>
-                             </form>
-                        </div>
-                        <!-- Sign Up Tab -->
-                        <div class="tab-pane fade" id="nav-signup" role="tabpanel" aria-labelledby="nav-signup-tab">
-                             <form id="signupForm" novalidate>
-                                 <div class="mb-3">
-                                    <label for="signupDisplayName" class="form-label visually-hidden">Display Name</label>
-                                    <input type="text" class="form-control" id="signupDisplayName" placeholder="Display Name" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="signupEmail" class="form-label visually-hidden">Email</label>
-                                    <input type="email" class="form-control" id="signupEmail" placeholder="Email Address" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="signupPassword" class="form-label visually-hidden">Password</label>
-                                    <input type="password" class="form-control" id="signupPassword" placeholder="Password (min. 6 characters)" required minlength="6">
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Sign Up</button>
-                                <div id="signupError" class="form-text mt-2 small text-center"></div>
-                             </form>
-                        </div>
-                     </div>
-                 </div>
-             </div>
-         </div>
-     </div>
+     <!-- Loading/Status Overlay -->
+    <div id="status-overlay">
+        <p id="status-message">Processing...</p>
+        <progress id="status-progress" value="0" max="100" style="display: none;"></progress> <!-- Initially hide progress bar -->
+    </div>
 
 
-    <!-- Back to Top Button -->
-    <a href="#" class="back-to-top" id="backToTop" title="Back to Top" aria-label="Back to top"><i class="fas fa-arrow-up"></i></a>
+    <script>
+        // PASTE THE JAVASCRIPT LOGIC HERE
+        // (The script content will follow in the next step, matching this HTML)
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element References ---
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const mediaPool = document.getElementById('media-pool');
+            const mediaPlaceholder = document.getElementById('media-placeholder');
+            const videoPlayer = document.getElementById('video-player');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const playIcon = document.getElementById('play-icon');
+            const pauseIcon = document.getElementById('pause-icon');
+            const currentTimeEl = document.getElementById('current-time');
+            const totalDurationEl = document.getElementById('total-duration-display');
+            const seekSlider = document.getElementById('seek-slider');
+            const timelineWrapper = document.getElementById('timeline-wrapper');
+            const timeline = document.getElementById('timeline');
+            const timeMarkersEl = document.getElementById('time-markers');
+            const clipsContainer = document.getElementById('clips-container');
+            const playhead = document.getElementById('playhead');
+            const zoomSlider = document.getElementById('zoom-slider');
+            const propClipId = document.getElementById('prop-clip-id');
+            const propClipStart = document.getElementById('prop-clip-start');
+            const propClipEnd = document.getElementById('prop-clip-end');
+            const propClipDuration = document.getElementById('prop-clip-duration');
+            const actionSplitBtn = document.getElementById('action-split');
+            const actionDeleteBtn = document.getElementById('action-delete');
+            const exportButton = document.getElementById('export-button');
+            const exportStatus = document.getElementById('export-status');
+            const contextMenu = document.getElementById('context-menu');
+            const statusOverlay = document.getElementById('status-overlay');
+            const statusMessage = document.getElementById('status-message');
+            const statusProgress = document.getElementById('status-progress');
+            const resetProjectBtn = document.getElementById('reset-project-btn');
 
-    <!-- Footer -->
-     <footer class="footer">
-         <div class="container">
-             <div class="row">
-                 <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
-                     <div class="footer-logo mb-3"><i class="fas fa-meteor"></i> CineVerse</div>
-                     <p class="pe-lg-4">Your portal to the universe of cinema. Explore, discover, and discuss the world of movies and TV shows.</p>
-                     <div class="social-icons mt-4">
-                         <a href="#" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
-                         <a href="#" aria-label="Twitter" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a>
-                         <a href="#" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
-                         <a href="#" aria-label="Youtube" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
-                     </div>
-                 </div>
-                 <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
-                     <h5>Quick Links</h5>
-                     <ul class="list-unstyled footer-links">
-                         <li><a href="#explore">Explore</a></li>
-                         <li><a href="#featured">Featured</a></li>
-                         <li><a href="#reviews">Reviews</a></li>
-                         <li><a href="#" onclick="loadMovies('top_rated', 1); return false;">Top Rated</a></li>
-                         <li><a href="#" onclick="loadMovies('upcoming', 1); return false;">Upcoming</a></li>
-                     </ul>
-                 </div>
-                 <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
-                     <h5>Community</h5>
-                     <ul class="list-unstyled footer-links">
-                         <li><a href="#qandaSection">Discussions</a></li>
-                         <li><a href="#reviews">User Reviews</a></li>
-                         <li><a href="#">Leaderboard</a></li><!-- Placeholder -->
-                         <li><a href="#">Watchlists</a></li> <!-- Placeholder -->
-                     </ul>
-                 </div>
-                 <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
-                     <h5>Newsletter</h5>
-                     <p>Subscribe for weekly movie news and highlights.</p>
-                     <form id="newsletterFormDummy">
-                         <div class="input-group mb-3">
-                             <label for="newsletterEmail" class="visually-hidden">Email</label>
-                             <input type="email" id="newsletterEmail" class="form-control" placeholder="Enter your email" aria-label="Email" required>
-                             <button class="btn btn-outline-primary" type="submit">Subscribe</button>
-                         </div>
-                     </form>
-                     <small id="newsletterMessageDummy" class="d-block mt-2 text-secondary"></small>
-                 </div>
-             </div>
-             <hr class="my-4">
-             <div class="row footer-bottom align-items-center">
-                 <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
-                     <p class="mb-0">© <script>document.write(new Date().getFullYear())</script> CineVerse. All Rights Reserved.</p>
-                 </div>
-                 <div class="col-md-6 text-center text-md-end">
-                     <small>Movie data provided by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" class="link-secondary">TMDb</a>. This project uses the TMDb API but is not endorsed or certified by TMDb.</small>
-                 </div>
-             </div>
-         </div>
-    </footer>
+            // --- State ---
+            let sourceVideoFile = null;
+            let sourceVideoURL = null;
+            let totalDuration = 0;
+            let clips = []; // { id, startTime, endTime, name }
+            let selectedClipId = null;
+            let contextClipId = null; // For context menu target
+            let isPlaying = false;
+            let isSeeking = false;
+            let pixelsPerSecond = 50; // Initial zoom level
+            let mediaRecorder = null;
+            let recordedChunks = [];
+            let exportStartTime = 0; // For progress calculation
 
-    <!-- Firebase SDK (ensure these versions are compatible if using older compat libraries) -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore-compat.js"></script>
+            // Drag states
+            let clipDragState = { element: null, id: null, offsetX: 0, originalLeft: 0 };
+            let handleDragState = { element: null, clip: null, type: null, startX: 0, originalStart: 0, originalEnd: 0 };
+            let playheadDragState = { isDragging: false, startX: 0, startScroll: 0, startTime: 0 };
 
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+            const MIN_CLIP_WIDTH_PX = 10;
+            const MIN_CLIP_DURATION_S = 0.1;
 
 
-  <script scr="main.js"></script>
+            // --- Utility Functions ---
+            function formatTime(totalSeconds) {
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = Math.floor(totalSeconds % 60);
+                return `${minutes}:${String(seconds).padStart(2, '0')}`;
+            }
+            function timeToPx(time) { return time * pixelsPerSecond; }
+            function pxToTime(px) { return px / pixelsPerSecond; }
+
+            // --- File Handling & Media Pool ---
+            function setupFileHandling() {
+                dropZone.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', handleFileSelect);
+                dropZone.addEventListener('dragover', handleDragOver);
+                dropZone.addEventListener('dragleave', handleDragLeave);
+                dropZone.addEventListener('drop', handleDrop);
+                resetProjectBtn.addEventListener('click', () => {
+                     if (confirm('Reset project? All changes will be lost.')) {
+                         resetEditor();
+                     }
+                });
+            }
+
+            function handleFileSelect(e) {
+                 const file = e.target.files[0];
+                 if (file && (file.type === 'video/mp4' || file.type === 'video/webm')) {
+                     loadVideo(file);
+                 } else if(file) {
+                     alert('Please select an MP4 or WebM video file.');
+                 }
+                 fileInput.value = ''; // Reset file input
+            }
+            function handleDragOver(e) { e.preventDefault(); dropZone.classList.add('dragover'); }
+            function handleDragLeave() { dropZone.classList.remove('dragover'); }
+            function handleDrop(e) {
+                e.preventDefault(); dropZone.classList.remove('dragover');
+                 const file = e.dataTransfer.files[0];
+                if (file && (file.type === 'video/mp4' || file.type === 'video/webm')) {
+                    loadVideo(file);
+                 } else if (file) {
+                    alert('Please drop an MP4 or WebM video file.');
+                }
+            }
+
+            function loadVideo(file) {
+                 console.log("Loading video:", file.name);
+                 resetEditor(); // Clear previous state first
+                 showStatus("Loading video...", false);
+                 sourceVideoFile = file;
+                 sourceVideoURL = URL.createObjectURL(sourceVideoFile);
+
+                 updateMediaPoolDisplay(file.name);
+
+                 videoPlayer.onerror = () => {
+                     console.error("Video Loading Error:", videoPlayer.error);
+                     alert(`Error loading video: ${videoPlayer.error?.message || 'Unknown error.'}. Please try a different file.`);
+                     resetEditor();
+                     showStatus("Error loading video.", true);
+                 };
+
+                 videoPlayer.onloadedmetadata = () => {
+                     console.log("Metadata loaded. Duration:", videoPlayer.duration);
+                     totalDuration = videoPlayer.duration;
+
+                     // Update UI with duration
+                     seekSlider.max = totalDuration;
+                     totalDurationEl.textContent = formatTime(totalDuration);
+                     currentTimeEl.textContent = formatTime(0); // Reset current time display
+
+                     // Create initial clip spanning the whole video
+                     const clipId = `clip-${Date.now()}`;
+                     clips = [{ id: clipId, startTime: 0, endTime: totalDuration, name: `Clip 1` }];
+                     console.log("Initial clips:", clips);
+
+                     // Enable controls
+                     enableControls(true);
+                     selectClipById(clipId); // Select the initial clip
+
+                     // Render initial timeline state
+                     renderTimeline();
+                     renderMarkers();
+                     updatePlayhead();
+                     showStatus("Video loaded.", true, 2000); // Show success temporarily
+                 };
+                 // Set source LAST, after listeners are attached
+                 videoPlayer.src = sourceVideoURL;
+             }
+
+             function updateMediaPoolDisplay(filename) {
+                 mediaPlaceholder.style.display = 'none';
+                 mediaPool.innerHTML = `
+                    <div class="media-item">
+                        <strong>${filename}</strong>
+                        <span>Video File</span>
+                    </div>`;
+             }
+
+            // --- Playback & Seeking ---
+            function setupPlaybackControls() {
+                playPauseBtn.addEventListener('click', togglePlayPause);
+                videoPlayer.addEventListener('timeupdate', handleTimeUpdate);
+                videoPlayer.addEventListener('play', handlePlay);
+                videoPlayer.addEventListener('pause', handlePause);
+                videoPlayer.addEventListener('ended', handleEnded);
+                seekSlider.addEventListener('input', handleSeekInput);
+                seekSlider.addEventListener('change', handleSeekChange); // Seek only on release
+                 // Playhead Drag
+                 playhead.addEventListener('mousedown', handlePlayheadMouseDown);
+            }
+
+            function togglePlayPause() {
+                 if (isPlaying) {
+                     videoPlayer.pause();
+                 } else {
+                     if (videoPlayer.readyState >= 1) { // Ensure metadata loaded at least
+                         playSequence(); // Use custom playback logic
+                     }
+                 }
+            }
+
+             function handlePlay() { isPlaying = true; playIcon.style.display = 'none'; pauseIcon.style.display = 'inline-block'; }
+             function handlePause() { isPlaying = false; playIcon.style.display = 'inline-block'; pauseIcon.style.display = 'none'; }
+             function handleEnded() { handlePause(); }
+
+            function handleTimeUpdate() {
+                 if (isSeeking) return; // Don't update UI elements during manual seek
+                 const currentTime = videoPlayer.currentTime;
+                 seekSlider.value = currentTime;
+                 currentTimeEl.textContent = formatTime(currentTime);
+                 updatePlayhead();
+                 seekSlider.style.setProperty('--seek-progress', `${(currentTime / totalDuration) * 100}%`);
+
+                 // Clip sequence logic (check if end of segment reached)
+                 if (isPlaying) { checkClipSequence(); }
+            }
+
+            function handleSeekInput() { // Called while dragging
+                 isSeeking = true;
+                 const time = parseFloat(seekSlider.value);
+                 videoPlayer.currentTime = time; // Update video time live *only if needed* - causes stutter?
+                 currentTimeEl.textContent = formatTime(time); // Update time display live
+                 updatePlayhead();
+                 seekSlider.style.setProperty('--seek-progress', `${(time / totalDuration) * 100}%`);
+            }
+
+             function handleSeekChange() { // Called when slider is released
+                 isSeeking = false;
+                 videoPlayer.currentTime = parseFloat(seekSlider.value); // Final seek
+                 // If playback was stopped by seeking, restart sequence check
+                 if (!isPlaying) {
+                    // Do nothing or maybe prepare for play? Depends on desired UX
+                 } else {
+                      checkClipSequence(); // Re-check sequence if playing
+                 }
+             }
+
+             // Logic to play through edited clips sequentially
+             function playSequence() {
+                 const currentTime = videoPlayer.currentTime;
+                 let foundCurrentClip = false;
+
+                 for (let i = 0; i < clips.length; i++) {
+                     const clip = clips[i];
+                     // Check if current time is *within* this clip's original source range
+                     if (currentTime >= clip.startTime && currentTime < clip.endTime) {
+                         foundCurrentClip = true;
+                         console.log(`Play starting within clip ${clip.id} [${clip.startTime.toFixed(2)} - ${clip.endTime.toFixed(2)}]`);
+                         videoPlayer.play().catch(e => console.warn("Play prevented", e));
+                         break;
+                     }
+                     // If current time is *before* this clip, seek to its start and play
+                     else if (currentTime < clip.startTime) {
+                         console.log(`Seeking to start of clip ${clip.id} (${clip.startTime.toFixed(2)}) to play sequence`);
+                         videoPlayer.currentTime = clip.startTime;
+                          // Set timeout to allow seek before playing
+                         setTimeout(() => {
+                             videoPlayer.play().catch(e => console.warn("Play prevented after seek", e));
+                         }, 50); // Short delay
+                         foundCurrentClip = true;
+                         break;
+                     }
+                 }
+
+                 // If playhead is after the last clip
+                 if (!foundCurrentClip && clips.length > 0) {
+                      console.log("Playhead after last clip, resetting to start.");
+                      videoPlayer.currentTime = clips[0].startTime; // Go to start of first clip
+                      videoPlayer.play().catch(e => console.warn("Play prevented at start", e));
+                 } else if (clips.length === 0 && videoPlayer.readyState >= 1){
+                    // If no clips, play the whole video? Or stay paused?
+                    // Let's just play the source for now if no clips
+                    videoPlayer.play().catch(e => console.warn("Play prevented (no clips)", e));
+                 }
+             }
+
+            // Check during playback if we need to jump to the next clip
+            function checkClipSequence() {
+                 const currentTime = videoPlayer.currentTime;
+                 let currentClipIndex = -1;
+
+                for (let i = 0; i < clips.length; i++) {
+                    // We use a small tolerance (0.1s) to avoid issues near clip boundaries
+                     if (currentTime >= clips[i].startTime - 0.1 && currentTime < clips[i].endTime - 0.1) {
+                        currentClipIndex = i;
+                        break;
+                    }
+                 }
+
+                 if (currentClipIndex !== -1) {
+                    const clip = clips[currentClipIndex];
+                     // Check if very close to the end of the current source segment
+                     if (currentTime >= clip.endTime - 0.1) { // 0.1s tolerance before end
+                        const nextIndex = currentClipIndex + 1;
+                         if (nextIndex < clips.length) {
+                            const nextClip = clips[nextIndex];
+                             console.log(`End of segment ${clip.id}, jumping to ${nextClip.id} at ${nextClip.startTime.toFixed(2)}`);
+                            videoPlayer.currentTime = nextClip.startTime; // Jump to the start of the next segment
+                         } else {
+                            console.log("End of last clip reached.");
+                            videoPlayer.pause();
+                             videoPlayer.currentTime = clip.endTime; // Set exactly to end
+                         }
+                     }
+                 } else {
+                     // Playhead is currently between clips - pause playback
+                     console.log("Playhead between clips, pausing.");
+                     videoPlayer.pause();
+                      // Optionally seek to the start of the next available clip?
+                     // const nextClip = clips.find(c => c.startTime > currentTime);
+                     // if (nextClip) videoPlayer.currentTime = nextClip.startTime;
+                 }
+            }
+
+             // --- Timeline Rendering & Interaction ---
+             function setupTimeline() {
+                 zoomSlider.addEventListener('input', handleZoom);
+                 // Drag/drop for clips handled by event delegation in renderTimeline
+                 timeline.addEventListener('click', handleTimelineClick);
+                  timelineWrapper.addEventListener('scroll', renderMarkers); // Re-render markers on scroll
+             }
+
+             function handleZoom() {
+                 pixelsPerSecond = parseInt(zoomSlider.value);
+                 console.log("Zoom PPS:", pixelsPerSecond);
+                 renderTimeline();
+                 renderMarkers();
+                 updatePlayhead();
+             }
+
+             function renderTimeline() {
+                 const timelineWidth = totalDuration * pixelsPerSecond;
+                 timeline.style.width = `${timelineWidth}px`;
+                 clipsContainer.innerHTML = ''; // Clear existing clips
+
+                 clips.forEach(clip => {
+                     const clipEl = document.createElement('div');
+                     clipEl.className = 'clip';
+                     clipEl.dataset.clipId = clip.id;
+                     clipEl.draggable = true;
+                     if (clip.id === selectedClipId) { clipEl.classList.add('selected'); }
+
+                     const left = timeToPx(clip.startTime);
+                     const width = Math.max(MIN_CLIP_WIDTH_PX, timeToPx(clip.endTime - clip.startTime));
+                     clipEl.style.left = `${left}px`;
+                     clipEl.style.width = `${width}px`;
+                     clipEl.textContent = clip.name;
+
+                     // Add Resize Handles
+                     const leftHandle = document.createElement('div');
+                     leftHandle.className = 'clip-handle left';
+                     leftHandle.dataset.type = 'left';
+                     clipEl.appendChild(leftHandle);
+                     leftHandle.addEventListener('mousedown', handleHandleMouseDown);
+
+                     const rightHandle = document.createElement('div');
+                     rightHandle.className = 'clip-handle right';
+                     rightHandle.dataset.type = 'right';
+                     clipEl.appendChild(rightHandle);
+                     rightHandle.addEventListener('mousedown', handleHandleMouseDown);
+
+                      // Attach Drag listeners to the clip element itself
+                      clipEl.addEventListener('dragstart', handleClipDragStart);
+                     clipEl.addEventListener('dragend', handleClipDragEnd);
+
+                      // Select on click
+                      clipEl.addEventListener('click', (e) => {
+                         e.stopPropagation(); // Prevent timeline click seek
+                         selectClipById(clip.id);
+                         hideContextMenu();
+                     });
+
+                     // Context Menu
+                     clipEl.addEventListener('contextmenu', handleClipContextMenu);
+
+                     clipsContainer.appendChild(clipEl);
+                 });
+
+                  updatePlayhead(); // Update playhead based on potential timeline width changes
+             }
+
+             function renderMarkers() {
+                 timeMarkersEl.innerHTML = ''; // Clear existing
+                 const wrapperWidth = timelineWrapper.clientWidth;
+                 const scrollLeft = timelineWrapper.scrollLeft;
+                 const scale = pixelsPerSecond;
+
+                 // Determine reasonable interval based on zoom
+                 let intervalSec = 1;
+                 if (scale < 15) intervalSec = 10;
+                 else if (scale < 30) intervalSec = 5;
+                 else if (scale < 100) intervalSec = 1;
+                 else intervalSec = 0.5; // Sub-second for high zoom
+
+                 const startSec = Math.floor(pxToTime(scrollLeft) / intervalSec) * intervalSec;
+                 const endSec = pxToTime(scrollLeft + wrapperWidth);
+
+                 for (let t = startSec; t <= endSec + intervalSec; t += intervalSec) {
+                     if (t < 0) continue;
+                     const x = timeToPx(t);
+                     const isMajor = Math.abs(t % (intervalSec * 5)) < 0.01 || t === 0;
+
+                     const marker = document.createElement('div');
+                     marker.className = `marker ${isMajor ? 'major' : ''}`;
+                     marker.style.left = `${x}px`;
+
+                      if (isMajor) {
+                          const label = document.createElement('span');
+                          label.textContent = formatTime(t);
+                          marker.appendChild(label);
+                      }
+                     timeMarkersEl.appendChild(marker);
+                 }
+             }
+
+             function updatePlayhead() {
+                 if (sourceVideoURL) {
+                    const playheadPos = timeToPx(videoPlayer.currentTime);
+                     playhead.style.transform = `translateX(${playheadPos}px)`;
+                 } else {
+                      playhead.style.transform = `translateX(0px)`;
+                 }
+             }
+
+            function handleTimelineClick(e) {
+                 // Allow clicking only on timeline background, not clips or handles
+                 if (e.target === timeline || e.target === clipsContainer) {
+                     const rect = timeline.getBoundingClientRect();
+                     const clickX = e.clientX - rect.left + timelineWrapper.scrollLeft;
+                     const time = Math.max(0, pxToTime(clickX)); // Clamp time >= 0
+
+                     if(sourceVideoURL) {
+                        videoPlayer.currentTime = Math.min(time, totalDuration); // Clamp <= duration
+                        updatePlayhead();
+                         currentTimeEl.textContent = formatTime(videoPlayer.currentTime);
+                        seekSlider.value = videoPlayer.currentTime;
+                        seekSlider.style.setProperty('--seek-progress', `${(videoPlayer.currentTime / totalDuration) * 100}%`);
+
+                        if (isPlaying) videoPlayer.pause(); // Pause on manual seek
+                    }
+                 }
+                  hideContextMenu();
+             }
+
+              // --- Playhead Drag ---
+            function handlePlayheadMouseDown(e) {
+                 e.preventDefault();
+                 e.stopPropagation(); // Prevent timeline click
+                 playheadDragState.isDragging = true;
+                 playheadDragState.startX = e.clientX;
+                 playheadDragState.startScroll = timelineWrapper.scrollLeft;
+                 playheadDragState.startTime = videoPlayer.currentTime;
+                 document.addEventListener('mousemove', handlePlayheadMouseMove);
+                 document.addEventListener('mouseup', handlePlayheadMouseUp);
+                 if(isPlaying) videoPlayer.pause(); // Pause during drag
+                 document.body.style.cursor = 'grabbing';
+             }
+
+            function handlePlayheadMouseMove(e) {
+                 if (!playheadDragState.isDragging) return;
+                 const deltaX = e.clientX - playheadDragState.startX;
+                 const targetPx = timeToPx(playheadDragState.startTime) + deltaX;
+                 const time = Math.max(0, pxToTime(targetPx));
+
+                 // Update immediately for feedback
+                 videoPlayer.currentTime = Math.min(time, totalDuration);
+                  currentTimeEl.textContent = formatTime(videoPlayer.currentTime);
+                  updatePlayhead();
+                 // Optionally scroll container: Needs calculation based on position within wrapper
+             }
+
+             function handlePlayheadMouseUp(e) {
+                  if (playheadDragState.isDragging) {
+                     playheadDragState.isDragging = false;
+                     document.removeEventListener('mousemove', handlePlayheadMouseMove);
+                     document.removeEventListener('mouseup', handlePlayheadMouseUp);
+                     // Final seek done via mouse move update
+                     handleSeekChange(); // Update slider properly
+                     document.body.style.cursor = '';
+                 }
+             }
+
+            // --- Clip Drag & Drop ---
+            function handleClipDragStart(e) {
+                 const clipElement = e.target;
+                 clipDragState = {
+                     element: clipElement,
+                     id: clipElement.dataset.clipId,
+                     offsetX: e.clientX - clipElement.getBoundingClientRect().left,
+                      originalLeft: parseFloat(clipElement.style.left)
+                 };
+                 e.dataTransfer.effectAllowed = 'move';
+                 e.dataTransfer.setData('text/plain', clipDragState.id); // Data is needed for Firefox
+                 setTimeout(() => clipElement.classList.add('dragging'), 0); // Add style slightly later
+                 console.log(`Drag Start: ${clipDragState.id}`);
+            }
+
+            function handleClipDragEnd(e) {
+                if (clipDragState.element) {
+                     clipDragState.element.classList.remove('dragging');
+                }
+                clipDragState = { element: null, id: null, offsetX: 0, originalLeft: 0 }; // Reset state
+                 console.log("Drag End");
+            }
+
+             // Need dragover on the *timeline* element to allow dropping clips back onto it
+            timeline.addEventListener('dragover', (e) => {
+                 e.preventDefault(); // Allow drop
+                 e.dataTransfer.dropEffect = 'move';
+             });
+
+             timeline.addEventListener('drop', (e) => {
+                 e.preventDefault();
+                  if (!clipDragState.id) return; // Check if we are dragging a clip
+
+                 const rect = timeline.getBoundingClientRect();
+                 const dropX = e.clientX - rect.left + timelineWrapper.scrollLeft;
+                 const dropTime = Math.max(0, pxToTime(dropX - clipDragState.offsetX)); // Target start time
+
+                 console.log(`Drop clip ${clipDragState.id} target time: ${dropTime}`);
+
+                 // Find the clip in the data array
+                 const clipIndex = clips.findIndex(c => c.id === clipDragState.id);
+                 if (clipIndex === -1) { console.error("Dropped clip data not found"); return; }
+
+                 // Update clip's startTime (endTime needs recalculation)
+                 const droppedClip = clips[clipIndex];
+                 droppedClip.startTime = dropTime; // endTime remains relative for now
+
+                 // Remove and re-insert based on new start time to maintain order
+                  clips.splice(clipIndex, 1); // Remove
+                  const insertIndex = clips.findIndex(c => c.startTime > dropTime);
+                  if (insertIndex === -1) clips.push(droppedClip); // Add to end
+                  else clips.splice(insertIndex, 0, droppedClip); // Insert at correct position
+
+                 adjustSubsequentClips(-1); // Recalculate ALL timings after reorder
+
+                 renderTimeline(); // Re-render the whole timeline
+                 selectClipById(clipDragState.id); // Re-select the dropped clip
+            });
+
+
+             // --- Clip Resizing ---
+             function handleHandleMouseDown(e) {
+                 e.preventDefault();
+                 e.stopPropagation();
+                 const handle = e.target;
+                 const clipElement = handle.closest('.clip');
+                 const clipId = clipElement.dataset.clipId;
+                 const clip = clips.find(c => c.id === clipId);
+                 if (!clip) return;
+
+                 handleDragState = {
+                     element: handle,
+                     clip: clip,
+                     type: handle.dataset.type, // 'left' or 'right'
+                     startX: e.clientX,
+                     originalStart: clip.startTime,
+                     originalEnd: clip.endTime
+                 };
+
+                 document.body.style.cursor = 'ew-resize';
+                 document.addEventListener('mousemove', handleHandleMouseMove);
+                 document.addEventListener('mouseup', handleHandleMouseUp);
+                 if(isPlaying) videoPlayer.pause(); // Pause during resize
+             }
+
+             function handleHandleMouseMove(e) {
+                 if (!handleDragState.clip) return;
+                 const deltaX = e.clientX - handleDragState.startX;
+                 const deltaTime = pxToTime(deltaX);
+                 let newStart = handleDragState.originalStart;
+                 let newEnd = handleDragState.originalEnd;
+
+                 if (handleDragState.type === 'left') {
+                     newStart = handleDragState.originalStart + deltaTime;
+                     // Clamp start time and prevent inverted clip
+                     newStart = Math.max(0, Math.min(newStart, handleDragState.originalEnd - MIN_CLIP_DURATION_S));
+                 } else { // right handle
+                     newEnd = handleDragState.originalEnd + deltaTime;
+                     // Clamp end time and prevent inverted clip
+                      newEnd = Math.max(handleDragState.originalStart + MIN_CLIP_DURATION_S, Math.min(newEnd, totalDuration));
+                 }
+
+                 // Update clip data
+                 handleDragState.clip.startTime = newStart;
+                 handleDragState.clip.endTime = newEnd;
+
+                 // Update visual element style live (important for feedback)
+                 const clipElement = handleDragState.element.closest('.clip');
+                  clipElement.style.left = `${timeToPx(newStart)}px`;
+                  clipElement.style.width = `${Math.max(MIN_CLIP_WIDTH_PX, timeToPx(newEnd - newStart))}px`;
+
+                 updateSelectedClipInfo(); // Update properties panel live
+             }
+
+             function handleHandleMouseUp(e) {
+                 if (handleDragState.clip) {
+                    // Final time clamping check after drag ends
+                    const clip = handleDragState.clip;
+                     clip.startTime = Math.max(0, clip.startTime);
+                     clip.endTime = Math.min(totalDuration, clip.endTime);
+                     if (clip.endTime - clip.startTime < MIN_CLIP_DURATION_S) {
+                          if(handleDragState.type === 'left') clip.startTime = clip.endTime - MIN_CLIP_DURATION_S;
+                          else clip.endTime = clip.startTime + MIN_CLIP_DURATION_S;
+                     }
+
+                     document.body.style.cursor = '';
+                     document.removeEventListener('mousemove', handleHandleMouseMove);
+                     document.removeEventListener('mouseup', handleHandleMouseUp);
+
+                      // Recalculate subsequent clip timings if necessary
+                     adjustSubsequentClips(-1); // Simple recalculate all after resize/trim
+
+                     renderTimeline(); // Re-render timeline to fix potential overlaps visually
+                     selectClipById(clip.id); // Ensure still selected
+
+                     handleDragState = { element: null, clip: null, type: null, startX: 0, originalStart: 0, originalEnd: 0 }; // Reset state
+                 }
+             }
+
+
+             // --- Context Menu ---
+             function setupContextMenu() {
+                  contextMenu.addEventListener('click', handleContextMenuAction);
+                   // Clicking anywhere else closes it
+                  document.addEventListener('click', (e) => {
+                      if (!contextMenu.contains(e.target)) hideContextMenu();
+                  });
+                   // Right clicking anywhere else closes previous one
+                   document.addEventListener('contextmenu', (e) => {
+                       if (!e.target.closest('.clip')) hideContextMenu();
+                   });
+             }
+             function handleClipContextMenu(e) {
+                  e.preventDefault(); e.stopPropagation();
+                  const clipElement = e.target.closest('.clip');
+                  if(!clipElement) return;
+
+                  contextClipId = clipElement.dataset.clipId; // Store which clip was right-clicked
+                  selectClipById(contextClipId); // Select the clip
+
+                  // Position and show
+                   const menuWidth = contextMenu.offsetWidth; const menuHeight = contextMenu.offsetHeight;
+                   const winWidth = window.innerWidth; const winHeight = window.innerHeight;
+                   let top = e.clientY; let left = e.clientX;
+                   if (left + menuWidth > winWidth) left = winWidth - menuWidth - 5;
+                   if (top + menuHeight > winHeight) top = winHeight - menuHeight - 5;
+                  contextMenu.style.top = `${top}px`; contextMenu.style.left = `${left}px`;
+                  contextMenu.style.display = 'block';
+             }
+             function hideContextMenu() { contextMenu.style.display = 'none'; contextClipId = null; }
+
+             function handleContextMenuAction(e) {
+                  const button = e.target.closest('.context-menu-item');
+                  if (!button || !contextClipId) { hideContextMenu(); return; } // Check if target or context valid
+                  const action = button.dataset.action;
+
+                 console.log(`Context Action: ${action} on ${contextClipId}`);
+
+                  // Action functions use 'selectedClipId', which is set by context menu click
+                 switch (action) {
+                     case 'split': handleSplit(); break;
+                     case 'duplicate': handleDuplicate(); break;
+                     case 'delete': handleDelete(); break;
+                  }
+                 hideContextMenu();
+             }
+
+             // --- Editing Actions ---
+             function handleSplit() {
+                 if (!selectedClipId) { alert("No clip selected."); return; }
+                 const clipIndex = clips.findIndex(c => c.id === selectedClipId);
+                 if (clipIndex === -1) return;
+
+                 const clip = clips[clipIndex];
+                 const splitTime = videoPlayer.currentTime;
+
+                  // Can only split if playhead is INSIDE the clip duration
+                  if (splitTime > clip.startTime + MIN_CLIP_DURATION_S && splitTime < clip.endTime - MIN_CLIP_DURATION_S) {
+                     const originalEndTime = clip.endTime;
+                     const newClip = {
+                         id: `clip-${Date.now()}`,
+                         startTime: splitTime,
+                         endTime: originalEndTime,
+                         name: `${clip.name} (Split)` // Rename new part
+                     };
+                     clip.endTime = splitTime; // Shorten original clip
+                     clips.splice(clipIndex + 1, 0, newClip); // Insert new clip after original
+                     adjustSubsequentClips(-1);
+                     renderTimeline();
+                     selectClipById(newClip.id); // Select the new (second) clip
+                 } else {
+                     alert("Playhead must be within the clip duration (not at edges) to split.");
+                 }
+             }
+
+             function handleDelete() {
+                 if (!selectedClipId) { alert("No clip selected."); return; }
+                 const clipIndex = clips.findIndex(c => c.id === selectedClipId);
+                 if (clipIndex !== -1) {
+                     clips.splice(clipIndex, 1);
+                     selectedClipId = null; // Deselect
+                     adjustSubsequentClips(-1);
+                     renderTimeline();
+                     updatePropertiesPanel(); // Clear properties
+                     updateEditButtonStates();
+                 }
+             }
+
+             function handleDuplicate() {
+                 if (!selectedClipId) { alert("No clip selected."); return; }
+                 const clipIndex = clips.findIndex(c => c.id === selectedClipId);
+                 if (clipIndex !== -1) {
+                     const originalClip = clips[clipIndex];
+                     const newClip = {
+                         id: `clip-${Date.now()}`,
+                         startTime: originalClip.endTime, // Initially place after original (will be adjusted)
+                         endTime: originalClip.endTime + (originalClip.endTime - originalClip.startTime),
+                         name: `${originalClip.name} (Copy)`
+                     };
+                     clips.splice(clipIndex + 1, 0, newClip);
+                     adjustSubsequentClips(-1);
+                     renderTimeline();
+                     selectClipById(newClip.id);
+                 }
+             }
+
+             // Adjusts subsequent clips' start/end times after an edit
+             function adjustSubsequentClips(startIndex = -1) { // -1 means recalc all from start
+                 if (clips.length === 0) return;
+
+                 let currentTime = 0;
+                 let recalculateAll = startIndex === -1;
+
+                  if (!recalculateAll) { // Adjust from a specific point
+                    if (startIndex >= 0 && startIndex < clips.length) {
+                         currentTime = clips[startIndex].endTime; // Start time for next clip
+                     } else { // Invalid index, might happen after delete
+                        recalculateAll = true;
+                    }
+                  }
+
+                 // Iterate and fix timings
+                 clips.sort((a, b) => a.startTime - b.startTime); // Ensure array is sorted first!
+                 currentTime = 0; // Always recalculate from 0 after sort
+                  for (let i = 0; i < clips.length; i++) {
+                     const clip = clips[i];
+                      const duration = clip.endTime - clip.startTime;
+                      clip.startTime = currentTime;
+                      clip.endTime = currentTime + duration;
+                      currentTime = clip.endTime;
+                      // Add a tiny gap? Optional, depends on desired snapping behavior.
+                      // currentTime += 0.01;
+                  }
+                  console.log("Adjusted clips:", JSON.parse(JSON.stringify(clips))); // Deep copy for logging
+             }
+
+
+            // --- Export Logic (MediaRecorder) ---
+            function handleExport() {
+                 if (clips.length === 0 || !sourceVideoURL) {
+                     alert("Please load a video and add clips to the timeline first.");
+                     return;
+                 }
+                 if (typeof MediaRecorder === 'undefined') {
+                     alert("MediaRecorder API is not supported in this browser.");
+                     return;
+                 }
+
+                 exportButton.disabled = true;
+                 exportStatus.textContent = 'Preparing...';
+                 showStatus("Exporting...", false); // Show overlay without progress initially
+
+                  // Use webm with vp9 or vp8 as preferred/fallback
+                 const options = { mimeType: 'video/webm;codecs=vp9' };
+                 if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                     console.warn('WebM VP9 not supported, trying VP8...');
+                     options.mimeType = 'video/webm;codecs=vp8';
+                     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                         console.error('WebM VP8 also not supported!');
+                         alert('WebM recording is not supported in this browser.');
+                          showStatus("", false); // Hide overlay
+                          exportButton.disabled = false;
+                          exportStatus.textContent = 'Export failed (Unsupported)';
+                         return;
+                     }
+                 }
+
+                  // IMPORTANT: Temporarily make video visible during recording if using captureStream
+                  // Not strictly needed if drawing to canvas, but simpler here.
+                  videoPlayer.style.opacity = '1'; // Make sure it's potentially renderable
+
+                  try {
+                      const stream = videoPlayer.captureStream ? videoPlayer.captureStream() : videoPlayer.mozCaptureStream();
+                      if(!stream) throw new Error("Could not capture stream.");
+
+                      mediaRecorder = new MediaRecorder(stream, options);
+                      recordedChunks = [];
+                      exportStartTime = Date.now();
+
+                      mediaRecorder.ondataavailable = (event) => {
+                          if (event.data.size > 0) {
+                              recordedChunks.push(event.data);
+                          }
+                      };
+
+                      mediaRecorder.onstop = () => {
+                          console.log("Recording stopped. Assembling Blob...");
+                           showStatus("Finalizing...", true, 99); // Indicate finalizing
+                          const blob = new Blob(recordedChunks, { type: options.mimeType });
+                           const exportDurationMs = Date.now() - exportStartTime;
+                           console.log(`Export took ${exportDurationMs / 1000}s`);
+                           exportStatus.textContent = `Export Complete (${(blob.size / 1024 / 1024).toFixed(1)} MB)`;
+                           triggerDownload(blob, `${sourceVideoFile?.name.split('.')[0] || 'video'}-edited.webm`);
+                          resetAfterExport();
+                           showStatus("", false); // Hide overlay
+                           videoPlayer.style.opacity = '1'; // Restore opacity if changed
+                      };
+
+                       mediaRecorder.onerror = (event) => {
+                            console.error("MediaRecorder error:", event.error);
+                            alert(`Export Error: ${event.error.name || 'Unknown error'}`);
+                           resetAfterExport();
+                            showStatus("Export Failed!", true);
+                           setTimeout(() => showStatus("", false), 3000);
+                           videoPlayer.style.opacity = '1';
+                      };
+
+                      // Start the sequence
+                      startRecordingSequence();
+
+                  } catch (error) {
+                      console.error("Error setting up MediaRecorder:", error);
+                      alert(`Setup Error: ${error.message}`);
+                     resetAfterExport();
+                      showStatus("", false);
+                      videoPlayer.style.opacity = '1';
+                  }
+            }
+
+             async function startRecordingSequence() {
+                 if (clips.length === 0 || !mediaRecorder) return;
+                 console.log("Starting recording sequence...");
+                 const totalOutputDuration = calculateTotalClipDuration();
+                 let processedOutputTime = 0;
+
+                 // Ensure player is ready and at the start of the first segment
+                 videoPlayer.pause();
+                 videoPlayer.currentTime = clips[0].startTime;
+                 await new Promise(r => setTimeout(r, 150)); // Wait for seek
+
+                  // Need to handle playback segment by segment
+                  let currentClipIndex = 0;
+                  const originalMuted = videoPlayer.muted;
+                  videoPlayer.muted = true; // Mute source during recording playback
+                  mediaRecorder.start();
+                 console.log("MediaRecorder started.");
+                 exportStatus.textContent = 'Recording 0%...';
+                  showStatus("Exporting...", true, 0); // Show progress bar
+
+
+                  const recordNextSegment = async () => {
+                    if (currentClipIndex >= clips.length) {
+                         mediaRecorder.stop(); // All done! onstop will handle the rest.
+                         return;
+                    }
+
+                     const clip = clips[currentClipIndex];
+                      const segmentStartTime = clip.startTime;
+                      const segmentEndTime = clip.endTime;
+                      const segmentDuration = segmentEndTime - segmentStartTime;
+
+                      console.log(`Recording segment ${currentClipIndex + 1}: [${segmentStartTime.toFixed(2)} - ${segmentEndTime.toFixed(2)}]`);
+                      videoPlayer.currentTime = segmentStartTime;
+
+                      // Wait short time for potential seek
+                      await new Promise(r => setTimeout(r, 100));
+
+                      // Create a promise that resolves when this segment finishes playing
+                      const segmentPlayed = new Promise((resolve, reject) => {
+                          const checkTime = () => {
+                              const currentTime = videoPlayer.currentTime;
+                              if (currentTime >= segmentEndTime - 0.05 || videoPlayer.paused || videoPlayer.ended) {
+                                  if (!videoPlayer.paused) videoPlayer.pause(); // Pause precisely
+                                   // Calculate progress
+                                   processedOutputTime += segmentDuration;
+                                   const progress = Math.min(100, (processedOutputTime / totalOutputDuration) * 100);
+                                   progressBar.value = progress;
+                                   progressText.textContent = `${Math.round(progress)}%`;
+                                   exportStatus.textContent = `Recording ${Math.round(progress)}%...`;
+
+                                  resolve(); // Segment finished
+                              } else {
+                                  requestAnimationFrame(checkTime);
+                              }
+                          };
+                          videoPlayer.play().then(checkTime).catch(reject); // Start playing and checking
+                      });
+
+                     try {
+                        await segmentPlayed;
+                         currentClipIndex++;
+                         recordNextSegment(); // Recurse for the next segment
+                     } catch(error) {
+                          console.error(`Error playing segment ${currentClipIndex + 1}:`, error);
+                          if (mediaRecorder.state === 'recording') mediaRecorder.stop(); // Stop on error
+                         resetAfterExport();
+                          showStatus(`Error during segment ${currentClipIndex + 1}!`, true);
+                         setTimeout(() => showStatus("", false), 3000);
+                          videoPlayer.muted = originalMuted; // Restore muted state
+                     }
+                  };
+
+                  // Kick off the first segment
+                  recordNextSegment();
+            }
+
+            function resetAfterExport() {
+                exportButton.disabled = clips.length === 0;
+                recordedChunks = [];
+                 if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    // May already be stopped, but good practice
+                    try { mediaRecorder.stop(); } catch(e) {}
+                 }
+                mediaRecorder = null;
+                 videoPlayer.muted = false; // Restore muted state (should capture original state)
+            }
+
+
+            // --- UI Updates ---
+             function enableControls(isEnabled) {
+                playPauseBtn.disabled = !isEnabled;
+                seekSlider.disabled = !isEnabled;
+                zoomSlider.disabled = !isEnabled;
+                 actionSplitBtn.disabled = !isEnabled || !selectedClipId; // Also depends on selection
+                actionDeleteBtn.disabled = !isEnabled || !selectedClipId;
+                exportButton.disabled = !isEnabled || clips.length === 0; // Initially disable if no clips
+                // Keep properties disabled until selection
+                 propClipId.textContent = isEnabled ? 'None' : 'N/A';
+                 propClipStart.textContent = 'N/A';
+                 propClipEnd.textContent = 'N/A';
+                 propClipDuration.textContent = 'N/A';
+             }
+
+            function updateEditButtonStates() { // Updated function name
+                const hasSelection = selectedClipId !== null;
+                actionSplitBtn.disabled = !hasSelection;
+                actionDeleteBtn.disabled = !hasSelection;
+                // Also update context menu potentially or disable directly
+                // duplicate button? Add one to actions if needed:
+                // const duplicateBtn = document.getElementById('action-duplicate'); // Assuming exists
+                // if (duplicateBtn) duplicateBtn.disabled = !hasSelection;
+             }
+
+             function updatePropertiesPanel() {
+                const clip = clips.find(c => c.id === selectedClipId);
+                 if (clip) {
+                    propClipId.textContent = clip.id.substring(clip.id.length - 6); // Show short ID
+                    propClipStart.textContent = clip.startTime.toFixed(3);
+                    propClipEnd.textContent = clip.endTime.toFixed(3);
+                    propClipDuration.textContent = (clip.endTime - clip.startTime).toFixed(3);
+                 } else {
+                    propClipId.textContent = 'None';
+                    propClipStart.textContent = 'N/A';
+                    propClipEnd.textContent = 'N/A';
+                    propClipDuration.textContent = 'N/A';
+                 }
+             }
+
+             function selectClipById(clipId) {
+                 selectedClipId = clipId;
+                 clipsContainer.querySelectorAll('.clip').forEach(el => {
+                     el.classList.toggle('selected', el.dataset.clipId === clipId);
+                 });
+                 updatePropertiesPanel();
+                 updateEditButtonStates();
+                 console.log(`Selected clip: ${clipId}`);
+                 hideContextMenu(); // Hide if selecting via normal click
+             }
+
+              function showStatus(message, isTemporary = true, duration = 2000) {
+                 statusMessage.textContent = message;
+                 statusProgress.style.display = 'none'; // Hide progress bar for simple status
+                 statusOverlay.style.display = 'flex';
+                  if(isTemporary) {
+                    setTimeout(() => { statusOverlay.style.display = 'none'; }, duration);
+                 }
+             }
+
+
+            // --- Initialize ---
+             function initializeEditor() {
+                 console.log("Initializing Creative Editor...");
+                 setupFileHandling();
+                 setupPlaybackControls();
+                 setupTimeline();
+                 setupContextMenu();
+                 resetEditor(); // Set initial state
+                 enableControls(false); // Disable controls initially
+                 updatePropertiesPanel(); // Clear properties
+             }
+
+            initializeEditor();
+        });
+    </script>
+
 </body>
 </html>
