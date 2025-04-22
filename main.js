@@ -1,1056 +1,2243 @@
-    // --- App Configuration ---
-        const APP_NAME = "Synergy Chat";
-        const MESSAGE_LIMIT = 100; // How many messages to load initially
-        const TYPING_TIMEOUT_MS = 3000; // How long until typing status resets
-        const DEBOUNCE_TYPING_MS = 400; // Debounce interval for typing updates
-
-        // --- Firebase Configuration ---
-        const firebaseConfigApp = {
-            apiKey: "AIzaSyDp2V0ULE-32AcIJ92a_e3mhMe6f6yZ_H4", // *** REPLACE ***
-            authDomain: "sm4movies.firebaseapp.com",           // *** REPLACE ***
-            projectId: "sm4movies",                      // *** REPLACE ***
-            storageBucket: "sm4movies.appspot.com",       // *** REPLACE ***
-            messagingSenderId: "277353836953",           // *** REPLACE ***
-            appId: "1:277353836953:web:85e02783526c7cb58de308" // *** REPLACE ***
+ /* ==========================================================================
+       Graphite Chat Application - COMPLETE & ADVANCED REWRITE
+       Using Firebase v9 SDK (via HTML Script Tags), Bootstrap 5
+       Features: Auth, Realtime Chat, Presence, Typing, Media, Profile, Theming
+       ========================================================================== */
+    
+    (function () {
+        "use strict";
+    
+        //======================================================================
+        // Firebase Configuration
+        //======================================================================
+        const firebaseConfig = {
+           apiKey: "AIzaSyDp2V0ULE-32AcIJ92a_e3mhMe6f6yZ_H4",
+           authDomain: "sm4movies.firebaseapp.com",
+           projectId: "sm4movies",
+           storageBucket: "sm4movies.firebasestorage.app",
+           messagingSenderId: "277353836953",
+           appId: "1:277353836953:web:85e02783526c7cb58de308",
+           measurementId: "G-690RSNJ2Q2"
         };
-        // REMINDER: Set secure Firebase Realtime Database rules as provided!
-
-        // --- Firebase Initialization ---
-        let firebaseApp, firebaseAuth, firebaseDatabase;
-        let messagesRef, statusRef, typingRef, userStatusRef, userTypingRef;
-        const presenceConnections = new Map(); // Track presence connections
-
-        // --- DOM Elements ---
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const appContainer = document.getElementById('app-container');
-        const authSection = document.getElementById('auth-section');
-        const chatSection = document.getElementById('chat-section');
-        // Auth
-        const loginForm = document.getElementById('login-form');
-        const signupForm = document.getElementById('signup-form');
-        const loginCard = document.getElementById('login-card');
-        const signupCard = document.getElementById('signup-card');
-        const showSignupLink = document.getElementById('show-signup');
-        const showLoginLink = document.getElementById('show-login');
-        const loginErrorDiv = document.getElementById('login-error');
-        const signupErrorDiv = document.getElementById('signup-error');
-        // Chat Layout
-        const userSidebar = document.getElementById('user-sidebar');
-        const sidebarToggleButton = document.getElementById('sidebar-toggle-button');
-        const sidebarCloseButton = document.getElementById('sidebar-close-button');
-        // Chat Navbar
-        const chatNavbar = document.getElementById('chat-navbar');
-        const userDisplayNameSpan = document.getElementById('user-display-name');
-        const navbarAvatarDiv = document.getElementById('navbar-avatar');
-        const navbarUserInfo = document.getElementById('navbar-user-info');
-        const logoutButton = document.getElementById('logout-button');
-        const themeSelector = document.getElementById('theme-selector');
-        const onlineUserCountSpan = document.getElementById('online-user-count');
-        // User List
-        const userListUl = document.getElementById('user-list');
-        // Chat Area
-        const chatBox = document.getElementById('chat-box');
-        const typingIndicatorDiv = document.getElementById('typing-indicator');
-        // Input Area
-        const messageForm = document.getElementById('message-form');
-        const messageInput = document.getElementById('message-input');
-        const sendButton = document.getElementById('send-button');
-        const chatErrorDiv = document.getElementById('chat-error');
-        // Modal
-        const profileModalEl = document.getElementById('profileModal');
-        const profileModal = new bootstrap.Modal(profileModalEl);
-        const modalAvatar = document.getElementById('modal-avatar');
-        const modalDisplayName = document.getElementById('modal-display-name');
-        const modalEmail = document.getElementById('modal-email');
-        const modalUid = document.getElementById('modal-uid');
-        const modalStatus = document.getElementById('modal-status');
-
-        // --- State Variables ---
-        let currentUser = null;
-        let messageListenerAttached = false;
-        let statusListenerAttached = false;
-        let typingListenerAttached = false;
-        let typingTimeout = null;
-        const messageCache = new Map();
-        const onlineUsers = new Map();
-        const typingUsers = new Map();
-
-        // --- Themes Definition ---
-        const themes = [
-            { name: 'light', label: 'Light Mode', icon: 'bi-sun-fill' },
-            { name: 'dark', label: 'Dark Mode', icon: 'bi-moon-stars-fill' },
-            // Add more themes here if desired
-        ];
-
+    
         //======================================================================
-        // $ Utility Functions
+        // App Configuration Constants
         //======================================================================
-
-        /**
-         * Displays an error message in a designated element.
-         * @param {HTMLElement} element - The element to display the error in.
-         * @param {string} message - The error message.
-         */
-        function displayError(element, message) {
-            if (!element) return;
-            element.textContent = message;
-            element.classList.remove('hidden');
-        }
-
-        /**
-         * Clears an error message from a designated element.
-         * @param {HTMLElement} element - The element to clear the error from.
-         */
-        function clearError(element) {
-            if (!element) return;
-            element.textContent = '';
-            element.classList.add('hidden');
-        }
-
-        /**
-         * Formats a timestamp into a locale-specific time string.
-         * @param {number} timestamp - The Unix timestamp (milliseconds).
-         * @returns {string} - Formatted time string (e.g., "10:30 AM") or empty string.
-         */
-        function formatTimestamp(timestamp) {
-            if (!timestamp) return '';
-            try {
-                const date = new Date(timestamp);
-                if (isNaN(date.getTime())) {
-                    console.warn("Invalid timestamp received:", timestamp);
-                    return '';
+        const CONFIG = {
+            MESSAGE_LIMIT: 50, // How many messages to initially load (can implement pagination later)
+            TYPING_TIMEOUT_MS: 3000, // How long 'typing...' stays after last input
+            DEBOUNCE_TYPING_MS: 400, // Delay before sending typing update
+            DEBOUNCE_SEARCH_MS: 300, // Delay for search input
+            EMOJI_LIST: ['😀', '😂', '😊', '😍', '🤔', '👍', '👎', '❤️', '🔥', '🎉', '🚀', '✅', '👀', '👋', '🙏', '✨', '💯', '😇', '😎', '😭', '🤯', '🤣', '🙄', '😥', '😴', '🥳', '🥺', '👉', '👈', '👀', '🎶', '💡', ' M M M M K K H H H H H B B F C Z C V ' , /* ... add more as needed ... */ ],
+            THEMES: [
+                { name: 'light', label: 'Graphite Light', icon: 'bi-brightness-high-fill' },
+                { name: 'dark', label: 'Graphite Dark', icon: 'bi-moon-stars-fill' },
+                { name: 'sapphire', label: 'Sapphire Sea', icon: 'bi-water' }
+            ],
+            MAX_FILE_SIZE: 15 * 1024 * 1024, // 15MB Max file size
+            ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+            ALLOWED_VIDEO_TYPES: ['video/mp4', 'video/webm', 'video/ogg'],
+            ALLOWED_AUDIO_TYPES: ['audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/mp3'], // Be mindful of browser support
+            OFFLINE_THRESHOLD_MS: 60 * 1000 // Mark user offline if inactive for 1 minute
+        };
+    
+        //======================================================================
+        // State Management
+        //======================================================================
+        let state = {
+            currentUser: null, // Holds Firebase Auth user object + profile data from DB
+            currentChatId: null, // e.g., "uid1_uid2"
+            currentRecipientId: null, // The UID of the person being chatted with
+            currentRecipientData: null, // Full profile data of the recipient
+            isUserOnline: false, // Tracks current user's explicit online state
+            listeners: { // To store listener detachment functions
+                auth: null,
+                messages: null,
+                status: null, // For all users' status
+                contacts: null, // For user list updates
+                chats: null, // For chat metadata (last msg, unread)
+                presence: null, // For current user's own connection mgmt
+                typing: null // For recipient's typing status
+            },
+            typingTimeout: null, // Timer for clearing local user's typing status
+            mediaFiles: [], // Array of File objects staged for upload
+            searchQuery: '', // Current search term for contacts
+            caches: {
+                contacts: new Map(), // Map<uid, userData>
+                chatMetadata: new Map(), // Map<chatId, chatMetaData>
+                messages: new Map(), // Map<chatId, Map<messageId, messageData>> - Store messages per chat
+                onlineUsers: new Map(), // Map<uid, { online: boolean, lastActive: number }>
+                typingUsers: new Map() // Map<chatId, Map<uid, boolean>> - Who is typing in which chat
+            }
+        };
+    
+        //======================================================================
+        // Firebase Service References (Initialized in initializeFirebase)
+        //======================================================================
+        let firebaseApp, firebaseAuth, firebaseDb, firebaseStorage;
+        // V9 Service Functions (accessed via initialized instances)
+        let getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+            updateProfile, signOut, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail;
+        let getDatabase, ref, set, push, update, remove, onValue, onChildAdded, off,
+            serverTimestamp, increment, query, limitToLast, equalTo, orderByChild, startAt, endAt, get; // Added query functions
+        let getStorage, storageRef, uploadBytesResumable, getDownloadURL;
+    
+        //======================================================================
+        // DOM Elements Reference
+        //======================================================================
+        const UI = {
+            // Query all elements needed and store references
+            elements: {
+                loadingOverlay: document.getElementById('loading-overlay'),
+                appContainer: document.getElementById('app-container'),
+                authSection: document.getElementById('auth-section'),
+                chatSection: document.getElementById('chat-section'),
+    
+                // Auth Elements
+                loginForm: document.getElementById('loginForm'),
+                registerForm: document.getElementById('registerForm'),
+                loginEmailInput: document.getElementById('loginEmail'),
+                loginPasswordInput: document.getElementById('loginPassword'),
+                registerNameInput: document.getElementById('registerName'),
+                registerEmailInput: document.getElementById('registerEmail'),
+                registerPasswordInput: document.getElementById('registerPassword'),
+                confirmPasswordInput: document.getElementById('confirmPassword'),
+                loginError: document.getElementById('login-error'),
+                signupError: document.getElementById('signup-error'),
+                googleLoginBtn: document.getElementById('googleLoginBtn'),
+                facebookLoginBtn: document.getElementById('facebookLoginBtn'), // Note: FB Login requires more setup
+                forgotPasswordLink: document.getElementById('forgotPasswordLink'),
+                loginTabBtn: document.getElementById('login-tab-button'),
+                registerTabBtn: document.getElementById('register-tab-button'),
+    
+                // Modals (Instances)
+                forgotPasswordModal: new bootstrap.Modal(document.getElementById('forgotPasswordModal')),
+                profileModal: new bootstrap.Modal(document.getElementById('profileModal')),
+                mediaGalleryModal: new bootstrap.Modal(document.getElementById('mediaGalleryModal')),
+                mediaPreviewModal: new bootstrap.Modal(document.getElementById('mediaPreviewModal')),
+    
+                // Forgot Password Modal Elements
+                forgotPasswordForm: document.getElementById('forgotPasswordForm'),
+                resetEmailInput: document.getElementById('resetEmail'),
+                sendResetLinkBtn: document.getElementById('sendResetLinkBtn'),
+    
+                // Profile Modal Elements
+                updateProfileForm: document.getElementById('updateProfileForm'),
+                updateNameInput: document.getElementById('updateName'),
+                updateBioInput: document.getElementById('updateBio'),
+                updateProfilePictureInput: document.getElementById('updateProfilePictureInput'),
+                editProfilePic: document.getElementById('editProfilePic'),
+                saveProfileBtn: document.getElementById('saveProfileBtn'),
+    
+                // Sidebar Elements
+                userSidebar: document.getElementById('user-sidebar'),
+                sidebarToggleButton: document.getElementById('sidebar-toggle-button'),
+                userProfilePicSidebar: document.getElementById('userProfilePicSidebar'),
+                userNameSidebar: document.getElementById('userNameSidebar'),
+                userStatusIndicatorSidebar: document.getElementById('userStatusIndicatorSidebar'),
+                userStatusTextSidebar: document.getElementById('userStatusTextSidebar'),
+                searchContactsInput: document.getElementById('searchContactsInput'),
+                contactListContainer: document.getElementById('contactListContainer'),
+                profileDropdownBtn: document.getElementById('profileDropdownBtn'),
+                logoutBtn: document.getElementById('logoutBtn'),
+    
+                // Main Chat Area Elements
+                chatMain: document.getElementById('chat-main'),
+                chatNavbar: document.getElementById('chat-navbar'),
+                activeChatHeaderInfo: document.getElementById('activeChatHeaderInfo'),
+                activeChatAvatar: document.getElementById('activeChatAvatar'),
+                activeChatName: document.getElementById('activeChatName'),
+                activeChatStatusIndicator: document.getElementById('activeChatStatusIndicator'),
+                activeChatStatusText: document.getElementById('activeChatStatusText'),
+                emptyChatHeaderInfo: document.getElementById('emptyChatHeaderInfo'),
+                activeChatOptionsMenu: document.getElementById('activeChatOptionsMenu'),
+                themeSelector: document.getElementById('theme-selector'),
+                chatMenuDropdown: document.getElementById('chatMenuDropdown'),
+                clearChatBtn: document.getElementById('clearChatBtn'),
+                blockUserBtn: document.getElementById('blockUserBtn'),
+    
+                // Chat Box Elements
+                chatBoxWrapper: document.getElementById('chat-box-wrapper'),
+                chatBox: document.getElementById('chat-box'),
+                emptyChatState: document.getElementById('emptyChatState'),
+                typingIndicator: document.getElementById('typing-indicator'),
+                skeletonChat: document.querySelector('.skeleton-chat'),
+                contactListSkeleton: document.querySelector('.skeleton-list'),
+    
+                // Message Input Elements
+                messageFormContainer: document.getElementById('message-form-container'),
+                messageForm: document.getElementById('message-form'),
+                messageInput: document.getElementById('messageInput'),
+                sendButton: document.getElementById('send-button'),
+                emojiBtn: document.getElementById('emojiBtn'),
+                emojiPicker: document.getElementById('emojiPicker'),
+                attachmentMenuButton: document.getElementById('attachmentMenuButton'),
+                attachImageVideoBtn: document.getElementById('attachImageVideoBtn'),
+                attachAudioBtn: document.getElementById('attachAudioBtn'),
+                imageVideoInput: document.getElementById('imageVideoInput'),
+                audioInput: document.getElementById('audioInput'),
+                mediaPreviewContainer: document.getElementById('mediaPreviewContainer'),
+                chatError: document.getElementById('chat-error'),
+    
+                // Media Gallery Modal Elements
+                imageGalleryContainer: document.getElementById('imageGalleryContainer'),
+                videoGalleryContainer: document.getElementById('videoGalleryContainer'),
+                audioGalleryContainer: document.getElementById('audioGalleryContainer'),
+                noImagesMessage: document.getElementById('noImagesMessage'),
+                noVideosMessage: document.getElementById('noVideosMessage'),
+                noAudiosMessage: document.getElementById('noAudiosMessage'),
+                mediaGalleryTabs: document.getElementById('mediaGalleryTabs'),
+    
+    
+                // Media Preview Modal Elements
+                mediaPreviewContent: document.getElementById('mediaPreviewContent'),
+    
+                // Toast Container
+                toastContainer: document.querySelector('.toast-container')
+            },
+    
+            // UI Helper Methods
+            showLoadingOverlay(instant = false) {
+                const overlay = this.elements.loadingOverlay;
+                if (!overlay) return;
+                overlay.style.transition = instant ? 'none' : 'opacity 0.3s ease, visibility 0.3s ease';
+                overlay.style.opacity = '1';
+                overlay.style.visibility = 'visible';
+            },
+    
+            hideLoadingOverlay(delay = 200) {
+                const overlay = this.elements.loadingOverlay;
+                if (!overlay) return;
+                setTimeout(() => {
+                    overlay.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
+                    overlay.style.opacity = '0';
+                    overlay.style.visibility = 'hidden';
+                }, delay);
+            },
+    
+            showAuthSection() {
+                this.elements.authSection.classList.remove('hidden');
+                this.elements.authSection.style.display = 'flex';
+                this.elements.chatSection.classList.add('hidden');
+                this.elements.chatSection.style.display = 'none';
+                this.hideLoadingOverlay(0); // Hide quickly when showing auth
+            },
+    
+            showChatSection() {
+                this.elements.authSection.classList.add('hidden');
+                this.elements.authSection.style.display = 'none';
+                this.elements.chatSection.classList.remove('hidden');
+                this.elements.chatSection.style.display = 'flex';
+                this.hideLoadingOverlay(); // Normal delay
+                // Auto-focus message input on larger screens when chat appears
+                if (window.innerWidth > 767.98 && state.currentChatId) {
+                     this.elements.messageInput?.focus();
                 }
-                return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-            } catch (e) {
-                console.error("Error formatting timestamp:", timestamp, e);
-                return '';
+            },
+    
+            toggleSidebar(forceOpen = null) {
+                const isActive = this.elements.userSidebar.classList.contains('active');
+                if (forceOpen === true && !isActive) {
+                     this.elements.userSidebar.classList.add('active');
+                } else if (forceOpen === false && isActive) {
+                     this.elements.userSidebar.classList.remove('active');
+                } else if (forceOpen === null) {
+                     this.elements.userSidebar.classList.toggle('active');
+                }
+                 // Add overlay for clicking off sidebar on mobile? (Optional enhancement)
+            },
+    
+            // Enhanced method to manage loading states for buttons
+            setButtonLoading(button, isLoading) {
+                 if (!button) return;
+                 button.disabled = isLoading;
+                 const spinner = button.querySelector('.spinner-border');
+                 const text = button.querySelector('.btn-text');
+    
+                 if (isLoading) {
+                     button.classList.add('loading');
+                     if (spinner) spinner.style.display = 'inline-block';
+                     if (text) text.style.display = 'none'; // Hide text when loading
+                 } else {
+                     button.classList.remove('loading');
+                     if (spinner) spinner.style.display = 'none';
+                     if (text) text.style.display = 'inline'; // Show text when not loading
+                 }
+            }
+        };
+    
+        //======================================================================
+        // Utility Functions
+        //======================================================================
+    
+        // Clears error message display for a form element
+        function clearError(element) {
+            if (element && !element.classList.contains('hidden')) {
+                element.textContent = '';
+                element.classList.add('hidden');
             }
         }
-
-        /**
-         * Generates HTML for a user avatar (initials-based with colored background).
-         * @param {string|null} uid - User ID (used for color generation).
-         * @param {string} displayName - User's display name.
-         * @param {string} [sizeClass=''] - Additional CSS class for sizing (e.g., 'avatar-lg').
-         * @returns {string} - HTML string for the avatar element.
-         */
-        function generateAvatarHTML(uid, displayName, sizeClass = '') {
-             const name = displayName || '??';
-             let initials = '?';
-             try {
-                 const nameParts = name.split(' ').filter(Boolean);
-                 if (nameParts.length >= 2) {
-                     initials = nameParts[0][0] + nameParts[nameParts.length - 1][0];
-                 } else if (nameParts.length === 1 && nameParts[0].length > 0) {
-                      // Ensure we don't try index 1 if length is 1
-                      initials = nameParts[0].length >= 2 ? nameParts[0].substring(0, 2) : nameParts[0][0];
-                 }
-             } catch (e) { console.warn("Error generating initials for:", name, e); }
-
-             // Simple hashing for color consistency
-             let hash = 0;
-             if (uid) {
-                 for (let i = 0; i < uid.length; i++) {
-                     hash = uid.charCodeAt(i) + ((hash << 5) - hash);
-                     hash = hash & hash; // Convert to 32bit integer
-                 }
-             }
-             // Consistent color palette
-             const colors = ['#0d6efd', '#6f42c1', '#d63384', '#dc3545', '#fd7e14', '#ffc107', '#198754', '#20c997', '#0dcaf0', '#6610f2', '#212529', '#ff6b6b', '#4ecdc4', '#feca57', '#48dbfb', '#9b59b6'];
-             const colorIndex = Math.abs(hash % colors.length);
-             const bgColor = colors[colorIndex];
-
-             // Determine text color based on background brightness (simple contrast check)
-             let textColor = '#ffffff'; // Default white text
-             if (bgColor.startsWith('#')) {
-                 const r = parseInt(bgColor.substring(1, 3), 16);
-                 const g = parseInt(bgColor.substring(3, 5), 16);
-                 const b = parseInt(bgColor.substring(5, 7), 16);
-                 const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-                 if (brightness > 150) { // Threshold may need adjustment
-                     textColor = '#181c1a'; // Use dark text on light backgrounds
-                 }
-             }
-
-             // Use htmlspecialchars equivalent for safety if name could contain html
-             const safeName = name.replace(/</g, "<").replace(/>/g, ">");
-             const safeInitials = initials.replace(/</g, "<").replace(/>/g, ">");
-
-             return `<div class="avatar ${sizeClass}" style="background-color: ${bgColor}; color: ${textColor};" title="${safeName}">${safeInitials.toUpperCase()}</div>`;
-         }
-
-
-        /**
-         * Toggles the loading state of a button (shows/hides text and spinner).
-         * @param {HTMLButtonElement} button - The button element.
-         * @param {boolean} isLoading - True to show loading state, false otherwise.
-         */
-        function setLoadingState(button, isLoading) {
-            if (!button) return;
-            const textSpan = button.querySelector('.btn-text');
-            const spinnerSpan = button.querySelector('.spinner-border');
-
-            if (isLoading) {
-                button.disabled = true;
-                button.classList.add('loading'); // Add class for potential specific styling
-                if (textSpan) textSpan.style.display = 'none';
-                if (spinnerSpan) spinnerSpan.style.display = 'inline-block';
+    
+        // Displays an error message either in a dedicated element or as a toast
+        function displayError(element, message, isToast = false) {
+            console.error("Error:", message); // Log error for debugging
+            if (!isToast && element) {
+                element.textContent = message;
+                element.classList.remove('hidden');
             } else {
-                button.disabled = false;
-                button.classList.remove('loading');
-                if (textSpan) textSpan.style.display = 'inline-block'; // Or 'inline', 'block' depending on original
-                if (spinnerSpan) spinnerSpan.style.display = 'none';
+                showToast(message, "danger");
             }
         }
-
-        /**
-         * Debounces a function call.
-         * @param {Function} func - The function to debounce.
-         * @param {number} wait - The debounce delay in milliseconds.
-         * @returns {Function} - The debounced function.
-         */
+    
+        // Shows a Bootstrap toast notification
+        function showToast(message, type = 'info', delay = 5000) {
+            if (!UI.elements.toastContainer) return;
+            const toastId = `toast-${Date.now()}`;
+            const toastTypeClasses = {
+                info: 'text-bg-info',
+                success: 'text-bg-success',
+                warning: 'text-bg-warning',
+                danger: 'text-bg-danger'
+            };
+            const toastClass = toastTypeClasses[type] || toastTypeClasses.info;
+            const iconClass = {
+                info: 'bi-info-circle-fill',
+                success: 'bi-check-circle-fill',
+                warning: 'bi-exclamation-triangle-fill',
+                danger: 'bi-x-octagon-fill'
+            }[type] || 'bi-info-circle-fill';
+    
+            const toastHTML = `
+                <div id="${toastId}" class="toast align-items-center ${toastClass} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="${delay}">
+                  <div class="d-flex">
+                    <div class="toast-body">
+                      <i class="bi ${iconClass} me-2"></i> ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+                </div>`;
+    
+            UI.elements.toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+            const toastElement = document.getElementById(toastId);
+            if (toastElement) {
+                const bsToast = new bootstrap.Toast(toastElement);
+                toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+                bsToast.show();
+            }
+        }
+    
+        // Formats timestamp into a readable time string (e.g., "10:30 AM")
+        function formatTimestamp(timestamp) {
+            if (!timestamp || typeof timestamp !== 'number') return '';
+            const date = new Date(timestamp);
+            if (isNaN(date.getTime())) return '';
+            return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+    
+         // Formats timestamp into a relative time string (e.g., "5m ago", "yesterday", "Mar 15")
+        function formatRelativeTime(timestamp) {
+            if (!timestamp || typeof timestamp !== 'number') return '';
+            const date = new Date(timestamp);
+            if (isNaN(date.getTime())) return '';
+    
+            const now = new Date();
+            const seconds = Math.round((now - date) / 1000);
+            const minutes = Math.round(seconds / 60);
+            const hours = Math.round(minutes / 60);
+            const days = Math.round(hours / 24);
+    
+            if (seconds < 5) return 'just now';
+            if (minutes < 1) return `${seconds}s ago`;
+            if (hours < 1) return `${minutes}m ago`;
+            if (days < 1) {
+                // Check if it was yesterday
+                const yesterday = new Date(now);
+                yesterday.setDate(now.getDate() - 1);
+                if (date.getDate() === yesterday.getDate() &&
+                    date.getMonth() === yesterday.getMonth() &&
+                    date.getFullYear() === yesterday.getFullYear()) {
+                    return 'Yesterday';
+                }
+                // Check if it's today
+                if (date.getDate() === now.getDate() &&
+                    date.getMonth() === now.getMonth() &&
+                    date.getFullYear() === now.getFullYear()) {
+                     return formatTimestamp(timestamp); // Show time if today
+                }
+                 // Otherwise, show hours if less than 24 hours ago but crossed midnight
+                if (hours < 24) {
+                    return `${hours}h ago`;
+                }
+    
+            }
+             // If more than a day ago, show date
+            return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        }
+    
+        // Generates placeholder avatar HTML with initials and a background color based on UID
+        function generateAvatarHTML(uid, displayName, sizeClass = '', includeStatus = false, isOnline = false) {
+            const initials = (displayName || '??').trim().split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+            // Consistent color generation based on UID
+            const colors = ['#4c6ef5', '#20c997', '#fab005', '#fa5252', '#7950f2', '#f783ac', '#ff922b', '#228be6'];
+            let hash = 0;
+            if (uid) {
+                for (let i = 0; i < uid.length; i++) {
+                    hash = uid.charCodeAt(i) + ((hash << 5) - hash);
+                    hash = hash & hash; // Convert to 32bit integer
+                }
+            }
+            const bgColor = colors[Math.abs(hash % colors.length)];
+            const statusIndicatorHTML = includeStatus
+                ? `<span class="status-indicator ${isOnline ? 'bg-success' : 'bg-secondary'}"></span>`
+                : '';
+    
+            return `<div class="avatar ${sizeClass}" style="background-color: ${bgColor}; color: #fff;" title="${displayName || 'User'}">
+                        ${initials}
+                        ${statusIndicatorHTML}
+                    </div>`;
+        }
+    
+        // Higher-order function for debouncing
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
                 const later = () => {
                     clearTimeout(timeout);
-                    func.apply(this, args); // Use apply to maintain context
+                    func.apply(this, args);
                 };
                 clearTimeout(timeout);
                 timeout = setTimeout(later, wait);
             };
         }
-
-        // --- Show/Hide Loading Overlay ---
-        function showLoadingOverlay() {
-            loadingOverlay.classList.add('visible');
-        }
-        function hideLoadingOverlay() {
-             // Delay hiding slightly to avoid flicker if operation is very fast
-             setTimeout(() => {
-                loadingOverlay.classList.remove('visible');
-             }, 150);
-        }
-
-        //======================================================================
-        // $ THEME MANAGEMENT
-        //======================================================================
-
-        /** Populates the theme selector dropdown menu. */
-        function populateThemeSelector() {
-            themeSelector.innerHTML = themes.map(theme => `
-                <li>
-                    <button class="dropdown-item d-flex align-items-center" data-theme="${theme.name}" type="button">
-                        <i class="${theme.icon} me-2"></i>
-                        <span>${theme.label}</span>
-                    </button>
-                </li>
-            `).join('');
-        }
-
-        /** Applies the selected theme and saves preference. */
-        function applyTheme(themeName) {
-            // Remove all theme classes first
-            document.body.className = themes.reduce((acc, t) => acc.replace(`theme-${t.name}`, ''), document.body.className).trim();
-
-            if (themeName !== 'light') {
-                document.body.classList.add(`theme-${themeName}`);
-            }
-
-            // Update the --primary-rgb variable for dynamic rgba() usage
-             try {
-                const primaryColorValue = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
-                let rgb = { r: 13, g: 110, b: 253 }; // Default fallback (Bootstrap Blue)
-                if (primaryColorValue.startsWith('#')) {
-                     const hex = primaryColorValue;
-                     if (hex.length === 4) { rgb = { r: parseInt(hex[1] + hex[1], 16), g: parseInt(hex[2] + hex[2], 16), b: parseInt(hex[3] + hex[3], 16) }; }
-                     else if (hex.length === 7) { rgb = { r: parseInt(hex.substring(1, 3), 16), g: parseInt(hex.substring(3, 5), 16), b: parseInt(hex.substring(5, 7), 16) }; }
-                 } else if (primaryColorValue.startsWith('rgb')) {
-                     const match = primaryColorValue.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-                     if (match) { rgb = { r: parseInt(match[1]), g: parseInt(match[2]), b: parseInt(match[3]) }; }
-                 }
-                document.documentElement.style.setProperty('--primary-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
-
-                 // Also set secondary bg RGB for typing indicator
-                 const secondaryBgValue = getComputedStyle(document.documentElement).getPropertyValue('--bg-secondary').trim();
-                 let secondaryRgb = { r: 255, g: 255, b: 255 }; // Default white
-                 if (secondaryBgValue.startsWith('#')) { /* ... hex parsing ... */ }
-                 else if (secondaryBgValue.startsWith('rgb')) { /* ... rgb parsing ... */ }
-                 document.documentElement.style.setProperty('--bg-secondary-rgb', `${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b}`);
-
-
-             } catch (e) {
-                 console.error("Error processing theme colors for RGB:", e);
-                 document.documentElement.style.setProperty('--primary-rgb', '13, 110, 253'); // Fallback
-                 document.documentElement.style.setProperty('--bg-secondary-rgb', '255, 255, 255'); // Fallback
+    
+        // Creates a consistent chat ID from two user IDs
+        function getChatId(uid1, uid2) {
+            if (!uid1 || !uid2) {
+                 console.warn("Attempted to get chat ID with invalid UIDs:", uid1, uid2);
+                 return null;
              }
-
-
-            // Update active state in dropdown
-            themeSelector.querySelectorAll('.dropdown-item').forEach(item => {
-                item.classList.toggle('active', item.dataset.theme === themeName);
+            return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+        }
+    
+        // Auto-resizes the message textarea based on content
+        function resizeTextarea() {
+            const textarea = UI.elements.messageInput;
+            textarea.style.height = 'auto'; // Reset height
+            // Set height based on scroll height, capped at ~5 lines (adjust 120px as needed)
+            textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+        }
+    
+        // Validates a file based on size and allowed MIME types
+        function validateFile(file, allowedTypes) {
+             if (!file) return false;
+             const isValidSize = file.size <= CONFIG.MAX_FILE_SIZE;
+             const isValidType = allowedTypes.includes(file.type);
+             if (!isValidSize) {
+                 console.warn(`File too large: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+                 showToast(`File "${file.name}" is too large (max ${CONFIG.MAX_FILE_SIZE / 1024 / 1024} MB).`, "warning");
+             }
+             if (!isValidType) {
+                  console.warn(`Invalid file type: ${file.name} (${file.type})`);
+                 showToast(`File type for "${file.name}" is not allowed.`, "warning");
+             }
+            return isValidSize && isValidType;
+        }
+    
+        // Simple function to escape HTML to prevent XSS from user-generated text
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, function (match) {
+                const escapeMap = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;' //  &#39; is safer than &apos; for older browsers
+                };
+                return escapeMap[match];
             });
-
-            localStorage.setItem('chatTheme', themeName);
-            console.log(`Theme applied: ${themeName}`);
         }
-
-        /** Loads the saved theme preference or applies the default. */
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('chatTheme') || 'light'; // Default to light
-            applyTheme(savedTheme);
-        }
-
-
-        //======================================================================
-        // $ UI DISPLAY FUNCTIONS
-        //======================================================================
-
-        /** Toggles between Login and Signup forms. */
-        function toggleAuthForms(showSignup) {
-            clearError(loginErrorDiv);
-            clearError(signupErrorDiv);
-            loginForm.reset(); // Reset form fields
-            signupForm.reset();
-
-            if (showSignup) {
-                loginCard.classList.add('hidden');
-                signupCard.classList.remove('hidden');
-            } else {
-                signupCard.classList.add('hidden');
-                loginCard.classList.remove('hidden');
-            }
-        }
-
-        /** Shows the Authentication section and hides the Chat section. */
-        function showAuthSection() {
-            authSection.classList.remove('hidden');
-            chatSection.classList.add('hidden');
-            toggleAuthForms(false); // Default to login form
-            hideLoadingOverlay(); // Ensure loading overlay is hidden
-        }
-
-        /** Shows the Chat section and hides the Authentication section. */
-        function showChatSection() {
-            authSection.classList.add('hidden');
-            chatSection.classList.remove('hidden');
-            chatSection.style.display = 'flex'; // Ensure flex display is applied
-            scrollToBottom(); // Scroll down when chat loads
-            messageInput.focus();
-             hideLoadingOverlay(); // Ensure loading overlay is hidden
-        }
-
-        /** Scrolls the chat box to the bottom. */
-        function scrollToBottom() {
-             // Use requestAnimationFrame for smoother scrolling after DOM updates
-             requestAnimationFrame(() => {
-                 chatBox.scrollTop = chatBox.scrollHeight;
-             });
-        }
-
-        /** Displays a chat message in the chat box. */
-        function displayChatMessage(snapshot) {
-            const messageId = snapshot.key;
-            const messageData = snapshot.val();
-
-            // Basic validation and check cache
-            if (!messageData || !messageData.text || !messageData.uid || !messageData.timestamp || messageCache.has(messageId)) {
-                if(messageCache.has(messageId)) console.log("Skipping cached message:", messageId);
-                else console.warn("Received incomplete/invalid message data:", messageId, messageData);
-                return;
-            }
-
-            const senderDisplayName = onlineUsers.get(messageData.uid)?.displayName || messageData.displayName || 'Anonymous';
-            const isSent = currentUser && messageData.uid === currentUser.uid;
-
-            // Create message wrapper
-            const messageWrapper = document.createElement('div');
-            messageWrapper.className = `message-wrapper ${isSent ? 'sent' : 'received'}`;
-            messageWrapper.setAttribute('data-message-id', messageId);
-            messageWrapper.setAttribute('data-sender-uid', messageData.uid);
-            messageWrapper.setAttribute('data-sender-name', senderDisplayName); // Store name for profile modal
-
-            // Create Avatar
-            const avatarContainer = document.createElement('div');
-            avatarContainer.className = 'message-avatar';
-            avatarContainer.innerHTML = generateAvatarHTML(messageData.uid, senderDisplayName);
-            const avatarElement = avatarContainer.querySelector('.avatar');
-            if (avatarElement) {
-                avatarElement.addEventListener('click', () => showProfileModal(messageData.uid));
-            }
-            messageWrapper.appendChild(avatarContainer);
-
-            // Create Content Bubble container
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
-
-            // Create the bubble itself
-            const bubbleDiv = document.createElement('div');
-            bubbleDiv.className = 'message-bubble';
-
-            // Create Sender Name element
-            const senderSpan = document.createElement('span');
-            senderSpan.className = 'message-sender';
-            senderSpan.textContent = isSent ? 'You' : senderDisplayName;
-            senderSpan.addEventListener('click', () => showProfileModal(messageData.uid));
-            bubbleDiv.appendChild(senderSpan);
-
-            // Create Message Text element
-            const textP = document.createElement('p');
-            textP.className = 'message-text';
-            // Basic Sanitization: Use textContent to prevent HTML injection
-            textP.textContent = messageData.text;
-            bubbleDiv.appendChild(textP);
-
-            // Create Timestamp element
-            const timeSpan = document.createElement('span');
-            timeSpan.className = 'message-timestamp';
-            timeSpan.textContent = formatTimestamp(messageData.timestamp);
-            bubbleDiv.appendChild(timeSpan);
-
-            // Assemble and Append
-            contentDiv.appendChild(bubbleDiv);
-            messageWrapper.appendChild(contentDiv);
-
-            // Remove initial placeholder if present
-            const loadingMsg = chatBox.querySelector('.loading-placeholder');
-            if (loadingMsg) {
-                loadingMsg.remove();
-            }
-
-            // Add to chatbox and cache
-            chatBox.appendChild(messageWrapper);
-            messageCache.set(messageId, true); // Mark as displayed
-
-            // Scroll only if near the bottom already, or if it's our own message
-            const isScrolledToBottom = chatBox.scrollHeight - chatBox.clientHeight <= chatBox.scrollTop + 100; // 100px tolerance
-            if (isScrolledToBottom || isSent) {
-                 scrollToBottom();
-            }
-        }
-
-        /** Updates the list of online users in the sidebar. */
-        function displayUserList() {
-            userListUl.innerHTML = ''; // Clear current list
-            let onlineCount = 0;
-
-            // Sort users: current user first, then alphabetically
-            const sortedUsers = Array.from(onlineUsers.values()).sort((a, b) => {
-                 if (a.uid === currentUser?.uid) return -1;
-                 if (b.uid === currentUser?.uid) return 1;
-                 return (a.displayName || '').localeCompare(b.displayName || '');
-             });
-
-            if (sortedUsers.length === 0) {
-                userListUl.innerHTML = '<li class="loading-placeholder" style="padding: 1rem;">No users detected</li>';
-                onlineUserCountSpan.textContent = 0;
-                return;
-            }
-
-            sortedUsers.forEach(userData => {
-                 if (userData.online) {
-                     onlineCount++;
-                 }
-                 const li = document.createElement('li');
-                 li.className = 'user-list-item';
-                 li.setAttribute('data-uid', userData.uid);
-                 li.setAttribute('data-online', userData.online ? 'true' : 'false');
-                 li.title = `View profile of ${userData.displayName}`; // Tooltip
-
-                 const isCurrentUserInList = userData.uid === currentUser?.uid;
-
-                 li.innerHTML = `
-                    ${generateAvatarHTML(userData.uid, userData.displayName)}
-                    <span class="user-name">${userData.displayName}${isCurrentUserInList ? '<span class="you-indicator">(You)</span>' : ''}</span>
-                    <span class="online-indicator"></span>
-                 `;
-
-                 li.addEventListener('click', () => showProfileModal(userData.uid));
-                 userListUl.appendChild(li);
-             });
-            onlineUserCountSpan.textContent = onlineCount;
-        }
-
-        /** Updates the typing indicator display based on current typing users. */
-        function displayTypingIndicator() {
-            const typingNames = [];
-            typingUsers.forEach((isTyping, uid) => {
-                // Add name if typing and not the current user
-                if (isTyping && uid !== currentUser?.uid) {
-                    const userData = onlineUsers.get(uid); // Get name from online users cache
-                    if (userData) {
-                        typingNames.push(userData.displayName);
-                    }
-                }
-            });
-
-            if (typingNames.length === 0) {
-                typingIndicatorDiv.textContent = '';
-                typingIndicatorDiv.classList.remove('visible');
-            } else {
-                let text = '';
-                if (typingNames.length === 1) {
-                    text = `${typingNames[0]} is typing...`;
-                } else if (typingNames.length === 2) {
-                    text = `${typingNames[0]} and ${typingNames[1]} are typing...`;
-                } else {
-                    // Show first two names and "and others"
-                    text = `${typingNames.slice(0, 2).join(', ')} and others are typing...`;
-                }
-                typingIndicatorDiv.textContent = text;
-                typingIndicatorDiv.classList.add('visible');
-            }
-        }
-
-
-        //======================================================================
-        // $ PROFILE MODAL
-        //======================================================================
-
-        /** Shows the profile modal populated with user data. */
-        function showProfileModal(uid) {
-            if (!uid) {
-                console.warn("showProfileModal called without UID.");
-                return;
-            }
-
-            const userData = onlineUsers.get(uid) || { displayName: 'Unknown User', online: false }; // Get data from cache
-            const isCurrentUserProfile = currentUser && currentUser.uid === uid;
-
-            // Populate Modal Elements
-            modalAvatar.innerHTML = generateAvatarHTML(uid, userData.displayName, 'avatar-lg');
-            modalDisplayName.textContent = userData.displayName;
-            modalUid.textContent = `UID: ${uid}`;
-            modalEmail.textContent = isCurrentUserProfile ? (currentUser.email || 'Email not set') : 'Email private';
-            modalStatus.innerHTML = `
-                <span class="badge rounded-pill ${userData.online ? 'text-bg-success' : 'text-bg-secondary'}">
-                    <i class="bi bi-circle-fill me-1" style="font-size: 0.6em;"></i>
-                    ${userData.online ? 'Online' : 'Offline'}
-                </span>`;
-
-            profileModal.show();
-        }
-
-
-        //======================================================================
-        // $ FIREBASE PRESENCE & TYPING
-        //======================================================================
-
-        /** Sets up Firebase Realtime Database listeners for online presence. */
-        function setupPresence() {
-            if (!currentUser || !firebaseDatabase) {
-                console.warn("Cannot setup presence: No user or DB connection.");
-                return;
-            }
-            console.log("Setting up presence for user:", currentUser.uid);
-            const uid = currentUser.uid;
-            userStatusRef = firebaseDatabase.ref(`/status/${uid}`); // Specific user's status node
-
-            const connectedRef = firebaseDatabase.ref('.info/connected');
-
-            // Listener for connection status changes
-            const connectionListener = connectedRef.on('value', (snap) => {
-                if (snap.val() === true) {
-                    console.log("Firebase connected. Setting online status.");
-                    const statusData = {
-                        online: true,
-                        lastChanged: firebase.database.ServerValue.TIMESTAMP,
-                        displayName: currentUser.displayName || currentUser.email || 'Anonymous' // Store name
-                    };
-                    // Set online status
-                    userStatusRef.set(statusData)
-                        .catch(err => console.error("Failed to set online status:", err));
-
-                    // IMPORTANT: Set onDisconnect handler AFTER confirming connection
-                    userStatusRef.onDisconnect().set({
-                        online: false,
-                        lastChanged: firebase.database.ServerValue.TIMESTAMP,
-                        displayName: currentUser.displayName || currentUser.email || 'Anonymous'
-                    }).catch(err => console.error("Failed to set onDisconnect handler:", err));
-
-                } else {
-                    console.log("Firebase disconnected.");
-                    // NOTE: No need to manually set offline here, onDisconnect handles it.
-                }
-            });
-             presenceConnections.set('connection', connectionListener); // Store to remove later
-        }
-
-        /** Cleans up presence listeners and sets user offline. */
-        function clearPresence() {
-             // Get UID *before* potentially clearing currentUser
-             const uid = currentUser?.uid;
-             if (!uid || !firebaseDatabase) {
-                 console.warn("Cannot clear presence: No user or DB connection.");
-                 return;
+    
+        // Function to scroll the chatbox to the bottom
+        function scrollChatToBottom(behavior = 'smooth') {
+             if (UI.elements.chatBox) {
+                 // A small delay often helps ensure rendering is complete before scrolling
+                 setTimeout(() => {
+                    UI.elements.chatBox.scrollTo({ top: UI.elements.chatBox.scrollHeight, behavior });
+                 }, 50);
              }
-             console.log("Clearing presence for user:", uid);
-
-             // 1. Remove the connection listener
-             const connectionListener = presenceConnections.get('connection');
-             if (connectionListener) {
-                 firebaseDatabase.ref('.info/connected').off('value', connectionListener);
-                 presenceConnections.delete('connection');
-                 console.log(".info/connected listener removed.");
-             }
-
-             // 2. Attempt to set offline status immediately (best effort)
-             const statusData = {
-                 online: false,
-                 lastChanged: firebase.database.ServerValue.TIMESTAMP,
-                 displayName: currentUser?.displayName || currentUser?.email || 'Anonymous' // Use potentially stale data if needed
-             };
-             const refToClear = userStatusRef || firebaseDatabase.ref(`/status/${uid}`); // Use existing ref or get new one
-
-             refToClear.set(statusData)
-                .then(() => console.log("Offline status set on cleanup."))
-                .catch(err => console.warn("Could not set offline on cleanup (might be expected if network lost):", err))
-                .finally(() => {
-                     // 3. Crucially, cancel any pending onDisconnect operations for this ref
-                     refToClear.onDisconnect().cancel()
-                         .then(() => console.log("onDisconnect handler cancelled."))
-                         .catch(err => console.error("Failed to cancel onDisconnect handler:", err));
-
-                     // 4. Clear the specific user status reference if it exists
-                     if (userStatusRef) {
-                         userStatusRef = null;
-                     }
-                 });
-         }
-
-
-        /** Debounced function to update the user's typing status in Firebase. */
-        const updateTypingStatus = debounce((isTyping) => {
-            if (!currentUser || !userTypingRef) {
-                // console.log("Skipping typing update (no user or ref)");
-                return;
-            }
-            // console.log(`Debounced: Updating typing status to: ${isTyping}`);
-            userTypingRef.set(isTyping)
-                .catch(error => console.error("Error setting typing status:", error));
-        }, DEBOUNCE_TYPING_MS);
-
-
-        //======================================================================
-        // $ FIREBASE LISTENERS SETUP/TEARDOWN
-        //======================================================================
-
-        /** Attaches all necessary Firebase listeners. */
-        function attachListeners() {
-            if (!currentUser) {
-                console.warn("Cannot attach listeners: No current user.");
-                return;
-            }
-            console.log("Attaching Firebase listeners...");
-
-            // --- Messages Listener ---
-            if (!messageListenerAttached) {
-                chatBox.innerHTML = '<p class="loading-placeholder py-5">Loading recent messages...</p>';
-                messageCache.clear(); // Clear message cache on new attach
-                messagesRef.orderByChild('timestamp').limitToLast(MESSAGE_LIMIT).on(
-                    'child_added',
-                    displayChatMessage, // Function to handle new message
-                    (error) => { // Error callback
-                        console.error("Message listener error:", error);
-                        chatBox.innerHTML = `<p class="text-center error-text py-5">Error loading messages: ${error.message}</p>`;
-                        messageListenerAttached = false; // Mark as detached on error
-                    }
-                );
-                messageListenerAttached = true;
-                console.log("Message listener attached.");
-            }
-
-            // --- Online Status Listener ---
-            if (!statusListenerAttached) {
-                statusRef.on('value',
-                    (snapshot) => { // Success callback
-                        onlineUsers.clear(); // Reset local cache
-                        const statuses = snapshot.val() || {};
-                        Object.keys(statuses).forEach(uid => {
-                            onlineUsers.set(uid, { ...statuses[uid], uid: uid }); // Store user data
-                        });
-                        displayUserList(); // Update the UI list
-                        displayTypingIndicator(); // Update typing indicator (names might have changed)
-                        // Update profile modal if open
-                        if (profileModalEl.classList.contains('show')) {
-                           const displayedUid = modalUid.textContent.replace('UID: ', '');
-                            if(displayedUid && onlineUsers.has(displayedUid)) {
-                                const userData = onlineUsers.get(displayedUid);
-                                modalStatus.innerHTML = `<span class="badge rounded-pill ${userData.online ? 'text-bg-success' : 'text-bg-secondary'}"><i class="bi bi-circle-fill me-1" style="font-size: 0.6em;"></i>${userData.online ? 'Online' : 'Offline'}</span>`;
-                            }
-                        }
-                    },
-                    (error) => { // Error callback
-                        console.error("Status listener error:", error);
-                        statusListenerAttached = false; // Mark as detached
-                        userListUl.innerHTML = '<li class="error-text p-3">Error loading user status</li>';
-                    }
-                );
-                statusListenerAttached = true;
-                console.log("Status listener attached.");
-            }
-
-            // --- Typing Status Listener ---
-            if (!typingListenerAttached) {
-                userTypingRef = firebaseDatabase.ref(`/typing/${currentUser.uid}`); // Set ref for current user's typing node
-                typingRef.on('value',
-                    (snapshot) => { // Success callback
-                        typingUsers.clear(); // Reset local cache
-                        const typingData = snapshot.val() || {};
-                        Object.keys(typingData).forEach(uid => {
-                            typingUsers.set(uid, typingData[uid]); // Store boolean status
-                        });
-                        displayTypingIndicator(); // Update the UI indicator
-                    },
-                    (error) => { // Error callback
-                        console.error("Typing listener error:", error);
-                        typingListenerAttached = false; // Mark as detached
-                    }
-                );
-                typingListenerAttached = true;
-                console.log("Typing listener attached.");
-            }
-
-            // --- Setup Presence ---
-            setupPresence();
         }
-
-        /** Detaches all Firebase listeners and cleans up state. */
-        function detachListeners() {
-            console.log("Detaching Firebase listeners...");
-
-            // Detach specific listeners using .off() without arguments if added with .on()
-            if (messageListenerAttached) {
-                messagesRef.off(); // Detaches all listeners on this path
-                messageListenerAttached = false;
-                console.log("Message listener detached.");
-            }
-            if (statusListenerAttached) {
-                statusRef.off();
-                statusListenerAttached = false;
-                console.log("Status listener detached.");
-            }
-            if (typingListenerAttached) {
-                typingRef.off();
-                // Ensure own typing status is removed on detach/logout
-                if (userTypingRef) {
-                    userTypingRef.remove()
-                        .catch(e => console.warn("Could not remove typing status on detach:", e));
-                    userTypingRef = null; // Clear the reference
-                }
-                typingListenerAttached = false;
-                console.log("Typing listener detached.");
-            }
-
-            // Clean up presence (sets offline, cancels onDisconnect)
-            clearPresence();
-
-            // Clear local state caches
-            messageCache.clear();
-            onlineUsers.clear();
-            typingUsers.clear();
-
-            // Reset UI elements related to listeners
-            displayUserList();
-            displayTypingIndicator();
-             // Optionally clear chatbox or show logged out message
-             // chatBox.innerHTML = '<p class="loading-placeholder py-5">Please log in to chat.</p>';
-        }
-
-
+    
         //======================================================================
-        // $ AUTHENTICATION LOGIC & EVENT HANDLERS
+        // Firebase Service Initialization
         //======================================================================
-
-        /** Handles Firebase Authentication state changes. */
-        function handleAuthStateChanged(user) {
-             // Always reset button loading states on auth change
-             setLoadingState(loginForm.querySelector('button[type="submit"]'), false);
-             setLoadingState(signupForm.querySelector('button[type="submit"]'), false);
-             setLoadingState(logoutButton, false);
-
-             if (user) {
-                 // --- User is Logged IN ---
-                 if (currentUser && currentUser.uid === user.uid) {
-                     console.log("Auth State: Already logged in as", user.uid);
-                      hideLoadingOverlay(); // Ensure overlay is hidden if check is fast
-                     return; // No actual state change, avoid re-attaching listeners
-                 }
-                 console.log("Auth State: IN - ", user.uid, user.displayName);
-                 currentUser = user; // Set current user
-
-                 // Update UI elements for logged-in state
-                 userDisplayNameSpan.textContent = user.displayName || user.email || 'User';
-                 navbarAvatarDiv.innerHTML = generateAvatarHTML(user.uid, user.displayName);
-                 navbarUserInfo.onclick = () => showProfileModal(user.uid); // Make navbar avatar clickable
-                 navbarUserInfo.classList.add('cursor-pointer');
-                 navbarUserInfo.title = "View your profile";
-
-                 showChatSection(); // Show the main chat interface
-                 attachListeners(); // Attach all necessary Firebase listeners
-
-             } else {
-                 // --- User is Logged OUT ---
-                 if (!currentUser) {
-                     console.log("Auth State: Already logged out.");
-                      hideLoadingOverlay(); // Ensure overlay is hidden
-                     return; // No actual state change
-                 }
-                 console.log("Auth State: OUT");
-                 const wasLoggedInUser = currentUser; // Keep ref for potential cleanup if needed
-                 currentUser = null; // Clear current user state
-
-                 // Detach all listeners and clean up presence BEFORE showing auth section
-                 detachListeners();
-
-                 // Update UI elements for logged-out state
-                 userDisplayNameSpan.textContent = 'Not Logged In';
-                 navbarAvatarDiv.innerHTML = '?'; // Placeholder avatar
-                 navbarUserInfo.onclick = null; // Remove click handler
-                 navbarUserInfo.classList.remove('cursor-pointer');
-                 navbarUserInfo.title = "";
-
-                 showAuthSection(); // Show the login/signup interface
-             }
-         }
-
-        // --- Initialize Firebase and Auth Listener ---
         function initializeFirebase() {
             try {
-                firebaseApp = firebase.initializeApp(firebaseConfigApp);
-                firebaseAuth = firebase.auth();
-                firebaseDatabase = firebase.database();
-                // Define top-level references
-                messagesRef = firebaseDatabase.ref('messages');
-                statusRef = firebaseDatabase.ref('status');
-                typingRef = firebaseDatabase.ref('typing');
-                console.log("Firebase Initialized Successfully");
-
-                // Attach the core auth state listener
-                 showLoadingOverlay(); // Show overlay until auth state is determined
-                firebaseAuth.onAuthStateChanged(handleAuthStateChanged);
-
-            } catch (e) {
-                console.error("Firebase initialization failed:", e);
-                document.body.innerHTML = `<div class="vh-100 d-flex justify-content-center align-items-center"><div class="alert alert-danger m-5" role="alert"><strong>Initialization Error!</strong> Could not connect to services. Please check console, Firebase config, and ensure Firebase services (Auth, Realtime DB) are enabled. Error: ${e.message}</div></div>`;
-                 hideLoadingOverlay(); // Hide overlay on fatal error
+                // Check if Firebase is loaded (from script tags)
+                if (typeof firebase === 'undefined' || !firebase.initializeApp) {
+                     throw new Error("Firebase SDK not loaded or invalid version. Ensure Firebase v9+ scripts are included in HTML.");
+                }
+    
+                // Initialize Firebase App
+                firebaseApp = firebase.initializeApp(firebaseConfig);
+    
+                // Get Firebase Service Functions (v9 modular style)
+                // Authentication
+                getAuth = firebase.auth.getAuth;
+                onAuthStateChanged = firebase.auth.onAuthStateChanged;
+                signInWithEmailAndPassword = firebase.auth.signInWithEmailAndPassword;
+                createUserWithEmailAndPassword = firebase.auth.createUserWithEmailAndPassword;
+                updateProfile = firebase.auth.updateProfile;
+                signOut = firebase.auth.signOut;
+                GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
+                signInWithPopup = firebase.auth.signInWithPopup;
+                sendPasswordResetEmail = firebase.auth.sendPasswordResetEmail;
+    
+                // Realtime Database
+                getDatabase = firebase.database.getDatabase;
+                ref = firebase.database.ref;
+                set = firebase.database.set;
+                push = firebase.database.push;
+                update = firebase.database.update;
+                remove = firebase.database.remove;
+                onValue = firebase.database.onValue;
+                onChildAdded = firebase.database.onChildAdded;
+                off = firebase.database.off;
+                serverTimestamp = firebase.database.serverTimestamp;
+                increment = firebase.database.increment;
+                query = firebase.database.query;
+                limitToLast = firebase.database.limitToLast;
+                orderByChild = firebase.database.orderByChild; // For querying messages by timestamp etc.
+                startAt = firebase.database.startAt;
+                endAt = firebase.database.endAt;
+                get = firebase.database.get; // For fetching data once
+    
+                // Cloud Storage
+                getStorage = firebase.storage.getStorage;
+                storageRef = firebase.storage.ref;
+                uploadBytesResumable = firebase.storage.uploadBytesResumable;
+                getDownloadURL = firebase.storage.getDownloadURL;
+    
+                // Get Service Instances
+                firebaseAuth = getAuth(firebaseApp);
+                firebaseDb = getDatabase(firebaseApp);
+                firebaseStorage = getStorage(firebaseApp);
+    
+                console.log("Firebase Initialized Successfully:", firebaseApp.name);
+    
+                // Attach the crucial auth state listener immediately
+                state.listeners.auth = onAuthStateChanged(firebaseAuth, handleAuthStateChanged);
+    
+            } catch (error) {
+                console.error("Firebase Initialization Failed:", error);
+                UI.showLoadingOverlay(true); // Show overlay permanently on init failure
+                displayError(null, `Critical Error: Could not initialize Firebase services. Please check configuration and network. ${error.message}`, true);
+                // Prevent further execution if Firebase fails to load
+                throw new Error("Firebase failed to initialize.");
             }
         }
-
-
-        // --- Event Listener Bindings ---
-
-        /** Sets up all static event listeners for the application. */
-        function bindEventListeners() {
-            // Auth Form Toggles
-            showSignupLink.addEventListener('click', (e) => { e.preventDefault(); toggleAuthForms(true); });
-            showLoginLink.addEventListener('click', (e) => { e.preventDefault(); toggleAuthForms(false); });
-
-            // Auth Form Submissions
-            loginForm.addEventListener('submit', handleLoginSubmit);
-            signupForm.addEventListener('submit', handleSignupSubmit);
-
-            // Logout Button
-            logoutButton.addEventListener('click', handleLogout);
-
-            // Message Sending Form
-            messageForm.addEventListener('submit', handleMessageSend);
-
-            // Typing Indicator Logic
-            messageInput.addEventListener('input', handleTypingInput);
-
-            // Theme Selection Dropdown
-            themeSelector.addEventListener('click', handleThemeSelection);
-
-            // Sidebar Toggle (Mobile)
-            sidebarToggleButton?.addEventListener('click', toggleSidebar);
-            sidebarCloseButton?.addEventListener('click', closeSidebar);
-            // Click outside sidebar to close (optional)
-            document.addEventListener('click', handleOutsideSidebarClick);
+    
+    
+        //======================================================================
+        // Firebase Service Wrappers (Simplified for direct use now)
+        // Moved direct calls into handlers for clarity with v9 syntax access
+        //======================================================================
+    
+    
+        //======================================================================
+        // Presence Management (Online/Offline Status)
+        //======================================================================
+        function setupPresenceManagement() {
+            if (!state.currentUser || state.listeners.presence) return;
+    
+            const uid = state.currentUser.uid;
+            const userStatusDbRef = ref(firebaseDb, `/status/${uid}`);
+            const infoConnectedRef = ref(firebaseDb, '.info/connected');
+    
+            state.listeners.presence = onValue(infoConnectedRef, (snapshot) => {
+                if (snapshot.val() === false) {
+                    // Use 'set' on disconnect for immediate update if connection is lost gracefully
+                    // However, relying solely on 'onDisconnect' might be better for abrupt closures
+                    // For simplicity here, we just mark as offline if RTDB detects disconnection.
+                     set(userStatusDbRef, {
+                          online: false,
+                          lastActive: serverTimestamp()
+                      });
+                    state.isUserOnline = false;
+                    return;
+                }
+    
+                // Use onDisconnect to set status when client disconnects uncleanly
+                firebase.database().onDisconnect(userStatusDbRef).set({
+                    online: false,
+                    lastActive: serverTimestamp()
+                }).then(() => {
+                    // Set current status to online once connection is established AND onDisconnect is set up
+                    set(userStatusDbRef, {
+                        online: true,
+                        lastActive: serverTimestamp()
+                     });
+                     state.isUserOnline = true;
+                     updateSidebarStatus(true);
+                }).catch(error => {
+                    console.error("Could not set onDisconnect status:", error);
+                });
+            });
         }
-
-        // --- Event Handler Functions ---
-
-        /** Handles the login form submission. */
-        function handleLoginSubmit(event) {
+    
+         function teardownPresenceManagement() {
+              if (!state.currentUser) return;
+              const uid = state.currentUser.uid;
+              const userStatusDbRef = ref(firebaseDb, `/status/${uid}`);
+             // Explicitly set offline when logging out cleanly
+             set(userStatusDbRef, {
+                  online: false,
+                  lastActive: serverTimestamp()
+             }).catch(error => console.warn("Could not set status to offline on logout:", error));
+             // Cancel the onDisconnect operation
+              firebase.database().onDisconnect(userStatusDbRef).cancel().catch(error => console.warn("Could not cancel onDisconnect:", error));
+              state.isUserOnline = false;
+    
+              // Detach the '.info/connected' listener
+             if (state.listeners.presence) {
+                  // Firebase RTDB listeners need the original ref and event type to detach
+                 // The onValue returns an unsubscribe function directly.
+                 state.listeners.presence(); // Call the unsubscribe function returned by onValue
+                 state.listeners.presence = null;
+                 console.log("Presence listener detached.");
+             }
+        }
+    
+         function updateSidebarStatus(isOnline) {
+            if (UI.elements.userStatusIndicatorSidebar) {
+                 UI.elements.userStatusIndicatorSidebar.className = `bi bi-circle-fill me-1 text-${isOnline ? 'success' : 'secondary'} small`;
+            }
+             if (UI.elements.userStatusTextSidebar) {
+                UI.elements.userStatusTextSidebar.textContent = isOnline ? 'Online' : 'Offline';
+             }
+         }
+    
+        //======================================================================
+        // Listener Management
+        //======================================================================
+    
+         // Detaches a specific listener if it exists
+        function detachListener(type) {
+             if (state.listeners[type]) {
+                 try {
+                    state.listeners[type](); // Call the unsubscribe function
+                    console.log(`Listener detached: ${type}`);
+                } catch (error) {
+                     console.warn(`Error detaching listener ${type}:`, error);
+                 }
+                 state.listeners[type] = null;
+             }
+         }
+    
+         // Attaches listeners needed when the user is logged in and viewing the chat interface
+         function attachChatListeners() {
+             if (!state.currentUser) return;
+            console.log("Attaching core chat listeners...");
+             attachContactsAndChatsListener(); // Combined listener for users and chat metadata
+            attachStatusListener(); // Listener for everyone's online status
+            setupPresenceManagement(); // Handle own online status
+    
+            // If a chat is already selected (e.g., returning to tab)
+             if (state.currentChatId) {
+                 attachMessageListener(state.currentChatId);
+                attachTypingListener(state.currentChatId);
+             }
+         }
+    
+         // Detaches all listeners, typically on logout or critical error
+        function detachAllListeners() {
+             console.log("Detaching all listeners...");
+            if (state.currentUser) {
+                 teardownPresenceManagement(); // Must be called before detaching others if user is logged in
+             }
+            Object.keys(state.listeners).forEach(detachListener);
+    
+             // Clear local caches associated with listeners
+            // state.caches.messages.clear(); // Don't clear messages cache on logout, maybe clear on demand?
+            state.caches.onlineUsers.clear();
+            state.caches.contacts.clear();
+            state.caches.chatMetadata.clear();
+             state.caches.typingUsers.clear();
+             // Optionally clear media cache too if it's per-session: state.caches.media.clear();
+             displayUserList(); // Update UI to reflect cleared state
+         }
+    
+    
+        // Combined listener for Users and Chat Metadata for efficiency
+         function attachContactsAndChatsListener() {
+             if (state.listeners.contacts || state.listeners.chats || !state.currentUser) return;
+             console.log("Attaching contacts and chats listener...");
+             const usersRef = ref(firebaseDb, 'users');
+            const chatsRef = ref(firebaseDb, 'chats');
+    
+            // Listener for changes in the 'users' node
+             state.listeners.contacts = onValue(usersRef, (snapshot) => {
+                console.log("Contacts data received/updated.");
+                 state.caches.contacts.clear();
+                 const users = snapshot.val() || {};
+                 Object.entries(users).forEach(([uid, data]) => {
+                     if (uid !== state.currentUser?.uid) { // Exclude self
+                         state.caches.contacts.set(uid, { uid, ...data });
+                     }
+                 });
+                 // If recipient data is outdated, update it
+                 if (state.currentRecipientId && state.caches.contacts.has(state.currentRecipientId)) {
+                      state.currentRecipientData = state.caches.contacts.get(state.currentRecipientId);
+                      displayActiveChatHeader(); // Refresh header if recipient details changed
+                  }
+                displayUserList(); // Re-render the user list
+             }, (error) => {
+                 console.error("Contacts Listener Error:", error);
+                 showToast("Error fetching user list.", "danger");
+            });
+    
+             // Listener for changes in the 'chats' node (metadata only)
+            // We filter client-side which chats belong to the current user
+             state.listeners.chats = onValue(chatsRef, (snapshot) => {
+                console.log("Chat metadata received/updated.");
+                state.caches.chatMetadata.clear(); // Recalculate metadata
+                const chats = snapshot.val() || {};
+                const myUid = state.currentUser?.uid;
+                if (!myUid) return;
+    
+                 Object.entries(chats).forEach(([chatId, data]) => {
+                     // Check if the current user is a participant in this chat
+                    if (data.participants && data.participants.includes(myUid)) {
+                         // Calculate unread count specifically for the current user
+                         const unreadCount = data.unreadCount?.[myUid] || 0;
+                         // Store metadata including the correctly calculated unread count
+                        state.caches.chatMetadata.set(chatId, { ...data, calculatedUnreadCount: unreadCount });
+                    }
+                 });
+                 displayUserList(); // Re-render user list as metadata might affect sorting/badges
+            }, (error) => {
+                console.error("Chat Metadata Listener Error:", error);
+                showToast("Error fetching chat details.", "danger");
+             });
+         }
+    
+         // Listener for online/offline status of all users
+        function attachStatusListener() {
+            if (state.listeners.status || !state.currentUser) return;
+             console.log("Attaching global status listener...");
+            const statusRef = ref(firebaseDb, 'status');
+    
+            state.listeners.status = onValue(statusRef, (snapshot) => {
+                console.log("Global status data received/updated.");
+                 state.caches.onlineUsers.clear(); // Reset cache
+                const statuses = snapshot.val() || {};
+                Object.entries(statuses).forEach(([uid, data]) => {
+                    // Store the latest status info for each user
+                     if (uid !== state.currentUser?.uid) { // Don't need to track self here separately
+                         state.caches.onlineUsers.set(uid, { online: data?.online || false, lastActive: data?.lastActive || 0 });
+                    }
+                });
+                displayUserList(); // Re-render user list to show updated statuses
+                displayActiveChatHeader(); // Update status in the active chat header
+            }, (error) => {
+                console.error("Global Status Listener Error:", error);
+                 showToast("Error fetching user statuses.", "warning"); // Non-critical
+            });
+        }
+    
+        // Attaches listener for messages in a specific chat
+        function attachMessageListener(chatId) {
+            if (!chatId || !state.currentUser) return;
+            detachListener('messages'); // Remove previous message listener first
+             console.log(`Attaching message listener for chat: ${chatId}`);
+    
+             // Ensure a message cache exists for this chat
+            if (!state.caches.messages.has(chatId)) {
+                state.caches.messages.set(chatId, new Map());
+            }
+             const chatMessagesCache = state.caches.messages.get(chatId);
+             chatMessagesCache.clear(); // Clear previous messages for this chat
+            UI.elements.chatBox.innerHTML = ''; // Clear chatbox UI
+            UI.elements.skeletonChat.style.display = 'block'; // Show skeleton loader
+    
+            // Reference messages for the specific chat, limit to last N messages
+            const messagesRef = ref(firebaseDb, `chats/${chatId}/messages`);
+             // Query for the last N messages
+             const messagesQuery = query(messagesRef, limitToLast(CONFIG.MESSAGE_LIMIT));
+    
+    
+             let initialMessagesLoaded = false;
+             state.listeners.messages = onChildAdded(messagesQuery, (snapshot) => {
+                 if (!snapshot.exists()) return;
+                const messageId = snapshot.key;
+                const messageData = snapshot.val();
+    
+                 // Check if message already processed (could happen with cache race conditions)
+                 if (chatMessagesCache.has(messageId)) return;
+    
+                 // Store message in cache
+                 chatMessagesCache.set(messageId, { id: messageId, data: messageData });
+                displayChatMessage({ id: messageId, data: messageData }); // Display the new message
+    
+                if (!initialMessagesLoaded) {
+                     // Only scroll automatically for new incoming messages after initial load
+                     // or if the user is already near the bottom.
+                     const isScrolledToBottom = UI.elements.chatBox.scrollHeight - UI.elements.chatBox.scrollTop - UI.elements.chatBox.clientHeight < 100;
+                     if(messageData.senderId === state.currentUser.uid || isScrolledToBottom) {
+                         scrollChatToBottom('smooth');
+                     }
+                }
+            }, (error) => {
+                console.error(`Message Listener Error (Chat ${chatId}):`, error);
+                 showToast("Error loading messages.", "danger");
+                UI.elements.chatBox.innerHTML = '<div class="p-4 text-center text-danger">Could not load messages.</div>';
+                 UI.elements.skeletonChat.style.display = 'none';
+             });
+    
+    
+             // Handle initial load completion
+            // We can use 'get' to determine when the initial batch is loaded
+             get(messagesQuery).then(() => {
+                 console.log(`Initial messages loaded for chat: ${chatId}`);
+                 initialMessagesLoaded = true;
+                UI.elements.skeletonChat.style.display = 'none'; // Hide skeleton
+                if (chatMessagesCache.size === 0) {
+                    UI.elements.emptyChatState.classList.remove('hidden'); // Show empty state if no messages after load
+                 } else {
+                     UI.elements.emptyChatState.classList.add('hidden');
+                    scrollChatToBottom('auto'); // Jump to bottom instantly on initial load
+                }
+             }).catch(error => {
+                console.error("Error getting initial messages:", error);
+                 UI.elements.skeletonChat.style.display = 'none'; // Hide skeleton even on error
+                 showToast("Error fetching initial messages.", "danger");
+            });
+        }
+    
+         // Attaches listener for typing status of the recipient in a specific chat
+        function attachTypingListener(chatId) {
+             if (!chatId || !state.currentUser || !state.currentRecipientId) return;
+            detachListener('typing'); // Remove previous typing listener
+            console.log(`Attaching typing listener for chat ${chatId}, recipient ${state.currentRecipientId}`);
+    
+            const recipientTypingRef = ref(firebaseDb, `chats/${chatId}/typing/${state.currentRecipientId}`);
+    
+            // Initialize cache for this chat if it doesn't exist
+             if (!state.caches.typingUsers.has(chatId)) {
+                 state.caches.typingUsers.set(chatId, new Map());
+             }
+    
+             state.listeners.typing = onValue(recipientTypingRef, (snapshot) => {
+                const typingData = snapshot.val();
+                const isTyping = typingData?.isTyping ?? false;
+                 // Store typing status for the recipient in the specific chat cache
+                 const chatTypingCache = state.caches.typingUsers.get(chatId);
+                 chatTypingCache.set(state.currentRecipientId, isTyping);
+                displayTypingIndicator(); // Update UI based on cached status
+            }, (error) => {
+                console.error(`Typing Listener Error (Chat ${chatId}, Recipient ${state.currentRecipientId}):`, error);
+                // Non-critical, maybe just log it
+            });
+        }
+    
+         // Updates the typing indicator UI
+         function displayTypingIndicator() {
+             let typingText = '';
+            if (state.currentChatId && state.currentRecipientId) {
+                 const chatTypingCache = state.caches.typingUsers.get(state.currentChatId);
+                 const isRecipientTyping = chatTypingCache?.get(state.currentRecipientId) || false;
+                if (isRecipientTyping) {
+                     typingText = `${escapeHTML(state.currentRecipientData?.name) || 'User'} is typing...`;
+                }
+            }
+            UI.elements.typingIndicator.textContent = typingText;
+             // Toggle visibility based on whether anyone is typing
+            UI.elements.typingIndicator.style.display = typingText ? 'block' : 'none';
+        }
+    
+    
+        //======================================================================
+        // Authentication Handlers & Flow
+        //======================================================================
+    
+         // Central handler for Firebase Auth state changes
+         async function handleAuthStateChanged(user) {
+             UI.showLoadingOverlay(true); // Show loader during transition
+             detachAllListeners(); // Clear existing listeners before proceeding
+             resetAppState(); // Reset state variables
+    
+             if (user) {
+                 console.log("User authenticated:", user.uid);
+                 state.currentUser = { ...user }; // Store basic auth user data
+    
+                 try {
+                     // Fetch or create user profile in Realtime Database
+                     const userRef = ref(firebaseDb, `users/${user.uid}`);
+                    const snapshot = await get(userRef);
+    
+                    if (snapshot.exists()) {
+                        state.currentUser = { ...user, ...snapshot.val() }; // Merge auth data with DB data
+                        console.log("User profile found in DB:", state.currentUser.name);
+                     } else {
+                         console.log("User profile not found, creating new one...");
+                         const profileData = {
+                             uid: user.uid,
+                            name: user.displayName || `User_${user.uid.slice(0, 5)}`,
+                             email: user.email,
+                            photoURL: user.photoURL || null, // Use photoURL from provider if available
+                             bio: '',
+                            createdAt: serverTimestamp(),
+                             blockedUsers: {} // Initialize blocked users list
+                        };
+                        await set(userRef, profileData);
+                         // If user had displayName/photoURL from provider, update Auth profile too for consistency
+                         if (!user.displayName && profileData.name) await updateProfile(user, { displayName: profileData.name });
+                         if (!user.photoURL && profileData.photoURL) await updateProfile(user, { photoURL: profileData.photoURL });
+    
+                        state.currentUser = { ...user, ...profileData, createdAt: Date.now() }; // Use current time temporarily
+                        console.log("New user profile created.");
+                    }
+    
+                     displayCurrentUserInfoSidebar(); // Update sidebar with user info
+                     attachChatListeners(); // Attach listeners needed for chat view
+                     UI.showChatSection(); // Switch to the chat view
+    
+                 } catch (error) {
+                     console.error("Error fetching/creating user profile:", error);
+                     showToast("Error loading your profile. Please try again later.", "danger");
+                     // Logout the user if profile loading fails critically
+                     await FirebaseService.auth.signOut().catch(e => console.error("Signout failed after profile error:", e));
+                     UI.showAuthSection(); // Go back to auth section
+                 }
+    
+             } else {
+                 console.log("User logged out.");
+                 // No user logged in, ensure clean state and show auth screen
+                resetAppState();
+                UI.showAuthSection();
+            }
+         }
+    
+        // Reset application state when logging out or switching users
+         function resetAppState() {
+              state.currentUser = null;
+              state.currentChatId = null;
+              state.currentRecipientId = null;
+              state.currentRecipientData = null;
+              state.mediaFiles = [];
+              state.searchQuery = '';
+              // Don't detach listeners here, handleAuthStateChanged does it.
+              // Clear UI elements that hold user/chat specific data
+             if(UI.elements.userNameSidebar) UI.elements.userNameSidebar.textContent = 'Loading...';
+             if(UI.elements.userProfilePicSidebar) UI.elements.userProfilePicSidebar.innerHTML = generateAvatarHTML(null, null);
+             if(UI.elements.chatBox) UI.elements.chatBox.innerHTML = '';
+             if(UI.elements.contactListContainer) UI.elements.contactListContainer.innerHTML = ''; // Clear contacts
+              displayActiveChatHeader(); // Reset chat header
+              displayMediaPreview(); // Clear media preview
+              UI.elements.emptyChatState?.classList.remove('hidden');
+             UI.elements.chatBox.innerHTML = ''; // Clear chat box
+             updateSidebarStatus(false); // Ensure sidebar status is offline
+         }
+    
+        // Handles the login form submission
+        async function handleLoginSubmit(event) {
             event.preventDefault();
-            clearError(loginErrorDiv);
-            const emailInput = loginForm.elements['login-email'];
-            const passwordInput = loginForm.elements['login-password'];
-            const button = event.submitter || loginForm.querySelector('button[type="submit"]');
-
-            if (!emailInput.value || !passwordInput.value) {
-                displayError(loginErrorDiv, 'Please enter both email and password.');
+            clearError(UI.elements.loginError);
+            const email = UI.elements.loginEmailInput.value.trim();
+            const password = UI.elements.loginPasswordInput.value;
+    
+            if (!email || !password) {
+                displayError(UI.elements.loginError, "Please enter both email and password.");
                 return;
             }
-
-            setLoadingState(button, true);
-             showLoadingOverlay(); // Show overlay during login attempt
-
-            firebaseAuth.signInWithEmailAndPassword(emailInput.value, passwordInput.value)
-                .catch((error) => {
-                    console.error("Login failed:", error);
-                    displayError(loginErrorDiv, `Login failed: ${error.message}`);
-                    setLoadingState(button, false);
-                    hideLoadingOverlay(); // Hide on error
-                });
-             // Note: Success is handled by onAuthStateChanged, which will also hide overlay
+    
+             const submitButton = event.submitter;
+            UI.setButtonLoading(submitButton, true);
+            UI.showLoadingOverlay();
+    
+            try {
+                console.log("Attempting login...");
+                await signInWithEmailAndPassword(firebaseAuth, email, password);
+                console.log("Login successful (authStateChanged will handle UI).");
+                 // onAuthStateChanged will handle the rest
+            } catch (error) {
+                console.error("Login Failed:", error);
+                 const errorCode = error.code;
+                 let message = `Login failed: ${error.message}`;
+                 // Provide more user-friendly messages for common errors
+                 if (errorCode === 'auth/user-not-found' || errorCode === 'auth/wrong-password' || errorCode === 'auth/invalid-credential') {
+                     message = "Incorrect email or password. Please try again.";
+                } else if (errorCode === 'auth/invalid-email') {
+                     message = "Please enter a valid email address.";
+                } else if (errorCode === 'auth/network-request-failed') {
+                     message = "Network error. Please check your connection.";
+                 }
+                displayError(UI.elements.loginError, message);
+                UI.hideLoadingOverlay(0);
+                UI.setButtonLoading(submitButton, false);
+            }
+             // No need to hide overlay/spinner on success, handleAuthStateChanged does that
         }
-
-        /** Handles the signup form submission. */
-        function handleSignupSubmit(event) {
+    
+        // Handles the registration form submission
+        async function handleSignupSubmit(event) {
             event.preventDefault();
-            clearError(signupErrorDiv);
-            const nameInput = signupForm.elements['signup-name'];
-            const emailInput = signupForm.elements['signup-email'];
-            const passwordInput = signupForm.elements['signup-password'];
-            const button = event.submitter || signupForm.querySelector('button[type="submit"]');
-
-            if (!nameInput.value.trim() || !emailInput.value || passwordInput.value.length < 6) {
-                 displayError(signupErrorDiv, 'Please fill all fields correctly (Password min 6 characters).');
-                 return;
+            clearError(UI.elements.signupError);
+            const name = UI.elements.registerNameInput.value.trim();
+            const email = UI.elements.registerEmailInput.value.trim();
+            const password = UI.elements.registerPasswordInput.value;
+            const confirmPassword = UI.elements.confirmPasswordInput.value;
+    
+            if (!name || !email || !password) {
+                displayError(UI.elements.signupError, "Please fill in all fields.");
+                return;
+            }
+            if (password.length < 6) {
+                displayError(UI.elements.signupError, "Password must be at least 6 characters long.");
+                return;
+            }
+            if (password !== confirmPassword) {
+                displayError(UI.elements.signupError, "Passwords do not match.");
+                return;
+            }
+    
+            const submitButton = event.submitter;
+             UI.setButtonLoading(submitButton, true);
+            UI.showLoadingOverlay();
+    
+            try {
+                console.log("Attempting signup...");
+                const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+                console.log("Signup successful, creating profile...");
+    
+                 // Update profile immediately after creation (name)
+                // PhotoURL and initial DB record are handled in handleAuthStateChanged
+                await updateProfile(userCredential.user, { displayName: name });
+                console.log("Firebase Auth profile updated with display name.");
+    
+                 // Let handleAuthStateChanged create the DB record now that Auth profile is set
+                // onAuthStateChanged will be triggered, and handle profile creation/UI update
+                showToast(`Welcome, ${name}! Account created successfully.`, 'success');
+    
+    
+             } catch (error) {
+                console.error("Signup Failed:", error);
+                 const errorCode = error.code;
+                 let message = `Signup failed: ${error.message}`;
+                 if (errorCode === 'auth/email-already-in-use') {
+                     message = "This email address is already registered.";
+                } else if (errorCode === 'auth/invalid-email') {
+                     message = "Please enter a valid email address.";
+                } else if (errorCode === 'auth/weak-password') {
+                     message = "Password is too weak. Please choose a stronger password.";
+                } else if (errorCode === 'auth/network-request-failed') {
+                     message = "Network error. Please check your connection.";
+                 }
+                displayError(UI.elements.signupError, message);
+                UI.hideLoadingOverlay(0);
+                UI.setButtonLoading(submitButton, false);
              }
-
-             setLoadingState(button, true);
-             showLoadingOverlay(); // Show overlay during signup
-
-             firebaseAuth.createUserWithEmailAndPassword(emailInput.value, passwordInput.value)
-                 .then((userCredential) => {
-                     console.log("Signup successful, updating profile...");
-                     // Update the user's profile immediately after creation
-                     return userCredential.user.updateProfile({
-                         displayName: nameInput.value.trim()
-                         // photoURL: null // Can set a default avatar URL here if desired
+             // No need to hide overlay/spinner on success, handleAuthStateChanged does that
+        }
+    
+         // Handles Google Sign-In button click
+         async function handleGoogleLogin() {
+             UI.setButtonLoading(UI.elements.googleLoginBtn, true);
+            clearError(UI.elements.loginError); // Clear any previous errors
+            UI.showLoadingOverlay();
+            const provider = new GoogleAuthProvider();
+    
+             try {
+                console.log("Attempting Google Sign-In...");
+                 await signInWithPopup(firebaseAuth, provider);
+                console.log("Google Sign-In successful (authStateChanged will handle UI).");
+                 // onAuthStateChanged handles the rest
+            } catch (error) {
+                console.error("Google Sign-In Failed:", error);
+                 const errorCode = error.code;
+                 let message = `Google Sign-In failed: ${error.message}`;
+                 if (errorCode === 'auth/popup-closed-by-user') {
+                     message = "Sign-in popup closed before completion.";
+                } else if (errorCode === 'auth/cancelled-popup-request') {
+                     message = "Multiple sign-in popups opened. Please try again.";
+                 } else if (errorCode === 'auth/network-request-failed') {
+                     message = "Network error during Google Sign-In.";
+                 }
+                // Display error on the login pane
+                 displayError(UI.elements.loginError, message);
+                 // Ensure UI state is reset
+                UI.setButtonLoading(UI.elements.googleLoginBtn, false);
+                 UI.hideLoadingOverlay(0);
+                // Ensure login tab is active if sign-in failed
+                if (UI.elements.loginTabBtn && !UI.elements.loginTabBtn.classList.contains('active')) {
+                    bootstrap.Tab.getOrCreateInstance(UI.elements.loginTabBtn).show();
+                }
+             }
+            // No need to hide overlay/spinner on success
+         }
+    
+        // Handles the forgot password form submission
+        async function handleForgotPasswordSubmit(event) {
+            event?.preventDefault(); // Allow calling without event if needed
+            const resetEmail = UI.elements.resetEmailInput.value.trim();
+    
+            if (!resetEmail) {
+                showToast("Please enter your email address.", "warning");
+                return;
+            }
+    
+             UI.setButtonLoading(UI.elements.sendResetLinkBtn, true);
+            try {
+                 await sendPasswordResetEmail(firebaseAuth, resetEmail);
+                 showToast("Password reset email sent! Check your inbox (and spam folder).", "success");
+                UI.elements.forgotPasswordModal.hide();
+                 UI.elements.forgotPasswordForm.reset();
+            } catch (error) {
+                 console.error("Forgot Password Failed:", error);
+                 const errorCode = error.code;
+                 let message = `Error sending reset email: ${error.message}`;
+                 if (errorCode === 'auth/user-not-found') {
+                     message = "No account found with this email address.";
+                 } else if (errorCode === 'auth/invalid-email') {
+                     message = "Please enter a valid email address.";
+                } else if (errorCode === 'auth/network-request-failed') {
+                     message = "Network error. Please try again.";
+                 }
+                showToast(message, "danger");
+            } finally {
+                 UI.setButtonLoading(UI.elements.sendResetLinkBtn, false);
+            }
+        }
+    
+         // Handles the logout button click
+         async function handleLogout() {
+             if (!state.currentUser) return;
+             console.log("Logging out user:", state.currentUser.uid);
+             UI.setButtonLoading(UI.elements.logoutBtn, true);
+    
+            try {
+                // Presence management already handles setting offline status via onDisconnect cancellation + explicit set
+                 await signOut(firebaseAuth);
+                 console.log("Sign out successful.");
+                 // handleAuthStateChanged will manage UI clearing and listener detachment
+                 showToast("You have been logged out.", "info");
+             } catch (error) {
+                 console.error("Logout Failed:", error);
+                showToast(`Logout failed: ${error.message}`, "danger");
+                 UI.setButtonLoading(UI.elements.logoutBtn, false); // Re-enable button on failure
+             }
+            // Don't reset button state on success, auth state change handles UI transition
+         }
+    
+        //======================================================================
+        // User Profile Management
+        //======================================================================
+    
+         // Populates the profile modal with current user data
+         function populateProfileModal() {
+            if (!state.currentUser) return;
+            UI.elements.updateNameInput.value = state.currentUser.name || state.currentUser.displayName || ''; // Prefer name from DB
+            UI.elements.updateBioInput.value = state.currentUser.bio || '';
+    
+             // Display current profile picture or placeholder
+             const photoURL = state.currentUser.photoURL;
+             if (photoURL) {
+                 UI.elements.editProfilePic.innerHTML = `<img src="${photoURL}" class="img-fluid rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" alt="Profile Picture">`;
+             } else {
+                 // Use the standard avatar generator if no photoURL
+                 UI.elements.editProfilePic.innerHTML = generateAvatarHTML(
+                    state.currentUser.uid,
+                    state.currentUser.name || state.currentUser.displayName,
+                    'd-flex align-items-center justify-content-center fs-1' // Make placeholder bigger
+                );
+                 UI.elements.editProfilePic.querySelector('.avatar')?.classList.add('w-100', 'h-100', 'rounded-circle');
+            }
+        }
+    
+        // Handles saving changes from the profile modal
+        async function handleProfileUpdate(event) {
+            event.preventDefault();
+            if (!state.currentUser) return;
+    
+            const newName = UI.elements.updateNameInput.value.trim();
+            const newBio = UI.elements.updateBioInput.value.trim();
+            const photoFile = UI.elements.updateProfilePictureInput.files[0];
+    
+            if (!newName) {
+                showToast("Name cannot be empty.", "warning");
+                return;
+            }
+    
+             UI.setButtonLoading(UI.elements.saveProfileBtn, true);
+    
+             try {
+                let newPhotoURL = state.currentUser.photoURL; // Start with existing URL
+    
+                 // 1. Upload new photo if selected and valid
+                 if (photoFile) {
+                     if (validateFile(photoFile, CONFIG.ALLOWED_IMAGE_TYPES)) {
+                        console.log("Uploading new profile picture...");
+                        const filePath = `profile_pics/${state.currentUser.uid}/${Date.now()}_${photoFile.name}`;
+                        const fileStorageRef = storageRef(firebaseStorage, filePath);
+                        const uploadTask = uploadBytesResumable(fileStorageRef, photoFile);
+    
+                        // Add upload progress listener (optional)
+                        uploadTask.on('state_changed',
+                            (snapshot) => {
+                                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                console.log('Upload is ' + progress + '% done');
+                                // You could potentially show progress in the modal here
+                             },
+                            (error) => {
+                                 console.error("Upload failed:", error);
+                                 throw new Error(`Failed to upload profile picture: ${error.code}`); // Throw to be caught below
+                            }
+                         );
+    
+                        // Wait for upload to complete
+                         await uploadTask;
+                        newPhotoURL = await getDownloadURL(uploadTask.snapshot.ref);
+                         console.log("New profile picture uploaded:", newPhotoURL);
+                    } else {
+                         // Validation failed (toast already shown by validateFile)
+                         UI.setButtonLoading(UI.elements.saveProfileBtn, false);
+                         return; // Stop profile update if file is invalid
+                    }
+                }
+    
+                 // 2. Update Firebase Auth Profile (Name and potentially Photo URL)
+                 const authUpdates = {};
+                 if (newName !== state.currentUser.displayName) authUpdates.displayName = newName;
+                 if (newPhotoURL !== state.currentUser.photoURL) authUpdates.photoURL = newPhotoURL;
+    
+                 if (Object.keys(authUpdates).length > 0) {
+                     console.log("Updating Firebase Auth profile...", authUpdates);
+                     await updateProfile(firebaseAuth.currentUser, authUpdates);
+                     console.log("Firebase Auth profile updated.");
+                }
+    
+                 // 3. Update Realtime Database Profile (Name, Bio, Photo URL)
+                 const dbUpdates = {};
+                 if (newName !== state.currentUser.name) dbUpdates.name = newName; // Assuming 'name' exists in DB model
+                 if (newBio !== state.currentUser.bio) dbUpdates.bio = newBio;
+                 if (newPhotoURL !== state.currentUser.photoURL) dbUpdates.photoURL = newPhotoURL;
+    
+    
+                 if (Object.keys(dbUpdates).length > 0) {
+                     console.log("Updating Realtime Database profile...", dbUpdates);
+                    const userDbRef = ref(firebaseDb, `users/${state.currentUser.uid}`);
+                    await update(userDbRef, dbUpdates);
+                    console.log("Realtime Database profile updated.");
+                }
+    
+                // 4. Update Local State
+                 const updatedUserData = { ...state.currentUser, ...dbUpdates }; // Update from DB
+                if (authUpdates.displayName) updatedUserData.displayName = authUpdates.displayName; // Update from Auth
+                 if (authUpdates.photoURL) updatedUserData.photoURL = authUpdates.photoURL; // Update from Auth
+                 state.currentUser = updatedUserData;
+    
+    
+                 // 5. Update UI
+                 displayCurrentUserInfoSidebar(); // Refresh sidebar
+                // The profile modal picture preview doesn't need explicit update, as the modal will be closed.
+                 // Re-populating on next open will show the changes.
+                UI.elements.profileModal.hide();
+                 showToast("Profile updated successfully!", "success");
+    
+             } catch (error) {
+                 console.error("Profile Update Failed:", error);
+                 showToast(`Profile update failed: ${error.message}`, "danger");
+             } finally {
+                 UI.setButtonLoading(UI.elements.saveProfileBtn, false);
+                 // Clear the file input value in case the user opens the modal again
+                 UI.elements.updateProfilePictureInput.value = '';
+            }
+        }
+    
+        //======================================================================
+        // Chat & Contact List Management
+        //======================================================================
+    
+        // Handles clicking on a user in the contact list
+        function handleContactClick(recipientUid) {
+            if (!state.currentUser || recipientUid === state.currentRecipientId) {
+                 if(window.innerWidth <= 767.98) { // Close sidebar on mobile if clicking active chat again
+                    UI.toggleSidebar(false);
+                 }
+                return; // Do nothing if already selected or no user
+            }
+    
+            console.log(`Switching chat to recipient: ${recipientUid}`);
+            const recipientData = state.caches.contacts.get(recipientUid);
+            if (!recipientData) {
+                console.error("Recipient data not found in cache for UID:", recipientUid);
+                showToast("Could not load chat details. User data missing.", "danger");
+                return;
+            }
+    
+            // --- State Updates ---
+            const newChatId = getChatId(state.currentUser.uid, recipientUid);
+            if (!newChatId) {
+                console.error("Failed to generate valid chat ID.");
+                return;
+            }
+            state.currentChatId = newChatId;
+            state.currentRecipientId = recipientUid;
+            state.currentRecipientData = recipientData;
+    
+            // --- UI Updates ---
+            displayUserList(); // Re-render list to highlight the new active chat
+            displayActiveChatHeader(); // Update the main chat header
+            UI.elements.emptyChatState.classList.add('hidden'); // Hide empty state
+            UI.elements.chatBox.innerHTML = ''; // Clear previous chat messages
+            UI.elements.messageInput.value = ''; // Clear message input
+             resizeTextarea(); // Reset textarea height
+            UI.elements.mediaPreviewContainer.innerHTML = ''; // Clear media previews
+             state.mediaFiles = []; // Clear staged media files
+    
+             // Close sidebar on mobile after selecting a chat
+            if(window.innerWidth <= 767.98) {
+                 UI.toggleSidebar(false);
+            }
+    
+    
+            // --- Listener Updates ---
+            detachListener('messages'); // Remove listener for old chat
+            detachListener('typing'); // Remove listener for old chat's typing
+    
+            attachMessageListener(state.currentChatId); // Attach listener for new chat messages
+            attachTypingListener(state.currentChatId); // Attach listener for new chat's typing
+    
+            // --- Mark Messages as Read ---
+            // Use update instead of set to avoid overwriting other unread counts
+             const unreadRef = ref(firebaseDb, `chats/${state.currentChatId}/unreadCount/${state.currentUser.uid}`);
+            set(unreadRef, 0).catch(error => console.warn("Failed to mark messages as read:", error));
+    
+    
+             // --- Focus Input ---
+             UI.elements.messageInput.focus();
+            // Optionally: displayMediaGallery(); // Maybe load gallery only when modal opened
+         }
+    
+    
+        // Renders the list of contacts/chats in the sidebar
+        function displayUserList() {
+            if (!UI.elements.contactListContainer || !state.currentUser) return;
+    
+            const container = UI.elements.contactListContainer;
+            container.innerHTML = ''; // Clear existing list
+            UI.elements.contactListSkeleton.style.display = 'none'; // Hide skeleton initially
+    
+            const myUid = state.currentUser.uid;
+            const filteredContacts = Array.from(state.caches.contacts.values()).filter(contact => {
+                // Basic filtering based on search query
+                const nameMatch = !state.searchQuery || (contact.name || '').toLowerCase().includes(state.searchQuery.toLowerCase());
+                // Add logic here to filter out blocked users if implemented
+                // const isBlocked = state.currentUser.blockedUsers?.[contact.uid];
+                // return nameMatch && !isBlocked;
+                return nameMatch;
+            });
+    
+            if (filteredContacts.length === 0 && state.searchQuery) {
+                 container.innerHTML = `<div class="p-3 text-center text-muted small">No users found matching "${escapeHTML(state.searchQuery)}".</div>`;
+                 return;
+            } else if (state.caches.contacts.size === 0 && !state.searchQuery) {
+                 // Show skeleton only if contacts haven't loaded at all yet
+                if (!state.listeners.contacts) { // Check if listener is attached as a proxy for loading
+                     UI.elements.contactListSkeleton.style.display = 'flex'; // Use display type of items
+                 } else {
+                     container.innerHTML = '<div class="p-3 text-center text-muted small">No other users found.</div>';
+                 }
+                 return;
+            }
+    
+             // Sort contacts: prioritize chats with recent messages, then alphabetically
+             const sortedContacts = filteredContacts.sort((a, b) => {
+                const chatIdA = getChatId(myUid, a.uid);
+                const chatIdB = getChatId(myUid, b.uid);
+                const metaA = state.caches.chatMetadata.get(chatIdA);
+                const metaB = state.caches.chatMetadata.get(chatIdB);
+                const timeA = metaA?.lastMessage?.createdAt || 0;
+                const timeB = metaB?.lastMessage?.createdAt || 0;
+    
+                if (timeB !== timeA) return timeB - timeA; // Newest messages first
+                return (a.name || '').localeCompare(b.name || ''); // Then alphabetically
+            });
+    
+            // Render sorted contacts
+            sortedContacts.forEach(contact => {
+                 const chatId = getChatId(myUid, contact.uid);
+                 const chatMeta = state.caches.chatMetadata.get(chatId);
+                 const lastMsg = chatMeta?.lastMessage || null;
+                 // Read calculated unread count for *this* user
+                 const unreadCount = chatMeta?.calculatedUnreadCount || 0;
+                 const isOnline = state.caches.onlineUsers.get(contact.uid)?.online ?? false;
+    
+                 const isActive = chatId === state.currentChatId;
+    
+                 const li = document.createElement('div');
+                 li.className = `user-list-item list-group-item list-group-item-action ${isActive ? 'active' : ''}`;
+                li.dataset.uid = contact.uid;
+                li.setAttribute('role', 'button'); // Make it clear it's clickable
+    
+                let lastMessageText = 'Start chatting...';
+                if (lastMsg) {
+                    if (lastMsg.text) {
+                         lastMessageText = escapeHTML(lastMsg.text);
+                     } else if (lastMsg.mediaType) {
+                         // Prepend sender info for media messages in preview
+                        const prefix = lastMsg.senderId === myUid ? "You sent a" : "";
+                         lastMessageText = `${prefix} ${lastMsg.mediaType}`.trim();
+                    }
+                }
+    
+                // Limit text length
+                const maxLen = 30;
+                if (lastMessageText.length > maxLen) {
+                    lastMessageText = lastMessageText.substring(0, maxLen) + '...';
+                }
+    
+    
+                 li.innerHTML = `
+                    <div class="d-flex align-items-center w-100">
+                        <div class="position-relative flex-shrink-0">
+                             ${contact.photoURL
+                                ? `<img src="${contact.photoURL}" class="avatar rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="${escapeHTML(contact.name)}">`
+                                 : generateAvatarHTML(contact.uid, contact.name, 'me-2')}
+                            <span class="online-indicator position-absolute bottom-0 end-0 p-1 border border-light rounded-circle ${isOnline ? 'bg-success' : 'bg-secondary'}"></span>
+                        </div>
+                        <div class="flex-grow-1 ms-2 overflow-hidden">
+                            <div class="contact-name fw-medium text-truncate">${escapeHTML(contact.name) || 'Unnamed User'}</div>
+                            <div class="last-message small text-truncate">${lastMessageText}</div>
+                        </div>
+                        <div class="message-meta text-end ms-2 flex-shrink-0">
+                            <div class="message-time small mb-1">${lastMsg?.createdAt ? formatRelativeTime(lastMsg.createdAt) : ''}</div>
+                            ${unreadCount > 0 ? `<span class="unread-badge badge bg-primary rounded-pill float-end">${unreadCount > 9 ? '9+' : unreadCount}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+    
+                li.addEventListener('click', () => handleContactClick(contact.uid));
+                 container.appendChild(li);
+            });
+        }
+    
+        // Displays the active chat information in the header
+        function displayActiveChatHeader() {
+            if (!UI.elements.activeChatHeaderInfo || !UI.elements.emptyChatHeaderInfo) return;
+    
+            if (state.currentRecipientData && state.currentChatId) {
+                // Show active chat info
+                 UI.elements.activeChatHeaderInfo.classList.remove('hidden');
+                UI.elements.activeChatOptionsMenu.classList.remove('hidden');
+                UI.elements.emptyChatHeaderInfo.classList.add('hidden');
+    
+                 const recipient = state.currentRecipientData;
+                 const isOnline = state.caches.onlineUsers.get(recipient.uid)?.online ?? false;
+    
+                 UI.elements.activeChatName.textContent = escapeHTML(recipient.name) || 'Unnamed User';
+                 UI.elements.activeChatAvatar.innerHTML = recipient.photoURL
+                     ? `<img src="${recipient.photoURL}" class="img-fluid rounded-circle" style="width: 100%; height: 100%; object-fit: cover;" alt="${escapeHTML(recipient.name)}">`
+                     : generateAvatarHTML(recipient.uid, recipient.name);
+    
+                UI.elements.activeChatStatusIndicator.className = `bi bi-circle-fill me-1 text-${isOnline ? 'success' : 'secondary'} small`;
+                UI.elements.activeChatStatusText.textContent = isOnline ? 'Online' : 'Offline';
+    
+                // Potentially update Block User button text/state here if implemented
+                // UI.elements.blockUserBtn.textContent = state.currentUser.blockedUsers?.[recipient.uid] ? 'Unblock User' : 'Block User';
+    
+            } else {
+                 // Show placeholder if no chat selected
+                UI.elements.activeChatHeaderInfo.classList.add('hidden');
+                UI.elements.activeChatOptionsMenu.classList.add('hidden');
+                UI.elements.emptyChatHeaderInfo.classList.remove('hidden');
+             }
+         }
+    
+    
+        //======================================================================
+        // Message Handling
+        //======================================================================
+    
+        // Displays a single chat message in the chat box
+         function displayChatMessage({ id, data }) {
+             if (!id || !data || !state.currentUser || !state.currentChatId || !UI.elements.chatBox) return;
+    
+             // Make sure this message belongs to the currently active chat cache
+             const chatMessagesCache = state.caches.messages.get(state.currentChatId);
+             if (!chatMessagesCache || !chatMessagesCache.has(id)) {
+                 // Message might be from a previous chat or cache inconsistency
+                 console.warn(`Attempted to display message ${id} not in active chat cache.`);
+                // Optionally add it if missing: chatMessagesCache?.set(id, { id, data });
+                 // return; // Or return to prevent display errors
+             }
+    
+             const isSent = data.senderId === state.currentUser.uid;
+             const senderData = isSent ? state.currentUser : state.caches.contacts.get(data.senderId);
+             const senderName = isSent ? 'You' : (senderData?.name || senderData?.displayName || 'User');
+    
+             const messageWrapper = document.createElement('div');
+             messageWrapper.className = `message-wrapper d-flex mb-3 ${isSent ? 'sent justify-content-end' : 'received justify-content-start'}`;
+             messageWrapper.dataset.messageId = id;
+    
+            // Use placeholder if sender data isn't available yet
+             const avatarHtml = senderData
+                ? (senderData.photoURL ?
+                      `<img src="${senderData.photoURL}" class="avatar rounded-circle" style="width: 36px; height: 36px; object-fit: cover;" alt="${escapeHTML(senderName)}">` :
+                      generateAvatarHTML(data.senderId, senderName))
+                : generateAvatarHTML(data.senderId, 'User'); // Placeholder if user data missing
+    
+            const messageContentHtml = `
+                 <div class="message-content ${isSent ? 'ms-auto me-2 text-end' : 'ms-2 text-start'}">
+                     <div class="message-bubble shadow-sm d-inline-block position-relative">
+                        ${!isSent ? `<span class="message-sender d-block mb-1 small fw-medium">${escapeHTML(senderName)}</span>` : ''}
+                        ${data.mediaURL && data.mediaType ? `<div class="media-message mb-1">${generateMediaHTML(data.mediaURL, data.mediaType, id)}</div>` : ''}
+                        ${data.text ? `<p class="message-text mb-0">${escapeHTML(data.text)}</p>` : ''}
+                        <span class="message-timestamp position-absolute bottom-0 end-0 p-1 small text-muted">${formatTimestamp(data.createdAt)}</span>
+                     </div>
+                 </div>
+             `;
+             // Correct order for Sent vs Received
+             if (isSent) {
+                messageWrapper.innerHTML = messageContentHtml + `<div class="message-avatar flex-shrink-0">${avatarHtml}</div>`;
+             } else {
+                messageWrapper.innerHTML = `<div class="message-avatar flex-shrink-0">${avatarHtml}</div>` + messageContentHtml;
+            }
+    
+    
+             // Replace existing element if it exists (e.g., replacing a temp message)
+             const existingElement = UI.elements.chatBox.querySelector(`[data-message-id="${id}"]`);
+             if (existingElement) {
+                UI.elements.chatBox.replaceChild(messageWrapper, existingElement);
+             } else {
+                 // Append the new message
+                 UI.elements.chatBox.appendChild(messageWrapper);
+             }
+    
+    
+             // Add event listener for media preview on images/videos inside message bubbles
+            const mediaItem = messageWrapper.querySelector('.media-message > [data-url]');
+            if (mediaItem) {
+                 mediaItem.addEventListener('click', () => {
+                    const url = mediaItem.dataset.url;
+                    const type = mediaItem.dataset.type;
+                     showMediaPreviewModal(url, type);
+                 });
+            }
+         }
+    
+        // Generates HTML for media content within a message bubble
+        function generateMediaHTML(url, type, messageId = '') {
+            switch (type) {
+                case 'image':
+                    return `<img src="${url}" class="img-fluid rounded" style="max-height: 300px; max-width: 100%; cursor: pointer;" alt="Shared Image" data-url="${url}" data-type="image" data-message-id="${messageId}">`;
+                case 'video':
+                    // Add controls but maybe initially load without autoplay
+                     return `<video src="${url}" controls class="img-fluid rounded" style="max-height: 300px; max-width: 100%; cursor: pointer;" data-url="${url}" data-type="video" data-message-id="${messageId}"></video>`;
+                 case 'audio':
+                     // Use the Bootstrap based styling maybe, or just standard controls
+                     return `<div class="audio-player p-2 border rounded"><audio src="${url}" controls class="w-100"></audio></div>`;
+                default:
+                     // Generic link for unsupported types (e.g., documents if added later)
+                     return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary btn-sm"><i class="bi bi-file-earmark-arrow-down me-1"></i>Download File</a>`;
+            }
+        }
+    
+        // Handles sending a message (text and/or media)
+        async function handleMessageSend(event) {
+            event.preventDefault();
+            if (!state.currentUser || !state.currentChatId || !state.currentRecipientId) {
+                 showToast("Cannot send message. No active chat selected.", "warning");
+                return;
+            }
+    
+            const text = UI.elements.messageInput.value.trim();
+            const filesToUpload = [...state.mediaFiles]; // Copy files to process
+    
+            if (!text && filesToUpload.length === 0) {
+                return; // Nothing to send
+            }
+    
+             UI.setButtonLoading(UI.elements.sendButton, true);
+            UI.elements.messageInput.disabled = true; // Disable input while sending
+    
+            // Clear input fields and preview immediately
+            UI.elements.messageInput.value = '';
+             resizeTextarea();
+            UI.elements.mediaPreviewContainer.innerHTML = '';
+             state.mediaFiles = [];
+    
+             try {
+                 // 1. Upload Files (if any)
+                 const uploadResults = [];
+                 if (filesToUpload.length > 0) {
+                    console.log(`Uploading ${filesToUpload.length} file(s)...`);
+                    const uploadPromises = filesToUpload.map(async (file) => {
+                        const filePath = `chat_media/${state.currentChatId}/${state.currentUser.uid}/${Date.now()}_${file.name}`;
+                        const fileStorageRef = storageRef(firebaseStorage, filePath);
+                         console.log(`Uploading ${file.name} to ${filePath}`);
+                         const uploadTask = uploadBytesResumable(fileStorageRef, file);
+    
+                        // Await completion
+                         await uploadTask;
+                         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        return {
+                            mediaURL: downloadURL,
+                            mediaType: file.type.split('/')[0] || 'file', // 'image', 'video', 'audio', 'file'
+                             mediaName: file.name // Store original filename (optional)
+                        };
+                    });
+                    uploadResults.push(...await Promise.all(uploadPromises));
+                    console.log("All files uploaded successfully.");
+                 }
+    
+                // 2. Prepare Message Data(s)
+                 const messagesToSend = [];
+                 const timestamp = serverTimestamp(); // Use server timestamp for consistency
+    
+                 // If there's text OR no files, send a text message (potentially empty if only files were sent)
+                 if (text || filesToUpload.length === 0) {
+                    messagesToSend.push({
+                         senderId: state.currentUser.uid,
+                         senderDisplayName: state.currentUser.name || state.currentUser.displayName, // Use DB name first
+                         recipientId: state.currentRecipientId, // Good to store recipient for queries/rules
+                        text: text,
+                        mediaURL: null, // No media for this specific message object
+                        mediaType: null,
+                        createdAt: timestamp,
+                        readStatus: { [state.currentUser.uid]: true, [state.currentRecipientId]: false } // Initial read status
                      });
-                 })
-                 .then(() => {
-                     console.log("Display name updated for new user.");
-                     // Success is handled by onAuthStateChanged, which hides overlay
-                 })
-                 .catch((error) => {
-                     console.error("Signup or profile update failed:", error);
-                     displayError(signupErrorDiv, `Signup failed: ${error.message}`);
-                     setLoadingState(button, false);
-                      hideLoadingOverlay(); // Hide on error
+                }
+    
+                 // Create separate message objects for each uploaded file
+                 uploadResults.forEach(result => {
+                     messagesToSend.push({
+                         senderId: state.currentUser.uid,
+                         senderDisplayName: state.currentUser.name || state.currentUser.displayName,
+                         recipientId: state.currentRecipientId,
+                         text: '', // Empty text for media-only messages
+                        mediaURL: result.mediaURL,
+                        mediaType: result.mediaType,
+                         mediaName: result.mediaName, // Optional: filename
+                        createdAt: timestamp,
+                        readStatus: { [state.currentUser.uid]: true, [state.currentRecipientId]: false }
+                     });
                  });
+    
+                 // 3. Push messages to Realtime Database and Update Chat Metadata
+                 const chatRef = ref(firebaseDb, `chats/${state.currentChatId}`);
+                const messagesRef = ref(firebaseDb, `chats/${state.currentChatId}/messages`);
+    
+                 const updates = {};
+                 // Push each message and capture the key (though not strictly needed here)
+                const messagePromises = messagesToSend.map(msg => push(messagesRef, msg));
+                await Promise.all(messagePromises);
+                console.log(`${messagesToSend.length} message(s) pushed to DB.`);
+    
+    
+                // Update chat metadata: last message and participants/unread count
+                const lastMessageData = messagesToSend[messagesToSend.length - 1];
+                 updates[`/lastMessage`] = {
+                    text: lastMessageData.text || `[${lastMessageData.mediaType}]`,
+                     senderId: lastMessageData.senderId,
+                     createdAt: timestamp // Use the same server timestamp
+                 };
+                 updates[`/participants`] = [state.currentUser.uid, state.currentRecipientId]; // Ensure participants are set
+                // Atomically increment unread count for the recipient
+                 updates[`/unreadCount/${state.currentRecipientId}`] = increment(messagesToSend.length);
+                // Ensure unread count for sender is 0 (or doesn't exist)
+                 updates[`/unreadCount/${state.currentUser.uid}`] = 0;
+    
+    
+                 await update(ref(firebaseDb), { [`/chats/${state.currentChatId}`]: updates }); // Perform batched update on the chat node
+    
+                console.log("Chat metadata updated.");
+                scrollChatToBottom('smooth'); // Scroll down after sending
+    
+    
+            } catch (error) {
+                console.error("Message Send Failed:", error);
+                showToast(`Failed to send message: ${error.message}`, "danger");
+                 // Consider re-populating the input fields if sending failed? Or just show error.
+             } finally {
+                UI.setButtonLoading(UI.elements.sendButton, false);
+                 UI.elements.messageInput.disabled = false; // Re-enable input
+                // Ensure focus returns to input if appropriate
+                 if (window.innerWidth > 767.98) UI.elements.messageInput.focus();
+            }
         }
-
-        /** Handles the logout button click. */
-        function handleLogout() {
-            setLoadingState(logoutButton, true);
-            showLoadingOverlay(); // Show overlay during logout
-            // Detach listeners happens within onAuthStateChanged AFTER signout completes
-            firebaseAuth.signOut()
-                .catch(err => {
-                     console.error("Sign out error:", err);
-                     alert("Error signing out. Please try again."); // Simple alert for signout error
-                     setLoadingState(logoutButton, false); // Reset button if signout fails
-                     hideLoadingOverlay(); // Hide overlay on error
+    
+    
+        // Sends typing status update to Firebase (debounced)
+        const debouncedSendTypingStatus = debounce((isTyping) => {
+             if (!state.currentChatId || !state.currentUser) return;
+            const typingRef = ref(firebaseDb, `chats/${state.currentChatId}/typing/${state.currentUser.uid}`);
+            set(typingRef, { isTyping: isTyping })
+                 .catch(error => console.warn("Could not set typing status:", error));
+    
+            // Clear the timeout if user continues typing
+             clearTimeout(state.typingTimeout);
+             if (isTyping) {
+                 // Set a timeout to automatically clear typing status if user stops
+                 state.typingTimeout = setTimeout(() => {
+                    set(typingRef, { isTyping: false })
+                         .catch(error => console.warn("Could not clear typing status:", error));
+                 }, CONFIG.TYPING_TIMEOUT_MS);
+            }
+        }, CONFIG.DEBOUNCE_TYPING_MS);
+    
+    
+        //======================================================================
+        // Media Handling (Attachments, Previews, Gallery)
+        //======================================================================
+    
+        // Handles file input changes for media attachments
+         function handleMediaInput(event, allowedTypes) {
+            if (!event.target.files) return;
+            const files = Array.from(event.target.files);
+             const validFiles = files.filter(file => validateFile(file, allowedTypes));
+    
+            if (validFiles.length > 0) {
+                 // Add only valid files to the state
+                 state.mediaFiles.push(...validFiles);
+                displayMediaPreview(); // Update the preview UI
+             }
+             // Reset the file input value to allow selecting the same file again
+            event.target.value = '';
+        }
+    
+    
+        // Renders the preview of staged media files below the message input
+        function displayMediaPreview() {
+            if (!UI.elements.mediaPreviewContainer) return;
+             UI.elements.mediaPreviewContainer.innerHTML = ''; // Clear previous previews
+    
+             state.mediaFiles.forEach((file, index) => {
+                 const url = URL.createObjectURL(file); // Create temporary URL for preview
+                 const isImage = file.type.startsWith('image/');
+                 const isVideo = file.type.startsWith('video/');
+                 const isAudio = file.type.startsWith('audio/');
+    
+                 const item = document.createElement('div');
+                 item.className = "media-preview-item position-relative d-inline-flex align-items-center justify-content-center rounded bg-light";
+                item.style.width = "70px";
+                item.style.height = "70px";
+                item.style.overflow = "hidden";
+                 item.dataset.index = index.toString();
+    
+                let previewHTML = '';
+                 if (isImage) {
+                     previewHTML = `<img src="${url}" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;" alt="${escapeHTML(file.name)} Preview">`;
+                } else if (isVideo) {
+                     previewHTML = `<video src="${url}" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;" title="${escapeHTML(file.name)}"></video>`;
+                 } else if (isAudio) {
+                     previewHTML = `<i class="bi bi-music-note-beamed fs-3 text-secondary" title="${escapeHTML(file.name)}"></i>`;
+                } else { // Generic file fallback
+                    previewHTML = `<i class="bi bi-file-earmark fs-3 text-secondary" title="${escapeHTML(file.name)}"></i>`;
+                }
+    
+                 item.innerHTML = `
+                    ${previewHTML}
+                    <button type="button" class="btn btn-sm btn-danger rounded-circle position-absolute top-0 end-0 m-1 p-0 d-flex align-items-center justify-content-center"
+                            style="width: 20px; height: 20px; transform: translate(25%, -25%); line-height: 1;"
+                            aria-label="Remove ${escapeHTML(file.name)}" data-remove-index="${index}">
+                        <i class="bi bi-x small"></i>
+                    </button>
+                `;
+    
+                 // Add event listener to remove button
+                 item.querySelector('button[data-remove-index]').addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent triggering other events
+                    const indexToRemove = parseInt(e.currentTarget.dataset.removeIndex);
+                    state.mediaFiles.splice(indexToRemove, 1); // Remove from state
+                     URL.revokeObjectURL(url); // Clean up blob URL
+                    displayMediaPreview(); // Re-render previews
                  });
-            // Note: UI changes/listener detach handled by onAuthStateChanged
+    
+                UI.elements.mediaPreviewContainer.appendChild(item);
+    
+                 // IMPORTANT: Revoke object URLs when they are no longer needed to free up memory
+                // Add cleanup logic, e.g., when the message is sent or files are cleared manually.
+                 // A more robust approach might track URLs and revoke them explicitly.
+                 // For simplicity here, rely on browser GC or revoke on remove click.
+             });
+         }
+    
+    
+        // Fetches and displays media shared in the current chat within the media gallery modal
+         async function displayMediaGallery() {
+             if (!state.currentChatId || !state.currentUser) return;
+             console.log("Loading media gallery for chat:", state.currentChatId);
+    
+            // Reset gallery content and show loading states (optional)
+            const containers = [
+                 UI.elements.imageGalleryContainer,
+                 UI.elements.videoGalleryContainer,
+                UI.elements.audioGalleryContainer
+             ];
+            const noMessages = [
+                UI.elements.noImagesMessage,
+                UI.elements.noVideosMessage,
+                 UI.elements.noAudiosMessage
+             ];
+             containers.forEach(c => { if (c) c.innerHTML = '<div class="col-12 text-center p-5"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div></div>'; });
+             noMessages.forEach(m => m?.classList.add('d-none'));
+    
+            const messagesRef = ref(firebaseDb, `chats/${state.currentChatId}/messages`);
+             // Query for messages that have a mediaURL property
+             const mediaMessagesQuery = query(messagesRef, orderByChild('mediaURL'), startAt('https://')); // Basic query, might need adjustment
+    
+             try {
+                 const snapshot = await get(mediaMessagesQuery);
+                 const images = [], videos = [], audios = [];
+    
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                         const msgData = childSnapshot.val();
+                         if (msgData.mediaURL && msgData.mediaType) {
+                            const mediaItem = {
+                                 id: childSnapshot.key,
+                                 url: msgData.mediaURL,
+                                 timestamp: msgData.createdAt,
+                                name: msgData.mediaName || msgData.mediaType // Optional name
+                            };
+                            if (msgData.mediaType === 'image') images.push(mediaItem);
+                            else if (msgData.mediaType === 'video') videos.push(mediaItem);
+                            else if (msgData.mediaType === 'audio') audios.push(mediaItem);
+                        }
+                    });
+                 }
+    
+                // Sort by timestamp (newest first)
+                images.sort((a, b) => b.timestamp - a.timestamp);
+                videos.sort((a, b) => b.timestamp - a.timestamp);
+                audios.sort((a, b) => b.timestamp - a.timestamp);
+    
+                // Render Images
+                if (UI.elements.imageGalleryContainer) {
+                     UI.elements.imageGalleryContainer.innerHTML = images.length > 0 ? images.map(img => `
+                        <div class="col">
+                             <img src="${img.url}" class="img-fluid rounded media-gallery-item"
+                                 style="cursor: pointer; object-fit: cover; aspect-ratio: 1 / 1;"
+                                 loading="lazy" alt="${escapeHTML(img.name) || 'Shared Image'}"
+                                 data-url="${img.url}" data-type="image">
+                        </div>
+                    `).join('') : '';
+                    UI.elements.noImagesMessage?.classList.toggle('d-none', images.length > 0);
+                 }
+    
+                 // Render Videos
+                 if (UI.elements.videoGalleryContainer) {
+                     UI.elements.videoGalleryContainer.innerHTML = videos.length > 0 ? videos.map(vid => `
+                        <div class="col">
+                            <div class="position-relative video-gallery-thumb rounded overflow-hidden">
+                                <video src="${vid.url}" class="img-fluid media-gallery-item"
+                                       style="cursor: pointer; display: block; width: 100%; object-fit: cover; aspect-ratio: 16 / 9;"
+                                       preload="metadata" alt="${escapeHTML(vid.name) || 'Shared Video'} Preview"
+                                       data-url="${vid.url}" data-type="video">
+                                 </video>
+                                <i class="bi bi-play-circle-fill position-absolute top-50 start-50 translate-middle fs-1 text-white" style="opacity: 0.8;"></i>
+                            </div>
+                        </div>
+                     `).join('') : '';
+                    UI.elements.noVideosMessage?.classList.toggle('d-none', videos.length > 0);
+                 }
+    
+                // Render Audios
+                if (UI.elements.audioGalleryContainer) {
+                     UI.elements.audioGalleryContainer.innerHTML = audios.length > 0 ? audios.map(audio => `
+                        <div class="list-group-item d-flex align-items-center gap-3">
+                            <i class="bi bi-music-note-beamed fs-4 text-secondary"></i>
+                            <div class="flex-grow-1 overflow-hidden">
+                                 <div class="small text-truncate" title="${escapeHTML(audio.name) || 'Audio File'}">${escapeHTML(audio.name) || 'Audio File'}</div>
+                                <audio src="${audio.url}" controls class="w-100" style="max-height: 40px;"></audio>
+                                <div class="text-muted small mt-1">${formatRelativeTime(audio.timestamp)}</div>
+                             </div>
+                        </div>
+                     `).join('') : '';
+                    UI.elements.noAudiosMessage?.classList.toggle('d-none', audios.length > 0);
+                 }
+    
+    
+                 // Add common click listener for image/video previews in gallery
+                UI.elements.mediaGalleryModal._element.querySelectorAll('.media-gallery-item[data-url]').forEach(item => {
+                     item.removeEventListener('click', handleGalleryItemClick); // Remove previous listener if any
+                     item.addEventListener('click', handleGalleryItemClick);
+                 });
+    
+    
+            } catch (error) {
+                console.error("Error fetching media gallery:", error);
+                 showToast("Failed to load shared media.", "danger");
+                // Reset gallery to error state
+                containers.forEach(c => { if (c) c.innerHTML = '<div class="col-12 text-center p-5 text-danger">Could not load media.</div>'; });
+                 noMessages.forEach(m => m?.classList.remove('d-none'));
+             }
         }
-
-        /** Handles the message sending form submission. */
-        function handleMessageSend(event) {
-             event.preventDefault();
-             const messageText = messageInput.value.trim();
-
-             // Validate state and input
-             if (!messageText || !currentUser || !messagesRef) {
-                 if (!currentUser) displayError(chatErrorDiv, "You're not logged in.");
+    
+    
+        // Click handler for media items within the gallery modal
+         function handleGalleryItemClick(event) {
+             const item = event.currentTarget;
+            const url = item.dataset.url;
+            const type = item.dataset.type;
+            if (url && type) {
+                showMediaPreviewModal(url, type);
+            }
+         }
+    
+         // Shows the large media preview modal
+         function showMediaPreviewModal(url, type) {
+             if (!url || !type) return;
+             let contentHTML = '';
+             if (type === 'image') {
+                 contentHTML = `<img src="${url}" class="img-fluid" style="max-height: 85vh; object-fit: contain;" alt="Media Preview">`;
+             } else if (type === 'video') {
+                 contentHTML = `<video src="${url}" controls autoplay class="img-fluid" style="max-height: 85vh; max-width: 100%; object-fit: contain;"></video>`;
+            } else {
+                console.warn("Unsupported media type for preview modal:", type);
+                 return; // Don't show modal for unsupported types
+            }
+            UI.elements.mediaPreviewContent.innerHTML = contentHTML;
+             UI.elements.mediaPreviewModal.show();
+         }
+    
+        //======================================================================
+        // Chat Actions (Clear, Block)
+        //======================================================================
+    
+         // Handles clearing all messages in the current chat
+         async function handleClearChat() {
+             if (!state.currentChatId || !state.currentUser) return;
+    
+            if (!confirm("Are you sure you want to permanently clear all messages in this chat? This cannot be undone.")) {
+                return;
+            }
+             console.log(`Clearing chat: ${state.currentChatId}`);
+    
+             try {
+                 const messagesRef = ref(firebaseDb, `chats/${state.currentChatId}/messages`);
+                await remove(messagesRef);
+    
+                // Also clear last message metadata
+                 const lastMessageRef = ref(firebaseDb, `chats/${state.currentChatId}/lastMessage`);
+                await remove(lastMessageRef);
+    
+                // Optionally clear typing indicators for this chat if any exist
+                const typingRef = ref(firebaseDb, `chats/${state.currentChatId}/typing`);
+                 await remove(typingRef);
+    
+                // Clear local message cache for this chat
+                 state.caches.messages.delete(state.currentChatId);
+                 // Clear media cache if maintained separately per chat
+                 state.caches.media.delete(state.currentChatId);
+    
+                 // Update UI
+                 UI.elements.chatBox.innerHTML = '';
+                 UI.elements.emptyChatState.classList.remove('hidden');
+                 // Optionally update last message display in contact list immediately
+                 displayUserList();
+                showToast("Chat cleared successfully.", "success");
+    
+             } catch (error) {
+                 console.error("Failed to clear chat:", error);
+                showToast(`Failed to clear chat: ${error.message}`, "danger");
+             }
+         }
+    
+         // Handles blocking a user (STUB - requires implementation in DB/rules)
+         async function handleBlockUser() {
+            if (!state.currentRecipientId || !state.currentUser) return;
+            const recipientName = escapeHTML(state.currentRecipientData?.name) || 'this user';
+             // const isCurrentlyBlocked = state.currentUser.blockedUsers?.[state.currentRecipientId]; // Check local state first
+    
+            if (!confirm(`Are you sure you want to block ${recipientName}? You will no longer see their messages, and they won't see yours.`)) {
                  return;
              }
-
-             clearError(chatErrorDiv);
-             setLoadingState(sendButton, true); // Show loading on send button
-
-             const newMessage = {
-                 uid: currentUser.uid,
-                 displayName: currentUser.displayName || currentUser.email || 'Anonymous', // Ensure name is present
-                 text: messageText, // Already trimmed
-                 timestamp: firebase.database.ServerValue.TIMESTAMP // Use server time
-             };
-
-             // Clear local typing status immediately when sending a message
-             clearTimeout(typingTimeout);
-             if (userTypingRef) {
-                 userTypingRef.set(false).catch(e => console.warn("Couldn't clear typing status on send:", e));
-             }
-
-             // Push message to Firebase
-             messagesRef.push(newMessage)
-                 .then(() => {
-                     // Success! Clear the input field.
-                     messageInput.value = '';
-                 })
-                 .catch(error => {
-                     // Failure! Display error to user.
-                     console.error("Error sending message:", error);
-                     displayChatError(`Failed to send message: ${error.message}`);
-                 })
-                 .finally(() => {
-                     // Always reset button state and focus input
-                     messageInput.focus();
-                     setLoadingState(sendButton, false);
-                 });
-         }
-
-        /** Handles input events on the message input field for typing indicators. */
-        function handleTypingInput() {
-            if (!currentUser || !userTypingRef) return; // Only if logged in and ref is set
-
-            // Indicate typing = true (debounced)
-            updateTypingStatus(true);
-
-            // Reset the timeout to turn typing indicator off after inactivity
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                 // After timeout, set typing to false
-                 if (userTypingRef) {
-                     userTypingRef.set(false)
-                        .catch(error => console.warn("Error setting typing status (timeout):", error));
-                 }
-            }, TYPING_TIMEOUT_MS);
+            console.log(`Attempting to block user: ${state.currentRecipientId}`);
+    
+             // --- !!! BACKEND IMPLEMENTATION REQUIRED !!! ---
+             // 1. Update the current user's data in Firebase to add the recipientId to a 'blockedUsers' map/list.
+             // Example: update(ref(firebaseDb, `users/${state.currentUser.uid}/blockedUsers`), { [state.currentRecipientId]: true });
+             // 2. Implement Firebase Security Rules:
+             //    - Prevent writing messages to chats where a participant is blocked by the sender.
+             //    - Prevent reading messages from users who have blocked the reader (or vice-versa).
+             //    - Prevent blocked users from appearing in contact lists/searches.
+             // ---------------------------------------------
+    
+             try {
+                // --- Example DB Update (REMOVE/REPLACE with actual implementation) ---
+                 const blockedUsersRef = ref(firebaseDb, `users/${state.currentUser.uid}/blockedUsers/${state.currentRecipientId}`);
+                 await set(blockedUsersRef, true); // Set block status to true
+                 console.log(`User ${state.currentRecipientId} blocked in DB (client-side representation).`);
+                 // --- End of Example DB Update ---
+    
+                // Update local state cache
+                 if (!state.currentUser.blockedUsers) state.currentUser.blockedUsers = {};
+                state.currentUser.blockedUsers[state.currentRecipientId] = true;
+    
+    
+                showToast(`${recipientName} has been blocked.`, "success");
+    
+                // Optionally, close the current chat and update UI
+                 const blockedUserId = state.currentRecipientId; // Store before resetting state
+                 state.currentChatId = null;
+                 state.currentRecipientId = null;
+                 state.currentRecipientData = null;
+                detachListener('messages');
+                detachListener('typing');
+                UI.elements.chatBox.innerHTML = '';
+                 UI.elements.emptyChatState.classList.remove('hidden');
+                 displayActiveChatHeader(); // Clear header
+                 displayUserList(); // Re-render list (blocked user should ideally be filtered out)
+    
+                 // Maybe navigate away or hide the chat input section?
+    
+    
+            } catch (error) {
+                console.error("Failed to block user:", error);
+                 showToast(`Failed to block user: ${error.message}`, "danger");
+            }
         }
-
-        /** Handles theme selection from the dropdown. */
-        function handleThemeSelection(event) {
-             if (event.target.classList.contains('dropdown-item')) {
-                 const theme = event.target.dataset.theme;
-                 if (theme) {
+    
+    
+        //======================================================================
+        // Theme Management
+        //======================================================================
+         function populateThemeSelector() {
+             if (!UI.elements.themeSelector) return;
+             UI.elements.themeSelector.innerHTML = CONFIG.THEMES.map(theme => `
+                 <li><button class="dropdown-item d-flex align-items-center" data-theme="${theme.name}">
+                    <i class="${theme.icon} me-2"></i>${theme.label}
+                    </button></li>
+             `).join('');
+             // Add checkmark to current theme if possible (needs reliable way to get current theme)
+         }
+    
+        function applyTheme(themeName) {
+             if (!CONFIG.THEMES.some(t => t.name === themeName)) {
+                themeName = 'light'; // Default to light if invalid
+             }
+            console.log("Applying theme:", themeName);
+            // Remove existing theme classes
+            document.body.classList.remove(...CONFIG.THEMES.map(t => `theme-${t.name}`));
+            // Add the new theme class if it's not the default (light)
+            if (themeName !== 'light') {
+                 document.body.classList.add(`theme-${themeName}`);
+            }
+            localStorage.setItem('chatTheme', themeName);
+            // Add checkmark to the selected theme in the dropdown (optional visual cue)
+            UI.elements.themeSelector.querySelectorAll('.dropdown-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.theme === themeName) {
+                     item.classList.add('active'); // Bootstrap 'active' class for visual selection
+                 }
+             });
+         }
+    
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('chatTheme') || 'light';
+            applyTheme(savedTheme);
+        }
+    
+        //======================================================================
+        // Emoji Picker Logic
+        //======================================================================
+        function populateEmojiPicker() {
+            if (!UI.elements.emojiPicker) return;
+             // Wrap buttons for better spacing/layout if needed
+            const emojiHTML = CONFIG.EMOJI_LIST.map(emoji => `
+                <button type="button" class="emoji btn btn-sm btn-link p-1" data-emoji="${emoji}" title="Insert ${emoji}">${emoji}</button>
+            `).join('');
+             UI.elements.emojiPicker.innerHTML = `<div class="d-flex flex-wrap p-2 justify-content-center">${emojiHTML}</div>`; // Added wrapper
+    
+            // Use event delegation on the picker container for efficiency
+             UI.elements.emojiPicker.addEventListener('click', (event) => {
+                 if (event.target.classList.contains('emoji')) {
+                     const emoji = event.target.dataset.emoji;
+                    // Insert emoji at current cursor position
+                     const textarea = UI.elements.messageInput;
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    textarea.value = textarea.value.substring(0, start) + emoji + textarea.value.substring(end);
+                     // Move cursor after inserted emoji
+                     textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+    
+                     // Close picker, focus input, resize
+                    UI.elements.emojiPicker.classList.add('d-none');
+                    textarea.focus();
+                     resizeTextarea();
+                 }
+             });
+        }
+    
+    
+        //======================================================================
+        // Event Binding
+        //======================================================================
+        function bindEventListeners() {
+            console.log("Binding event listeners...");
+    
+            // --- Authentication Forms ---
+            UI.elements.loginForm?.addEventListener('submit', handleLoginSubmit);
+            UI.elements.registerForm?.addEventListener('submit', handleSignupSubmit);
+            UI.elements.googleLoginBtn?.addEventListener('click', handleGoogleLogin);
+            UI.elements.forgotPasswordLink?.addEventListener('click', (e) => {
+                e.preventDefault();
+                UI.elements.forgotPasswordModal.show();
+             });
+             UI.elements.forgotPasswordForm?.addEventListener('submit', handleForgotPasswordSubmit);
+             // Optional: Add listener for Facebook button if implemented
+             // UI.elements.facebookLoginBtn?.addEventListener('click', handleFacebookLogin);
+    
+    
+            // --- Message Form & Input ---
+            UI.elements.messageForm?.addEventListener('submit', handleMessageSend);
+            // Auto-resize textarea on input
+            UI.elements.messageInput?.addEventListener('input', resizeTextarea);
+            // Trigger typing indicator on input (debounced)
+            UI.elements.messageInput?.addEventListener('input', () => {
+                debouncedSendTypingStatus(true);
+            });
+             // Optional: Handle pressing Enter to send (Shift+Enter for newline)
+            UI.elements.messageInput?.addEventListener('keydown', (e) => {
+                 if (e.key === 'Enter' && !e.shiftKey) {
+                     e.preventDefault(); // Prevent default newline behavior
+                     handleMessageSend(new Event('submit', { cancelable: true, bubbles: true })); // Trigger form submission
+                 }
+            });
+    
+            // --- Sidebar ---
+            UI.elements.sidebarToggleButton?.addEventListener('click', () => UI.toggleSidebar());
+             UI.elements.searchContactsInput?.addEventListener('input', debounce((e) => {
+                state.searchQuery = e.target.value.trim();
+                displayUserList();
+            }, CONFIG.DEBOUNCE_SEARCH_MS));
+             UI.elements.logoutBtn?.addEventListener('click', handleLogout);
+    
+    
+            // --- Modals ---
+            // Populate profile modal when shown
+             UI.elements.profileModal._element?.addEventListener('show.bs.modal', populateProfileModal);
+             // Handle profile save button click
+             UI.elements.saveProfileBtn?.addEventListener('click', handleProfileUpdate);
+             // Profile picture change triggers file input click
+             UI.elements.editProfilePic?.closest('.position-relative')?.querySelector('label')?.addEventListener('click', (e) => {
+                 // Check if the click is specifically on the label itself
+                if (e.target.tagName === 'LABEL' || e.target.closest('label')) {
+                     UI.elements.updateProfilePictureInput.click();
+                }
+             });
+            UI.elements.updateProfilePictureInput?.addEventListener('change', populateProfileModal); // Re-render preview on change? Maybe handle in handleProfileUpdate better.
+    
+            // Populate media gallery when shown
+             UI.elements.mediaGalleryModal._element?.addEventListener('show.bs.modal', displayMediaGallery);
+    
+             // Close Media Preview modal when hidden
+             UI.elements.mediaPreviewModal._element?.addEventListener('hidden.bs.modal', () => {
+                 // Stop video/audio playback if playing
+                 const mediaElement = UI.elements.mediaPreviewContent.querySelector('video, audio');
+                 if (mediaElement) {
+                    mediaElement.pause();
+                    mediaElement.src = ''; // Remove source to free resources
+                }
+                 UI.elements.mediaPreviewContent.innerHTML = ''; // Clear content
+             });
+    
+    
+            // --- Attachments & Emoji Picker ---
+            UI.elements.attachImageVideoBtn?.addEventListener('click', () => UI.elements.imageVideoInput?.click());
+            UI.elements.attachAudioBtn?.addEventListener('click', () => UI.elements.audioInput?.click());
+    
+            // Handle file input for different types
+             UI.elements.imageVideoInput?.addEventListener('change', (e) => handleMediaInput(e, [...CONFIG.ALLOWED_IMAGE_TYPES, ...CONFIG.ALLOWED_VIDEO_TYPES]));
+            UI.elements.audioInput?.addEventListener('change', (e) => handleMediaInput(e, CONFIG.ALLOWED_AUDIO_TYPES));
+    
+             // Toggle emoji picker
+             UI.elements.emojiBtn?.addEventListener('click', (e) => {
+                 e.stopPropagation(); // Prevent body click listener from closing it immediately
+                 UI.elements.emojiPicker.classList.toggle('d-none');
+                 if (!UI.elements.emojiPicker.classList.contains('d-none')) {
+                    // Maybe focus first emoji or a search input if added later?
+                 }
+            });
+    
+             // Close emoji picker if clicked outside
+             document.addEventListener('click', (e) => {
+                if (!UI.elements.emojiPicker?.classList.contains('d-none') &&
+                     !UI.elements.emojiPicker.contains(e.target) &&
+                     !UI.elements.emojiBtn.contains(e.target)) {
+                     UI.elements.emojiPicker.classList.add('d-none');
+                 }
+            });
+    
+    
+            // --- Theme Selector ---
+             UI.elements.themeSelector?.addEventListener('click', e => {
+                const themeButton = e.target.closest('.dropdown-item[data-theme]');
+                 if (themeButton) {
+                     const theme = themeButton.dataset.theme;
                      applyTheme(theme);
+                }
+             });
+    
+            // --- Chat Actions Dropdown ---
+            UI.elements.clearChatBtn?.addEventListener('click', (e) => {
+                 e.preventDefault();
+                 handleClearChat();
+            });
+            UI.elements.blockUserBtn?.addEventListener('click', (e) => {
+                e.preventDefault();
+                 handleBlockUser();
+            });
+    
+    
+            // --- Responsive Sidebar Closing ---
+             // Close sidebar if clicking on the main chat area on mobile
+             UI.elements.chatMain?.addEventListener('click', () => {
+                if (window.innerWidth <= 767.98 && UI.elements.userSidebar?.classList.contains('active')) {
+                     UI.toggleSidebar(false);
                  }
-             }
-         }
-
-        /** Toggles the mobile sidebar visibility. */
-        function toggleSidebar() {
-             userSidebar?.classList.toggle('active');
+             });
+    
+    
+            console.log("Event listeners bound.");
         }
-        /** Closes the mobile sidebar. */
-        function closeSidebar() {
-             userSidebar?.classList.remove('active');
-        }
-        /** Closes the sidebar if a click occurs outside of it on mobile. */
-        function handleOutsideSidebarClick(event) {
-             if (window.innerWidth < 768 && // Only on mobile view
-                 userSidebar?.classList.contains('active') &&
-                 !userSidebar.contains(event.target) &&
-                 !sidebarToggleButton?.contains(event.target))
-             {
-                 closeSidebar();
-             }
+    
+        //======================================================================
+        // Initialization Function
+        //======================================================================
+         function initializeApp() {
+             console.log("Initializing Graphite Chat App...");
+             UI.showLoadingOverlay(true); // Show loading overlay at the very start
+    
+            try {
+                // Setup UI elements that don't depend on Firebase data
+                populateThemeSelector();
+                populateEmojiPicker();
+                 loadTheme();
+                 bindEventListeners(); // Bind handlers to UI elements
+    
+                // Initialize Firebase (this attaches the critical auth listener)
+                initializeFirebase();
+    
+                console.log("App initialization sequence started.");
+                // Further setup happens within handleAuthStateChanged based on login status
+    
+            } catch (error) {
+                console.error("Catastrophic Initialization Error:", error);
+                 // UI should already show loading overlay permanently from initializeFirebase error
+                // Optionally display a permanent error message on the page itself
+                 document.body.innerHTML = `<div class="vh-100 d-flex justify-content-center align-items-center text-danger">
+                                               <h2>Application failed to initialize. Please refresh or contact support.</h2>
+                                            </div>`;
+            }
          }
-
-
+    
+    
         //======================================================================
-        // $ INITIALIZATION
+        // Start the Application when the DOM is ready
         //======================================================================
-
-        // --- Run Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-            populateThemeSelector();
-            loadTheme(); // Load theme preference early
-            bindEventListeners(); // Setup button clicks, form submits etc.
-            initializeFirebase(); // Initialize Firebase and Auth listener
-        });
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    
+    })(); // End of IIFE
