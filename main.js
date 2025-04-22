@@ -18,7 +18,8 @@
            storageBucket: "sm4movies.firebasestorage.app",
            messagingSenderId: "277353836953",
            appId: "1:277353836953:web:85e02783526c7cb58de308",
-           measurementId: "G-690RSNJ2Q2"
+           measurementId: "G-690RSNJ2Q2",
+           databaseURL: "https://sm4movies-default-rtdb.firebaseio.com"
        };
     
         //======================================================================
