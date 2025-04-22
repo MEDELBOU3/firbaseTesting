@@ -21,6 +21,41 @@
            measurementId: "G-690RSNJ2Q2",
            databaseURL: "https://sm4movies-default-rtdb.firebaseio.com"
        };
+
+       try {
+        // Check if firebase global exists *before* initializing
+        if (typeof firebase === 'undefined') {
+            throw new Error("FAILURE: Global 'firebase' object is undefined BEFORE initializeApp call.");
+        }
+        if (typeof firebase.initializeApp !== 'function') {
+             throw new Error("FAILURE: 'firebase.initializeApp' is not a function BEFORE initializeApp call.");
+        }
+
+        console.log("Attempting firebase.initializeApp...");
+        const firebaseApp = firebase.initializeApp(firebaseConfig);
+        console.log("✅ SUCCESS: firebase.initializeApp completed!", firebaseApp.name);
+
+        // Try accessing other services directly IF initializeApp succeeded
+        if (firebase.auth && typeof firebase.auth.getAuth === 'function') {
+            const auth = firebase.auth.getAuth(firebaseApp);
+            console.log("✅ SUCCESS: Got Auth service instance.");
+        } else {
+             console.error("❌ PROBLEM: firebase.auth or firebase.auth.getAuth not found AFTER initializeApp.");
+        }
+
+         if (firebase.database && typeof firebase.database.getDatabase === 'function') {
+            const db = firebase.database.getDatabase(firebaseApp);
+            console.log("✅ SUCCESS: Got Database service instance.");
+        } else {
+             console.error("❌ PROBLEM: firebase.database or firebase.database.getDatabase not found AFTER initializeApp.");
+        }
+
+    } catch (error) {
+        console.error("❌❌❌ CATASTROPHIC ERROR during simplified test:", error);
+         document.body.innerHTML = `<div style='padding: 20px; color: red; font-size: 1.2em;'><h2>Simplified Init Failed!</h2><p>Check console. Error: ${error.message}</p></div>`;
+    }
+
+    console.log("--- Simplified Test Finished ---");
     
         //======================================================================
         // App Configuration Constants
