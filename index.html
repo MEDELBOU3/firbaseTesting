@@ -4,1975 +4,457 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FireChat - Advanced Chat Application</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
-    <style>
-        :root {
-            --primary-color: #4285F4;
-            --secondary-color: #34A853;
-            --accent-color: #FBBC05;
-            --danger-color: #EA4335;
-            --light-gray: #f8f9fa;
-            --dark-gray: #343a40;
-        }
-        
-        body {
-            background-color: #f5f5f5;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .app-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .auth-container {
-            max-width: 500px;
-            margin: 50px auto;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            background-color: white;
-        }
-        
-        .chat-container {
-            height: calc(100vh - 150px);
-            display: flex;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            background-color: white;
-        }
-        
-        .sidebar {
-            width: 300px;
-            background-color: var(--light-gray);
-            border-right: 1px solid #dee2e6;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .chat-area {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .chat-header {
-            padding: 15px;
-            border-bottom: 1px solid #dee2e6;
-            display: flex;
-            align-items: center;
-            background-color: white;
-        }
-        
-        .user-status {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: var(--secondary-color);
-            margin-left: 10px;
-        }
-        
-        .messages-container {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background-color: #f9f9f9;
-        }
-        
-        .message {
-            margin-bottom: 15px;
-            max-width: 70%;
-        }
-        
-        .message.sent {
-            margin-left: auto;
-        }
-        
-        .message-content {
-            padding: 12px 15px;
-            border-radius: 18px;
-            position: relative;
-            word-wrap: break-word;
-        }
-        
-        .message.sent .message-content {
-            background-color: var(--primary-color);
-            color: white;
-            border-bottom-right-radius: 5px;
-        }
-        
-        .message.received .message-content {
-            background-color: #e9ecef;
-            color: var(--dark-gray);
-            border-bottom-left-radius: 5px;
-        }
-        
-        .message-time {
-            font-size: 0.7rem;
-            margin-top: 5px;
-            opacity: 0.7;
-            text-align: right;
-        }
-        
-        .message-input-container {
-            padding: 15px;
-            background-color: white;
-            border-top: 1px solid #dee2e6;
-        }
-        
-        .message-input {
-            display: flex;
-        }
-        
-        .message-input textarea {
-            resize: none;
-            border-radius: 24px;
-            padding: 12px 15px;
-            max-height: 100px;
-        }
-        
-        .message-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-left: 10px;
-        }
-        
-        .action-btn {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .action-btn:hover {
-            background-color: #f0f0f0;
-        }
-        
-        .contact-list {
-            overflow-y: auto;
-            flex-grow: 1;
-        }
-        
-        .contact-item {
-            padding: 15px;
-            border-bottom: 1px solid #dee2e6;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .contact-item:hover, .contact-item.active {
-            background-color: #e9ecef;
-        }
-        
-        .contact-info {
-            display: flex;
-            align-items: center;
-        }
-        
-        .profile-pic {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin-right: 15px;
-            background-color: #ccc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: white;
-        }
-        
-        .profile-pic img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .contact-details {
-            flex-grow: 1;
-        }
-        
-        .contact-name {
-            font-weight: 600;
-            margin-bottom: 3px;
-        }
-        
-        .last-message {
-            font-size: 0.85rem;
-            color: #6c757d;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 150px;
-        }
-        
-        .message-meta {
-            text-align: right;
-            font-size: 0.75rem;
-        }
-        
-        .message-time {
-            color: #6c757d;
-        }
-        
-        .message-status {
-            color: var(--primary-color);
-        }
-        
-        .search-box {
-            padding: 15px;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        .search-input {
-            border-radius: 24px;
-            padding: 8px 15px;
-        }
-        
-        .user-profile {
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            background-color: white;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        .profile-actions {
-            margin-left: auto;
-        }
-        
-        .dropdown-toggle::after {
-            display: none;
-        }
-        
-        .media-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .media-item {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            border-radius: 8px;
-            overflow: hidden;
-            background-color: #f0f0f0;
-        }
-        
-        .media-item img, .media-item video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .media-item .remove-media {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .audio-player {
-            width: 100%;
-            margin-top: 10px;
-        }
-        
-        .media-message {
-            max-width: 250px;
-        }
-        
-        .media-message img, .media-message video {
-            width: 100%;
-            border-radius: 10px;
-            margin-bottom: 5px;
-        }
-        
-        .typing-indicator {
-            padding: 10px;
-            font-size: 0.85rem;
-            color: #6c757d;
-            font-style: italic;
-        }
-        
-        .emoji-picker {
-            position: absolute;
-            bottom: 70px;
-            right: 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            padding: 10px;
-            z-index: 1000;
-        }
-        
-        .emoji-category {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .emoji {
-            cursor: pointer;
-            font-size: 1.5rem;
-            padding: 5px;
-            border-radius: 5px;
-            transition: background-color 0.2s;
-        }
-        
-        .emoji:hover {
-            background-color: #f0f0f0;
-        }
-        
-        /* Loading spinner */
-        .loader {
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            border: 3px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top-color: var(--primary-color);
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Responsiveness */
-        @media (max-width: 768px) {
-            .chat-container {
-                flex-direction: column;
-                height: calc(100vh - 100px);
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: 300px;
-            }
-            
-            .chat-area {
-                height: calc(100vh - 400px);
-            }
-        }
-        
-        /* Badge for unread messages */
-        .unread-badge {
-            background-color: var(--primary-color);
-            color: white;
-            font-size: 12px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Toasts for notifications */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1050;
-        }
-    </style>
+   <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts (Optional - Inter recommended) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  
 </head>
 <body>
-    <!-- Authentication Container -->
-    <div class="auth-container" id="authContainer">
-        <h2 class="text-center mb-4">FireChat</h2>
-        <ul class="nav nav-tabs nav-justified mb-4" id="authTabs">
-            <li class="nav-item">
-                <a class="nav-link active" id="login-tab" data-bs-toggle="tab" href="#login">Login</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="register-tab" data-bs-toggle="tab" href="#register">Register</a>
-            </li>
-        </ul>
-        <div class="tab-content">
-            <!-- Login Form -->
-            <div class="tab-pane fade show active" id="login">
-                <form id="loginForm">
-                    <div class="mb-3">
-                        <label for="loginEmail" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="loginEmail" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="loginPassword" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="loginPassword" required>
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="rememberMe">
-                        <label class="form-check-label" for="rememberMe">Remember me</label>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Login</button>
-                    </div>
-                    <div class="text-center mt-3">
-                        <a href="#" id="forgotPassword">Forgot Password?</a>
-                    </div>
-                </form>
-                <hr>
-                <div class="social-login">
-                    <p class="text-center">Or login with:</p>
-                    <div class="d-flex justify-content-center gap-3">
-                        <button class="btn btn-outline-danger" id="googleLogin">
-                            <i class="fab fa-google"></i> Google
-                        </button>
-                        <button class="btn btn-outline-primary" id="facebookLogin">
-                            <i class="fab fa-facebook-f"></i> Facebook
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Register Form -->
-            <div class="tab-pane fade" id="register">
-                <form id="registerForm">
-                    <div class="mb-3">
-                        <label for="registerName" class="form-label">Full Name</label>
-                        <input type="text" class="form-control" id="registerName" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="registerEmail" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="registerEmail" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="registerPassword" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="registerPassword" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="confirmPassword" class="form-label">Confirm Password</label>
-                        <input type="password" class="form-control" id="confirmPassword" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="profilePicture" class="form-label">Profile Picture</label>
-                        <input type="file" class="form-control" id="profilePicture" accept="image/*">
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Register</button>
-                    </div>
-                </form>
-            </div>
+ <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
-    
-    <!-- Chat Application Container -->
-    <div class="app-container d-none" id="appContainer">
-        <div class="chat-container">
+
+    <!-- App Container -->
+    <div id="app-container">
+
+        <!-- ========================== -->
+        <!--  Authentication Section -->
+        <!-- ========================== -->
+        <section id="auth-section">
+            <div class="card shadow-lg">
+                <div class="card-body p-4 p-md-5">
+                    <!-- Auth Tabs -->
+                    <ul class="nav nav-tabs nav-fill mb-4" id="authTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="login-tab-button" data-bs-toggle="tab" data-bs-target="#login-tab-pane" type="button" role="tab" aria-controls="login-tab-pane" aria-selected="true">Sign In</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="register-tab-button" data-bs-toggle="tab" data-bs-target="#register-tab-pane" type="button" role="tab" aria-controls="register-tab-pane" aria-selected="false">Sign Up</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="authTabContent">
+                        <!-- Login Pane -->
+                        <div class="tab-pane fade show active" id="login-tab-pane" role="tabpanel" aria-labelledby="login-tab-button" tabindex="0">
+                            <div class="text-center mb-4">
+                                <i class="bi bi-chat-heart-fill text-primary auth-icon"></i>
+                                <h4 class="card-title mb-1">Welcome Back!</h4>
+                                <p class="text-muted">Sign in to continue your chat.</p>
+                            </div>
+                             <div id="login-error" class="alert alert-danger hidden" role="alert"></div>
+                            <form id="loginForm" novalidate>
+                                <div class="mb-3">
+                                    <label for="loginEmail" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="loginEmail" required autocomplete="username">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="loginPassword" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="loginPassword" required autocomplete="current-password">
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                     <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="rememberMe">
+                                        <label class="form-check-label small" for="rememberMe">Remember me</label>
+                                    </div>
+                                    <a href="#" id="forgotPasswordLink" class="small text-decoration-none">Forgot Password?</a>
+                                </div>
+                                <div class="d-grid mb-3">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <span class="btn-text">Sign In</span>
+                                        <span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                                    </button>
+                                </div>
+                                 <!-- Social Login (Optional Stubs) -->
+                                <div class="text-center text-muted small my-3">OR SIGN IN WITH</div>
+                                <div class="d-flex justify-content-center gap-3">
+                                    <button type="button" class="btn btn-outline-secondary flex-grow-1" id="googleLoginBtn"><i class="bi bi-google me-2"></i>Google</button>
+                                    <button type="button" class="btn btn-outline-secondary flex-grow-1" id="facebookLoginBtn"><i class="bi bi-facebook me-2"></i>Facebook</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Register Pane -->
+                        <div class="tab-pane fade" id="register-tab-pane" role="tabpanel" aria-labelledby="register-tab-button" tabindex="0">
+                           <div class="text-center mb-4">
+                               <i class="bi bi-person-plus-fill text-success auth-icon"></i>
+                                <h4 class="card-title mb-1">Create Account</h4>
+                                <p class="text-muted">Join the conversation!</p>
+                            </div>
+                            <div id="signup-error" class="alert alert-danger hidden" role="alert"></div>
+                            <form id="registerForm" novalidate>
+                                <div class="mb-3">
+                                    <label for="registerName" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="registerName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="registerEmail" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="registerEmail" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="registerPassword" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="registerPassword" required minlength="6">
+                                </div>
+                                 <div class="mb-4">
+                                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword" required minlength="6">
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <span class="btn-text">Sign Up</span>
+                                        <span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div> <!-- end tab-content -->
+
+                     <!-- Switch Auth Link within Card Footer -->
+                     <div class="card-footer bg-transparent text-center py-3 border-0 mt-2 hidden" id="switchAuthFooter">
+                         <span class="text-muted small" id="switchAuthText"></span>
+                         <a href="#" class="switch-auth-link ms-1" id="switchAuthLink"></a>
+                    </div>
+
+                </div> <!-- end card-body -->
+            </div> <!-- end card -->
+        </section> <!-- end #auth-section -->
+
+        <!-- ====================== -->
+        <!-- Chat Application View -->
+        <!-- ====================== -->
+        <section id="chat-section" class="hidden">
             <!-- Sidebar -->
-            <div class="sidebar">
-                <!-- User Profile -->
-                <div class="user-profile">
-                    <div class="profile-pic" id="userProfilePic">
-                        <i class="fas fa-user"></i>
+            <aside id="user-sidebar">
+                <!-- Current User Profile Header -->
+                 <div class="user-profile p-3 d-flex align-items-center border-bottom">
+                    <div class="profile-pic avatar me-3" id="userProfilePicSidebar">?</div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="contact-name text-truncate" id="userNameSidebar">Loading...</div>
+                        <div class="small text-muted d-flex align-items-center">
+                            <i class="bi bi-circle-fill me-1 text-success small" id="userStatusIndicatorSidebar"></i>
+                            <span id="userStatusTextSidebar">Online</span>
+                        </div>
                     </div>
-                    <div class="contact-details">
-                        <div class="contact-name" id="userName">User Name</div>
-                        <div class="last-message" id="userStatus">Online</div>
+                    <div class="dropdown ms-auto">
+                        <button class="btn btn-icon text-secondary p-1" type="button" id="profileDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Profile Settings">
+                             <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                         <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="profileDropdownBtn">
+                            <li><a class="dropdown-item small" href="#" data-bs-toggle="modal" data-bs-target="#profileModal"><i class="bi bi-pencil-square me-2"></i>Edit Profile</a></li>
+                             <li><hr class="dropdown-divider my-1"></li>
+                            <li><a class="dropdown-item small text-danger" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
                     </div>
-                    <div class="profile-actions">
-                        <div class="dropdown">
-                            <button class="btn btn-light btn-sm rounded-circle dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v"></i>
+                </div>
+                <!-- Search -->
+                <div class="search-box border-bottom">
+                    <input type="text" class="form-control search-input bg-light border-0" placeholder="Search chats..." id="searchContactsInput">
+                </div>
+                <!-- Contact/Chat List -->
+                <div class="contact-list flex-grow-1" id="contactListContainer">
+                    <!-- Skeleton Loader -->
+                     <div class="skeleton-list p-2">
+                         <div class="skeleton-item"><div class="skeleton skeleton-avatar me-3"></div><div class="skeleton-details"><div class="skeleton skeleton-title w-75"></div><div class="skeleton skeleton-text"></div></div></div>
+                         <div class="skeleton-item"><div class="skeleton skeleton-avatar me-3"></div><div class="skeleton-details"><div class="skeleton skeleton-title w-50"></div><div class="skeleton skeleton-text w-75"></div></div></div>
+                         <div class="skeleton-item"><div class="skeleton skeleton-avatar me-3"></div><div class="skeleton-details"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text w-50"></div></div></div>
+                     </div>
+                    <!-- Actual list injected here -->
+                </div>
+            </aside> <!-- end #user-sidebar -->
+
+            <!-- Main Chat Area -->
+            <main id="chat-main">
+                <!-- Navbar -->
+                <nav id="chat-navbar" class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-icon text-secondary d-md-none me-2 p-1" id="sidebar-toggle-button" aria-label="Toggle user list">
+                            <i class="bi bi-list fs-5"></i>
+                        </button>
+                        <!-- Active Chat Info (Hidden initially or shows placeholder) -->
+                         <div class="d-flex align-items-center active-chat-info hidden" id="activeChatHeaderInfo">
+                             <div class="profile-pic avatar me-2" id="activeChatAvatar">?</div>
+                             <div class="overflow-hidden">
+                                 <div class="contact-name text-truncate fs-6" id="activeChatName">Select Chat</div>
+                                  <div class="small text-muted d-flex align-items-center">
+                                      <i class="bi bi-circle-fill me-1 text-success small" id="activeChatStatusIndicator"></i>
+                                      <span id="activeChatStatusText">Online</span>
+                                 </div>
+                            </div>
+                         </div>
+                          <div class="welcome-placeholder" id="emptyChatHeaderInfo">
+                                <a class="navbar-brand" href="#"><i class="bi bi-chat-right-heart-fill me-2"></i>Graphite Chat</a>
+                          </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <!-- Theme Switcher -->
+                         <div class="dropdown me-2">
+                            <button class="btn btn-icon text-secondary p-1" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Change Theme">
+                                <i class="bi bi-palette-fill fs-5"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">Edit Profile</a></li>
-                                <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
+                             <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="themeDropdown" id="theme-selector">
+                                <!-- Themes Populated by JS -->
+                             </ul>
+                        </div>
+                         <!-- More Chat Options -->
+                        <div class="dropdown chat-options hidden" id="activeChatOptionsMenu">
+                            <button class="btn btn-icon text-secondary p-1" type="button" id="chatMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Chat Options">
+                                <i class="bi bi-three-dots-vertical fs-5"></i>
+                            </button>
+                             <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="chatMenuDropdown">
+                                <li><a class="dropdown-item small" href="#" data-bs-toggle="modal" data-bs-target="#mediaGalleryModal"><i class="bi bi-images me-2"></i>Media Gallery</a></li>
+                                <li><a class="dropdown-item small" href="#" id="clearChatBtn"><i class="bi bi-trash3 me-2"></i>Clear Chat</a></li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li><a class="dropdown-item small text-danger" href="#" id="blockUserBtn"><i class="bi bi-slash-circle me-2"></i>Block User</a></li>
                             </ul>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Search Box -->
-                <div class="search-box">
-                    <input type="text" class="form-control search-input" placeholder="Search contacts..." id="searchContacts">
-                </div>
-                
-                <!-- Contact List -->
-                <div class="contact-list" id="contactList">
-                    <!-- Contacts will be populated dynamically -->
-                </div>
-            </div>
-            
-            <!-- Chat Area -->
-            <div class="chat-area">
-                <!-- Empty state when no chat is selected -->
-                <div class="d-flex flex-column justify-content-center align-items-center h-100" id="emptyChatState">
-                    <div class="text-center">
-                        <i class="fas fa-comments fa-4x text-muted mb-3"></i>
-                        <h4>Select a chat to start messaging</h4>
-                        <p class="text-muted">Or start a new conversation by clicking on a contact</p>
+                </nav>
+
+                <!-- Chat Box Wrapper -->
+                 <div id="chat-box-wrapper" class="position-relative flex-grow-1 overflow-hidden">
+                     <!-- Empty State -->
+                     <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center" id="emptyChatState">
+                         <i class="bi bi-chat-square-dots-fill display-1 text-muted opacity-25"></i>
+                         <h4 class="mt-4 text-muted fw-light">Select a conversation</h4>
+                         <p class="text-secondary small">Start chatting with your contacts.</p>
+                     </div>
+                    <!-- Messages Area (Initially empty, hidden if empty state shown) -->
+                     <div id="chat-box" class="h-100 overflow-auto">
+                         <!-- Skeleton Loader -->
+                         <div class="skeleton-chat p-3">
+                             <div class="d-flex mb-3"><div class="skeleton skeleton-avatar me-2"></div><div class="w-50"><div class="skeleton skeleton-text w-50 mb-2"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text w-75"></div></div></div>
+                            <div class="d-flex flex-row-reverse mb-3"><div class="skeleton skeleton-avatar ms-2"></div><div class="w-60"><div class="skeleton skeleton-text mb-2"></div><div class="skeleton skeleton-text w-75"></div></div></div>
+                            <div class="d-flex mb-3"><div class="skeleton skeleton-avatar me-2"></div><div class="w-40"><div class="skeleton skeleton-text w-50"></div></div></div>
+                         </div>
+                         <!-- Actual Messages Injected Here -->
                     </div>
-                </div>
-                
-                <!-- Chat Content (Initially hidden) -->
-                <div id="chatContent" class="d-none" style="height: 100%; display: flex; flex-direction: column;">
-                    <!-- Chat Header -->
-                    <div class="chat-header">
-                        <div class="contact-info">
-                            <div class="profile-pic" id="activeChatProfilePic">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div class="contact-details">
-                                <div class="contact-name" id="activeChatName">Contact Name</div>
-                                <div class="last-message">
-                                    <span id="activeChatStatus">Online</span>
-                                    <span class="user-status"></span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="ms-auto">
-                            <div class="dropdown">
-                                <button class="btn btn-light btn-sm rounded-circle" type="button" id="chatMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="chatMenuDropdown">
-                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#mediaGalleryModal">Media Gallery</a></li>
-                                    <li><a class="dropdown-item" href="#" id="clearChatBtn">Clear Chat</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="#" id="blockUserBtn">Block User</a></li>
-                                </ul>
-                            </div>
-                        </div>
+                     <div id="typing-indicator"></div>
+                </div> <!-- end #chat-box-wrapper -->
+
+
+                <!-- Message Input Area -->
+                <div id="message-form-container" class="chat-input-area">
+                    <div id="chat-error" class="error-text mb-1 small text-center"></div>
+                    <!-- Media Preview Area -->
+                    <div class="media-preview mb-2 d-flex flex-wrap gap-2" id="mediaPreviewContainer">
+                        <!-- Media previews appear here -->
                     </div>
-                    
-                    <!-- Messages Container -->
-                    <div class="messages-container" id="messagesContainer">
-                        <!-- Messages will be populated dynamically -->
-                    </div>
-                    
-                    <!-- Typing Indicator -->
-                    <div class="typing-indicator d-none" id="typingIndicator">
-                        <span id="typingUser">Contact</span> is typing...
-                    </div>
-                    
-                    <!-- Message Input -->
-                    <div class="message-input-container">
-                        <div class="media-preview" id="mediaPreview">
-                            <!-- Selected media preview will appear here -->
-                        </div>
-                        <div class="message-input">
-                            <textarea class="form-control" placeholder="Type a message..." id="messageInput" rows="1"></textarea>
-                            <div class="message-actions">
-                                <div class="action-btn" id="emojiBtn">
-                                    <i class="far fa-smile"></i>
-                                </div>
-                                <div class="action-btn" id="attachmentBtn">
-                                    <i class="fas fa-paperclip"></i>
-                                    <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*,audio/*">
-                                </div>
-                                <button class="btn btn-primary rounded-circle" id="sendMessageBtn">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Emoji Picker (Hidden by default) -->
-    <div class="emoji-picker d-none" id="emojiPicker">
-        <div class="emoji-category">
-            <span class="emoji">😀</span>
-            <span class="emoji">😁</span>
-            <span class="emoji">😂</span>
-            <span class="emoji">🤣</span>
-            <span class="emoji">😃</span>
-            <span class="emoji">😄</span>
-            <span class="emoji">😅</span>
-            <span class="emoji">😆</span>
-            <span class="emoji">😉</span>
-            <span class="emoji">😊</span>
-            <span class="emoji">😋</span>
-            <span class="emoji">😎</span>
-            <span class="emoji">😍</span>
-            <span class="emoji">😘</span>
-            <span class="emoji">🥰</span>
-            <span class="emoji">😗</span>
-            <span class="emoji">😙</span>
-            <span class="emoji">🥲</span>
-            <span class="emoji">😚</span>
-            <span class="emoji">🙂</span>
-        </div>
-        <div class="emoji-category">
-            <span class="emoji">👍</span>
-            <span class="emoji">👎</span>
-            <span class="emoji">👌</span>
-            <span class="emoji">✌️</span>
-            <span class="emoji">🤞</span>
-            <span class="emoji">🤟</span>
-            <span class="emoji">🤘</span>
-            <span class="emoji">🤙</span>
-            <span class="emoji">👋</span>
-            <span class="emoji">🤚</span>
-            <span class="emoji">🖐️</span>
-            <span class="emoji">✋</span>
-            <span class="emoji">👐</span>
-            <span class="emoji">🙌</span>
-            <span class="emoji">👏</span>
-            <span class="emoji">🙏</span>
-            <span class="emoji">🤝</span>
-            <span class="emoji">💪</span>
-            <span class="emoji">❤️</span>
-            <span class="emoji">💔</span>
-        </div>
-    </div>
-    
-    <!-- Toast Container for Notifications -->
-    <div class="toast-container"></div>
-    
+                     <form id="message-form" class="d-flex align-items-end gap-2">
+                        <div class="dropdown dropup">
+                            <button class="btn btn-icon text-secondary p-2 action-btn" type="button" id="attachmentMenuButton" data-bs-toggle="dropdown" aria-expanded="false" title="Attach Files">
+                               <i class="bi bi-paperclip fs-5"></i>
+                             </button>
+                              <ul class="dropdown-menu mb-1 border-0 shadow" aria-labelledby="attachmentMenuButton">
+                                <li><button class="dropdown-item small" type="button" id="attachImageVideoBtn"><i class="bi bi-image me-2"></i>Image/Video</button></li>
+                                <li><button class="dropdown-item small" type="button" id="attachAudioBtn"><i class="bi bi-mic-fill me-2"></i>Audio File</button></li>
+                                <!-- Add document etc. later -->
+                             </ul>
+                         </div>
+                          <textarea class="form-control flex-grow-1" placeholder="Type a message..." id="messageInput" rows="1"></textarea>
+                           <button class="btn btn-icon text-secondary p-2 action-btn" type="button" id="emojiBtn" title="Insert Emoji">
+                              <i class="bi bi-emoji-smile fs-5"></i>
+                           </button>
+                        <button type="submit" id="send-button" class="btn btn-primary btn-lg d-flex align-items-center justify-content-center" title="Send Message">
+                            <span class="btn-text"><i class="bi bi-send-fill"></i></span>
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        </button>
+                     </form>
+                     <!-- Hidden File Inputs -->
+                    <input type="file" id="imageVideoInput" class="d-none" multiple accept="image/*,video/*">
+                     <input type="file" id="audioInput" class="d-none" accept="audio/*">
+                      <!-- Emoji Picker -->
+                      <div class="emoji-picker d-none shadow" id="emojiPicker">
+                         <!-- Emojis loaded by JS -->
+                         <div class="p-2 text-center text-muted small">Loading emojis...</div>
+                      </div>
+                </div> <!-- end #message-form-container -->
+            </main> <!-- end #chat-main -->
+        </section> <!-- end #chat-section -->
+
+    </div> <!-- End #app-container -->
+
+
+    <!-- ======================== -->
+    <!-- Modals (Keep same structure) -->
+    <!-- ======================== -->
     <!-- Profile Modal -->
     <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="profileModalLabel">Edit Profile</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <h5 class="modal-title fs-5 fw-semibold" id="profileModalLabel">Edit Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body pt-0">
+            <form id="updateProfileForm" novalidate>
+               <div class="text-center mb-4 position-relative mx-auto" style="width: 120px;">
+                    <div class="profile-pic mx-auto" id="editProfilePic">
+                        <div class="skeleton skeleton-avatar" style="width: 120px; height: 120px;"></div>
+                    </div>
+                    <label for="updateProfilePictureInput" class="btn btn-light btn-sm rounded-circle position-absolute bottom-0 end-0" style="transform: translate(10%, 10%); border: 2px solid var(--bg-secondary);" title="Change profile picture">
+                         <i class="bi bi-camera-fill"></i>
+                    </label>
+                    <input type="file" class="d-none" id="updateProfilePictureInput" accept="image/*">
                 </div>
-                <div class="modal-body">
-                    <form id="updateProfileForm">
-                        <div class="mb-3 text-center">
-                            <div class="profile-pic mx-auto" style="width: 100px; height: 100px;" id="editProfilePic">
-                                <i class="fas fa-user fa-2x"></i>
-                            </div>
-                            <div class="mt-2">
-                                <label for="updateProfilePicture" class="btn btn-sm btn-outline-primary">
-                                    Change Photo
-                                </label>
-                                <input type="file" class="d-none" id="updateProfilePicture" accept="image/*">
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="updateName" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="updateName">
-                        </div>
-                        <div class="mb-3">
-                            <label for="updateBio" class="form-label">Bio</label>
-                            <textarea class="form-control" id="updateBio" rows="3"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status" id="statusOnline" value="online" checked>
-                                <label class="form-check-label" for="statusOnline">
-                                    Online
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status" id="statusAway" value="away">
-                                <label class="form-check-label" for="statusAway">
-                                    Away
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status" id="statusBusy" value="busy">
-                                <label class="form-check-label" for="statusBusy">
-                                    Busy
-                                </label>
-                            </div>
-                        </div>
-                    </form>
+                <div class="mb-3">
+                    <label for="updateName" class="form-label small fw-semibold">Name</label>
+                    <input type="text" class="form-control" id="updateName" required>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
+                <div class="mb-3">
+                    <label for="updateBio" class="form-label small fw-semibold">Bio</label>
+                    <textarea class="form-control" id="updateBio" rows="2" placeholder="Tell us about yourself..."></textarea>
                 </div>
-            </div>
+                 <!-- Status could be more complex, this is basic -->
+                 <!--
+                 <div class="mb-3">
+                    <label class="form-label small fw-semibold">Online Status</label>
+                    <div> ... radio buttons for online/away/busy ... </div>
+                </div>
+                -->
+            </form>
+          </div>
+          <div class="modal-footer border-0">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="saveProfileBtn">
+                <span class="btn-text">Save Changes</span>
+                <span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+            </button>
+          </div>
         </div>
+      </div>
     </div>
-    
+
     <!-- Media Gallery Modal -->
     <div class="modal fade" id="mediaGalleryModal" tabindex="-1" aria-labelledby="mediaGalleryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
+        <!-- ... (Keep modal structure same as original/previous) ... -->
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="mediaGalleryModalLabel">Media Gallery</h5>
+                    <h5 class="modal-title" id="mediaGalleryModalLabel">Shared Media</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <ul class="nav nav-tabs" id="mediaGalleryTabs">
-                        <li class="nav-item">
-                            <a class="nav-link active" data-bs-toggle="tab" href="#imagesTab">Images</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-bs-toggle="tab" href="#videosTab">Videos</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-bs-toggle="tab" href="#audiosTab">Audio</a>
-                        </li>
-                    </ul>
-                    <div class="tab-content mt-3">
-                        <div class="tab-pane fade show active" id="imagesTab">
-                            <div class="row" id="imageGallery">
-                                <!-- Images will be populated dynamically -->
-                                <div class="col-12 text-center py-5 text-muted" id="noImagesMessage">
-                                    <i class="fas fa-images fa-3x mb-3"></i>
-                                    <p>No images shared in this chat</p>
-                                </div>
+                 <div class="modal-body p-0">
+                      <ul class="nav nav-tabs nav-fill" id="mediaGalleryTabs" role="tablist">
+                         <li class="nav-item" role="presentation">
+                             <button class="nav-link active" id="images-tab" data-bs-toggle="tab" data-bs-target="#imagesTabPane" type="button" role="tab" aria-controls="imagesTabPane" aria-selected="true">Images</button>
+                         </li>
+                         <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="videos-tab" data-bs-toggle="tab" data-bs-target="#videosTabPane" type="button" role="tab" aria-controls="videosTabPane" aria-selected="false">Videos</button>
+                          </li>
+                           <li class="nav-item" role="presentation">
+                              <button class="nav-link" id="audios-tab" data-bs-toggle="tab" data-bs-target="#audiosTabPane" type="button" role="tab" aria-controls="audiosTabPane" aria-selected="false">Audio</button>
+                           </li>
+                           <!-- Add Documents Tab later -->
+                      </ul>
+                     <div class="tab-content p-3">
+                         <div class="tab-pane fade show active" id="imagesTabPane" role="tabpanel" aria-labelledby="images-tab" tabindex="0">
+                            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3" id="imageGalleryContainer">
+                                 <!-- Images Injected Here -->
+                                 <div class="col-12 text-center py-5 text-muted" id="noImagesMessage">
+                                     <i class="bi bi-image display-4 opacity-50"></i>
+                                     <p class="mt-2">No images shared yet.</p>
+                                 </div>
                             </div>
-                        </div>
-                        <div class="tab-pane fade" id="videosTab">
-                            <div class="row" id="videoGallery">
-                                <!-- Videos will be populated dynamically -->
-                                <div class="col-12 text-center py-5 text-muted" id="noVideosMessage">
-                                    <i class="fas fa-video fa-3x mb-3"></i>
-                                    <p>No videos shared in this chat</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="audiosTab">
-                            <div class="list-group" id="audioGallery">
-                                <!-- Audio files will be populated dynamically -->
-                                <div class="col-12 text-center py-5 text-muted" id="noAudiosMessage">
-                                    <i class="fas fa-music fa-3x mb-3"></i>
-                                    <p>No audio files shared in this chat</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                         </div>
+                          <div class="tab-pane fade" id="videosTabPane" role="tabpanel" aria-labelledby="videos-tab" tabindex="0">
+                              <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3" id="videoGalleryContainer">
+                                 <!-- Videos Injected Here -->
+                                 <div class="col-12 text-center py-5 text-muted" id="noVideosMessage">
+                                     <i class="bi bi-film display-4 opacity-50"></i>
+                                     <p class="mt-2">No videos shared yet.</p>
+                                 </div>
+                              </div>
+                          </div>
+                          <div class="tab-pane fade" id="audiosTabPane" role="tabpanel" aria-labelledby="audios-tab" tabindex="0">
+                              <div class="list-group" id="audioGalleryContainer">
+                                  <!-- Audio Injected Here -->
+                                  <div class="col-12 text-center py-5 text-muted" id="noAudiosMessage">
+                                      <i class="bi bi-music-note-beamed display-4 opacity-50"></i>
+                                      <p class="mt-2">No audio shared yet.</p>
+                                  </div>
+                              </div>
+                          </div>
+                     </div>
                 </div>
             </div>
-        </div>
+         </div>
     </div>
-    
+
     <!-- Forgot Password Modal -->
     <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
+       <!-- ... (Keep modal structure same) ... -->
+       <div class="modal-dialog modal-dialog-centered">
+           <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="forgotPasswordModalLabel">Reset Password</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Enter your email address, and we'll send you a link to reset your password.</p>
-                    <form id="forgotPasswordForm">
-                        <div class="mb-3">
-                            <label for="resetEmail" class="form-label">Email</label>
+                     <p class="small text-muted">Enter your email address, and we'll send you a link to reset your password.</p>
+                     <form id="forgotPasswordForm" novalidate>
+                         <div class="mb-3">
+                            <label for="resetEmail" class="form-label small fw-semibold">Email Address</label>
                             <input type="email" class="form-control" id="resetEmail" required>
                         </div>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="sendResetLinkBtn">Send Reset Link</button>
-                </div>
+                 </div>
+                 <div class="modal-footer">
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="sendResetLinkBtn">
+                         <span class="btn-text">Send Reset Link</span>
+                         <span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                    </button>
+                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Preview Modal for Media -->
+
+    <!-- Media Preview Modal -->
     <div class="modal fade" id="mediaPreviewModal" tabindex="-1" aria-labelledby="mediaPreviewModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
+        <!-- ... (Keep modal structure same) ... -->
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+             <div class="modal-content bg-dark text-light border-0">
+                <div class="modal-header border-0">
                     <h5 class="modal-title" id="mediaPreviewModalLabel">Media Preview</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body text-center" id="mediaPreviewContent">
+                <div class="modal-body text-center p-1" id="mediaPreviewContent">
                     <!-- Media content will be displayed here -->
-                </div>
+                 </div>
             </div>
-        </div>
+         </div>
     </div>
 
-    <!-- Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Firebase SDKs -->
+    <!-- Toast Container -->
+    <div class="toast-container p-3 bottom-0 end-0">
+        <!-- Toasts are added here -->
+    </div>
+
+    <!-- ========================== -->
+    <!-- Firebase SDKs (HTML Tags) -->
+    <!-- ========================== -->
+    <!-- IMPORTANT: Use versions compatible with v9 Modular API if needed, check Firebase docs -->
+    <!-- Core Firebase App (MUST be first) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <!-- Firebase Authentication -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
+    <!-- Firebase Cloud Storage -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js"></script>
-    <script>
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDp2V0ULE-32AcIJ92a_e3mhMe6f6yZ_H4",
-            authDomain: "sm4movies.firebaseapp.com",
-            projectId: "sm4movies",
-            storageBucket: "sm4movies.appspot.com",
-            messagingSenderId: "277353836953",
-            appId: "1:277353836953:web:85e02783526c7cb58de308"
-        };
+    <!-- Optional: Firestore (if you switch later) -->
+    <!-- <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script> -->
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-        
-        // Auth providers
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
-        const facebookProvider = new firebase.auth.FacebookAuthProvider();
-        
-        // Global variables
-        let currentUser = null;
-        let currentChatId = null;
-        let mediaFiles = [];
-        let contacts = [];
-        let unsubscribeMessages = null;
-        let unsubscribeContacts = null;
-        let chatUsers = {}; // Cache for user data
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
-        // DOM Elements
-        const authContainer = document.getElementById('authContainer');
-        const appContainer = document.getElementById('appContainer');
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
-        const forgotPassword = document.getElementById('forgotPassword');
-        const googleLogin = document.getElementById('googleLogin');
-        const facebookLogin = document.getElementById('facebookLogin');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const contactList = document.getElementById('contactList');
-        const searchContacts = document.getElementById('searchContacts');
-        const emptyChatState = document.getElementById('emptyChatState');
-        const chatContent = document.getElementById('chatContent');
-        const messagesContainer = document.getElementById('messagesContainer');
-        const messageInput = document.getElementById('messageInput');
-        const sendMessageBtn = document.getElementById('sendMessageBtn');
-        const attachmentBtn = document.getElementById('attachmentBtn');
-        const fileInput = document.getElementById('fileInput');
-        const mediaPreview = document.getElementById('mediaPreview');
-        const emojiBtn = document.getElementById('emojiBtn');
-        const emojiPicker = document.getElementById('emojiPicker');
-        const clearChatBtn = document.getElementById('clearChatBtn');
-        const blockUserBtn = document.getElementById('blockUserBtn');
-        const userProfilePic = document.getElementById('userProfilePic');
-        const userName = document.getElementById('userName');
-        const userStatus = document.getElementById('userStatus');
-        const typingIndicator = document.getElementById('typingIndicator');
-        const typingUser = document.getElementById('typingUser');
-        const saveProfileBtn = document.getElementById('saveProfileBtn');
-        const updateProfileForm = document.getElementById('updateProfileForm');
-        const sendResetLinkBtn = document.getElementById('sendResetLinkBtn');
-        
-        // Bootstrap Modals
-        const profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
-        const mediaGalleryModal = new bootstrap.Modal(document.getElementById('mediaGalleryModal'));
-        const forgotPasswordModal = new bootstrap.Modal(document.getElementById('forgotPasswordModal'));
-        const mediaPreviewModal = new bootstrap.Modal(document.getElementById('mediaPreviewModal'));
-        
-        // Check if user is authenticated
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                // User is signed in
-                currentUser = user;
-                
-                // Check if user exists in the database
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                
-                if (!userDoc.exists) {
-                    // Create user document if it doesn't exist
-                    await db.collection('users').doc(user.uid).set({
-                        name: user.displayName || 'User',
-                        email: user.email,
-                        photoURL: user.photoURL || '',
-                        status: 'online',
-                        bio: '',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                } else {
-                    // Update user's online status
-                    await db.collection('users').doc(user.uid).update({
-                        status: 'online',
-                        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-                
-                // Display user information
-                displayUserInfo(user.uid);
-                
-                // Show chat app container
-                authContainer.classList.add('d-none');
-                appContainer.classList.remove('d-none');
-                
-                // Load contacts
-                loadContacts();
-                
-                // Add event listener for online status
-                window.addEventListener('beforeunload', async () => {
-                    if (currentUser) {
-                        await db.collection('users').doc(currentUser.uid).update({
-                            status: 'offline',
-                            lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-                });
-            } else {
-                // User is signed out
-                currentUser = null;
-                
-                // Clear subscriptions
-                if (unsubscribeMessages) unsubscribeMessages();
-                if (unsubscribeContacts) unsubscribeContacts();
-                
-                // Show auth container
-                authContainer.classList.remove('d-none');
-                appContainer.classList.add('d-none');
-                
-                // Clear contact list
-                contactList.innerHTML = '';
-                
-                // Clear chat area
-                messagesContainer.innerHTML = '';
-                mediaPreview.innerHTML = '';
-                messageInput.value = '';
-                
-                // Hide emoji picker
-                emojiPicker.classList.add('d-none');
-            }
-        });
-        
-        // Login form submission
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            try {
-                showToast('Logging in...', 'info');
-                await auth.signInWithEmailAndPassword(email, password);
-                showToast('Login successful!', 'success');
-            } catch (error) {
-                console.error('Login error:', error);
-                showToast('Login failed: ' + error.message, 'danger');
-            }
-        });
-        
-        // Register form submission
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const name = document.getElementById('registerName').value;
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const profilePicture = document.getElementById('profilePicture').files[0];
-            
-            if (password !== confirmPassword) {
-                showToast('Passwords do not match!', 'danger');
-                return;
-            }
-            
-            try {
-                showToast('Creating account...', 'info');
-                // Create user with email and password
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-                
-                // Upload profile picture if provided
-                let photoURL = '';
-                if (profilePicture) {
-                    const storageRef = storage.ref(`profile_pictures/${user.uid}`);
-                    const uploadTask = storageRef.put(profilePicture);
-                    
-                    await new Promise((resolve, reject) => {
-                        uploadTask.on('state_changed',
-                            (snapshot) => {
-                                // Progress monitoring
-                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                                console.log('Upload is ' + progress + '% done');
-                            },
-                            (error) => {
-                                // Error handling
-                                reject(error);
-                            },
-                            async () => {
-                                // Upload completed successfully
-                                photoURL = await uploadTask.snapshot.ref.getDownloadURL();
-                                resolve();
-                            }
-                        );
-                    });
-                }
-                
-                // Create user document in Firestore
-                await db.collection('users').doc(user.uid).set({
-                    name: name,
-                    email: email,
-                    photoURL: photoURL,
-                    status: 'online',
-                    bio: '',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                showToast('Account created successfully!', 'success');
-            } catch (error) {
-                console.error('Registration error:', error);
-                showToast('Registration failed: ' + error.message, 'danger');
-            }
-        });
-        
-        // Forgot password link
-        forgotPassword.addEventListener('click', (e) => {
-            e.preventDefault();
-            forgotPasswordModal.show();
-        });
-        
-        // Send password reset email
-        sendResetLinkBtn.addEventListener('click', async () => {
-            const email = document.getElementById('resetEmail').value;
-            
-            try {
-                await auth.sendPasswordResetEmail(email);
-                showToast('Password reset email sent!', 'success');
-                forgotPasswordModal.hide();
-            } catch (error) {
-                console.error('Password reset error:', error);
-                showToast('Failed to send reset email: ' + error.message, 'danger');
-            }
-        });
-        
-        // Google login
-        googleLogin.addEventListener('click', async () => {
-            try {
-                await auth.signInWithPopup(googleProvider);
-            } catch (error) {
-                console.error('Google login error:', error);
-                showToast('Google login failed: ' + error.message, 'danger');
-            }
-        });
-        
-        // Facebook login
-        facebookLogin.addEventListener('click', async () => {
-            try {
-                await auth.signInWithPopup(facebookProvider);
-            } catch (error) {
-                console.error('Facebook login error:', error);
-                showToast('Facebook login failed: ' + error.message, 'danger');
-            }
-        });
-        
-        // Logout button
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                // Update user status to offline
-                if (currentUser) {
-                    await db.collection('users').doc(currentUser.uid).update({
-                        status: 'offline',
-                        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-                
-                await auth.signOut();
-                showToast('Logged out successfully!', 'success');
-            } catch (error) {
-                console.error('Logout error:', error);
-                showToast('Logout failed: ' + error.message, 'danger');
-            }
-        });
-        
-        // Display user information
-        async function displayUserInfo(userId) {
-            try {
-                const userDoc = await db.collection('users').doc(userId).get();
-                
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    
-                    // Display user name
-                    userName.textContent = userData.name;
-                    
-                    // Display user status
-                    userStatus.textContent = userData.status;
-                    
-                    // Display profile picture
-                    if (userData.photoURL) {
-                        userProfilePic.innerHTML = `<img src="${userData.photoURL}" alt="${userData.name}">`;
-                    } else {
-                        userProfilePic.innerHTML = `<span>${userData.name.charAt(0)}</span>`;
-                    }
-                    
-                    // Set profile edit form values
-                    document.getElementById('updateName').value = userData.name;
-                    document.getElementById('updateBio').value = userData.bio || '';
-                    
-                    // Set status radio button
-                    const statusRadio = document.querySelector(`input[name="status"][value="${userData.status}"]`);
-                    if (statusRadio) statusRadio.checked = true;
-                    
-                    // Display profile picture in edit form
-                    const editProfilePic = document.getElementById('editProfilePic');
-                    if (userData.photoURL) {
-                        editProfilePic.innerHTML = `<img src="${userData.photoURL}" alt="${userData.name}">`;
-                    } else {
-                        editProfilePic.innerHTML = `<span>${userData.name.charAt(0)}</span>`;
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-            }
-        }
-        
-        // Load contacts
-        function loadContacts() {
-            // Unsubscribe from previous listener
-            if (unsubscribeContacts) unsubscribeContacts();
-            
-            // Get all users except current user
-            const q = db.collection('users').where('email', '!=', currentUser.email);
-            
-            unsubscribeContacts = q.onSnapshot(async (querySnapshot) => {
-                contacts = [];
-                
-                querySnapshot.forEach((doc) => {
-                    contacts.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
-                });
-                
-                // Sort contacts by name
-                contacts.sort((a, b) => a.name.localeCompare(b.name));
-                
-                // Add last message to contacts
-                for (let contact of contacts) {
-                    const chatId = getChatId(currentUser.uid, contact.id);
-                    const chatDoc = await db.collection('chats').doc(chatId).get();
-                    
-                    if (chatDoc.exists) {
-                        const chatData = chatDoc.data();
-                        contact.lastMessage = chatData.lastMessage || {};
-                        contact.unreadCount = chatData.unreadCount?.[currentUser.uid] || 0;
-                    } else {
-                        contact.lastMessage = {};
-                        contact.unreadCount = 0;
-                    }
-                }
-                
-                // Display contacts
-                displayContacts(contacts);
-            });
-        }
-        
-        // Display contacts
-        function displayContacts(contactsToDisplay) {
-            contactList.innerHTML = '';
-            
-            contactsToDisplay.forEach(contact => {
-                const lastMessage = contact.lastMessage.text || (contact.lastMessage.mediaType ? `[${contact.lastMessage.mediaType}]` : '');
-                const lastMessageTime = contact.lastMessage.createdAt ? formatTime(contact.lastMessage.createdAt.toDate()) : '';
-                
-                const contactElement = document.createElement('div');
-                contactElement.className = 'contact-item';
-                contactElement.dataset.userId = contact.id;
-                
-                if (currentChatId && getChatId(currentUser.uid, contact.id) === currentChatId) {
-                    contactElement.classList.add('active');
-                }
-                
-                contactElement.innerHTML = `
-                    <div class="contact-info">
-                        <div class="profile-pic">
-                            ${contact.photoURL 
-                                ? `<img src="${contact.photoURL}" alt="${contact.name}">`
-                                : `<span>${contact.name.charAt(0)}</span>`}
-                        </div>
-                        <div class="contact-details">
-                            <div class="contact-name">${contact.name}</div>
-                            <div class="last-message">${lastMessage}</div>
-                        </div>
-                        <div class="message-meta">
-                            <div class="message-time">${lastMessageTime}</div>
-                            ${contact.unreadCount > 0 
-                                ? `<div class="unread-badge">${contact.unreadCount}</div>`
-                                : ''}
-                        </div>
-                    </div>
-                `;
-                
-                contactElement.addEventListener('click', () => {
-                    // Remove active class from all contacts
-                    document.querySelectorAll('.contact-item').forEach(item => {
-                        item.classList.remove('active');
-                    });
-                    
-                    // Add active class to clicked contact
-                    contactElement.classList.add('active');
-                    
-                    // Open chat with selected contact
-                    openChat(contact.id);
-                });
-                
-                contactList.appendChild(contactElement);
-            });
-        }
-        
-        // Search contacts
-        searchContacts.addEventListener('input', () => {
-            const searchTerm = searchContacts.value.toLowerCase();
-            
-            const filteredContacts = contacts.filter(contact => 
-                contact.name.toLowerCase().includes(searchTerm) ||
-                contact.email.toLowerCase().includes(searchTerm)
-            );
-            
-            displayContacts(filteredContacts);
-        });
-        
-        // Open chat with selected contact
-        async function openChat(contactId) {
-            // Show chat content
-            emptyChatState.classList.add('d-none');
-            chatContent.classList.remove('d-none');
-            
-            // Get chat ID
-            currentChatId = getChatId(currentUser.uid, contactId);
-            
-            // Get contact data
-            const contactData = contacts.find(c => c.id === contactId);
-            
-            // Display contact information
-            const activeChatName = document.getElementById('activeChatName');
-            const activeChatStatus = document.getElementById('activeChatStatus');
-            const activeChatProfilePic = document.getElementById('activeChatProfilePic');
-            
-            activeChatName.textContent = contactData.name;
-            activeChatStatus.textContent = contactData.status;
-            
-            if (contactData.photoURL) {
-                activeChatProfilePic.innerHTML = `<img src="${contactData.photoURL}" alt="${contactData.name}">`;
-            } else {
-                activeChatProfilePic.innerHTML = `<span>${contactData.name.charAt(0)}</span>`;
-            }
-            
-            // Check if chat exists, if not create it
-            const chatRef = db.collection('chats').doc(currentChatId);
-            const chatDoc = await chatRef.get();
-            
-            if (!chatDoc.exists) {
-                await chatRef.set({
-                    participants: [currentUser.uid, contactId],
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    lastMessage: {},
-                    unreadCount: {
-                        [currentUser.uid]: 0,
-                        [contactId]: 0
-                    }
-                });
-            } else {
-                // Reset unread counter for current user
-                await chatRef.update({
-                    [`unreadCount.${currentUser.uid}`]: 0
-                });
-            }
-            
-            // Load messages
-            loadMessages(currentChatId);
-            
-            // Update the contact list to show active chat
-            document.querySelectorAll('.contact-item').forEach(item => {
-                item.classList.remove('active');
-                if (item.dataset.userId === contactId) {
-                    item.classList.add('active');
-                    // Remove unread badge
-                    const unreadBadge = item.querySelector('.unread-badge');
-                    if (unreadBadge) unreadBadge.remove();
-                }
-            });
-        }
-        
-        // Load messages
-        function loadMessages(chatId) {
-            // Clear message container
-            messagesContainer.innerHTML = '';
-            
-            // Unsubscribe from previous listener
-            if (unsubscribeMessages) unsubscribeMessages();
-            
-            // Get messages from Firestore
-            const q = db.collection('chats').doc(chatId).collection('messages')
-                .orderBy('createdAt', 'asc');
-            
-            unsubscribeMessages = q.onSnapshot((querySnapshot) => {
-                querySnapshot.docChanges().forEach((change) => {
-                    if (change.type === 'added') {
-                        const message = {
-                            id: change.doc.id,
-                            ...change.doc.data()
-                        };
-                        
-                        displayMessage(message);
-                    }
-                });
-                
-                // Scroll to bottom
-                scrollToBottom();
-            });
-        }
-        
-        // Display message
-        function displayMessage(message) {
-            const isSent = message.senderId === currentUser.uid;
-            
-            const messageElement = document.createElement('div');
-            messageElement.className = `message ${ isSent ? 'sent' : 'received'}`;
-            messageElement.dataset.messageId = message.id;
-            
-            let messageContent = '';
-            
-            // Display media if present
-            if (message.mediaURL) {
-                switch(message.mediaType) {
-                    case 'image':
-                        messageContent = `
-                            <div class="media-message">
-                                <img src="${message.mediaURL}" alt="Image" class="img-fluid" 
-                                     data-bs-toggle="modal" data-bs-target="#mediaPreviewModal"
-                                     data-media-type="image" data-media-url="${message.mediaURL}">
-                            </div>
-                        `;
-                        break;
-                    case 'video':
-                        messageContent = `
-                            <div class="media-message">
-                                <video src="${message.mediaURL}" controls class="img-fluid"
-                                       data-bs-toggle="modal" data-bs-target="#mediaPreviewModal"
-                                       data-media-type="video" data-media-url="${message.mediaURL}"></video>
-                            </div>
-                        `;
-                        break;
-                    case 'audio':
-                        messageContent = `
-                            <div class="audio-player">
-                                <audio src="${message.mediaURL}" controls></audio>
-                            </div>
-                        `;
-                        break;
-                }
-            }
-            
-            // Add text if present
-            if (message.text) {
-                messageContent += `
-                    <div class="message-content">
-                        ${message.text}
-                    </div>
-                `;
-            }
-            
-            // Add time
-            const messageTime = message.createdAt 
-                ? formatTime(message.createdAt.toDate()) 
-                : formatTime(new Date());
-            
-            messageContent += `
-                <div class="message-time">
-                    ${messageTime}
-                    ${isSent ? '<i class="fas fa-check-double text-primary"></i>' : ''}
-                </div>
-            `;
-            
-            messageElement.innerHTML = messageContent;
-            messagesContainer.appendChild(messageElement);
-            
-            // Handle media preview click
-            const mediaElements = messageElement.querySelectorAll('[data-bs-toggle="modal"]');
-            mediaElements.forEach(media => {
-                media.addEventListener('click', () => {
-                    const mediaType = media.dataset.mediaType;
-                    const mediaUrl = media.dataset.mediaUrl;
-                    
-                    const mediaPreviewContent = document.getElementById('mediaPreviewContent');
-                    
-                    if (mediaType === 'image') {
-                        mediaPreviewContent.innerHTML = `<img src="${mediaUrl}" class="img-fluid" alt="Image">`;
-                    } else if (mediaType === 'video') {
-                        mediaPreviewContent.innerHTML = `<video src="${mediaUrl}" controls class="img-fluid"></video>`;
-                    }
-                    
-                    mediaPreviewModal.show();
-                });
-            });
-        }
-        
-        // Send message
-        sendMessageBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-        
-        async function sendMessage() {
-            if (!currentChatId) return;
-            
-            const text = messageInput.value.trim();
-            const hasMedia = mediaFiles.length > 0;
-            
-            if (!text && !hasMedia) return;
-            
-            // Clear input
-            messageInput.value = '';
-            
-            // Get recipient ID
-            const participants = currentChatId.split('_');
-            const recipientId = participants[0] === currentUser.uid ? participants[1] : participants[0];
-            
-            try {
-                // Add message to Firestore
-                if (hasMedia) {
-                    for (const file of mediaFiles) {
-                        let mediaType = file.type.split('/')[0]; // image, video, audio
-                        
-                        // Upload file to Firebase Storage
-                        const storageRef = storage.ref(`chats/${currentChatId}/${Date.now()}_${file.name}`);
-                        const uploadTask = storageRef.put(file);
-                        
-                        await new Promise((resolve, reject) => {
-                            uploadTask.on('state_changed',
-                                (snapshot) => {
-                                    // Progress monitoring
-                                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                                    console.log('Upload is ' + progress + '% done');
-                                },
-                                (error) => {
-                                    // Error handling
-                                    reject(error);
-                                },
-                                async () => {
-                                    // Upload completed successfully
-                                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                                    
-                                    // Add message with media
-                                    await db.collection('chats').doc(currentChatId).collection('messages').add({
-                                        text: text,
-                                        senderId: currentUser.uid,
-                                        mediaURL: downloadURL,
-                                        mediaType: mediaType,
-                                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                        read: false
-                                    });
-                                    
-                                    // Update last message
-                                    await db.collection('chats').doc(currentChatId).update({
-                                        lastMessage: {
-                                            text: text || `[${mediaType}]`,
-                                            senderId: currentUser.uid,
-                                            mediaType: mediaType,
-                                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                        },
-                                        [`unreadCount.${recipientId}`]: firebase.firestore.FieldValue.increment(1)
-                                    });
-                                    
-                                    resolve();
-                                }
-                            );
-                        });
-                    }
-                    
-                    // Clear media files
-                    mediaFiles = [];
-                    mediaPreview.innerHTML = '';
-                } else {
-                    // Add text-only message
-                    await db.collection('chats').doc(currentChatId).collection('messages').add({
-                        text: text,
-                        senderId: currentUser.uid,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        read: false
-                    });
-                    
-                    // Update last message
-                    await db.collection('chats').doc(currentChatId).update({
-                        lastMessage: {
-                            text: text,
-                            senderId: currentUser.uid,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        },
-                        [`unreadCount.${recipientId}`]: firebase.firestore.FieldValue.increment(1)
-                    });
-                }
-            } catch (error) {
-                console.error('Error sending message:', error);
-                showToast('Failed to send message', 'danger');
-            }
-        }
-        
-        // Handle file input
-        attachmentBtn.addEventListener('click', () => {
-            fileInput.click();
-        });
-        
-        fileInput.addEventListener('change', (e) => {
-            const files = e.target.files;
-            
-            if (!files || files.length === 0) return;
-            
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                
-                // Check file size (50MB limit)
-                if (file.size > 50 * 1024 * 1024) {
-                    showToast(`File ${file.name} exceeds 50MB limit`, 'danger');
-                    continue;
-                }
-                
-                // Add file to mediaFiles array
-                mediaFiles.push(file);
-                
-                // Create preview
-                const reader = new FileReader();
-                
-                reader.onload = function(event) {
-                    const mediaItem = document.createElement('div');
-                    mediaItem.className = 'media-item';
-                    
-                    const fileType = file.type.split('/')[0];
-                    
-                    if (fileType === 'image') {
-                        mediaItem.innerHTML = `
-                            <img src="${event.target.result}" alt="Image">
-                            <div class="remove-media" data-index="${mediaFiles.length - 1}">
-                                <i class="fas fa-times"></i>
-                            </div>
-                        `;
-                    } else if (fileType === 'video') {
-                        mediaItem.innerHTML = `
-                            <video src="${event.target.result}" muted></video>
-                            <div class="remove-media" data-index="${mediaFiles.length - 1}">
-                                <i class="fas fa-times"></i>
-                            </div>
-                        `;
-                    } else if (fileType === 'audio') {
-                        mediaItem.innerHTML = `
-                            <div class="d-flex align-items-center justify-content-center h-100">
-                                <i class="fas fa-music fa-2x"></i>
-                            </div>
-                            <div class="remove-media" data-index="${mediaFiles.length - 1}">
-                                <i class="fas fa-times"></i>
-                            </div>
-                        `;
-                    }
-                    
-                    mediaPreview.appendChild(mediaItem);
-                    
-                    // Add event listener to remove button
-                    const removeBtn = mediaItem.querySelector('.remove-media');
-                    removeBtn.addEventListener('click', function() {
-                        const index = parseInt(this.dataset.index);
-                        mediaFiles.splice(index, 1);
-                        mediaItem.remove();
-                        
-                        // Update indices for remaining items
-                        const removeBtns = mediaPreview.querySelectorAll('.remove-media');
-                        removeBtns.forEach((btn, i) => {
-                            btn.dataset.index = i;
-                        });
-                    });
-                };
-                
-                reader.readAsDataURL(file);
-            }
-            
-            // Clear file input
-            fileInput.value = '';
-        });
-        
-        // Emoji picker
-        emojiBtn.addEventListener('click', () => {
-            emojiPicker.classList.toggle('d-none');
-        });
-        
-        // Insert emoji into message input
-        emojiPicker.addEventListener('click', (e) => {
-            if (e.target.classList.contains('emoji')) {
-                messageInput.value += e.target.textContent;
-                messageInput.focus();
-                emojiPicker.classList.add('d-none');
-            }
-        });
-        
-        // Hide emoji picker when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
-                emojiPicker.classList.add('d-none');
-            }
-        });
-        
-        // Clear chat
-        clearChatBtn.addEventListener('click', async () => {
-            if (!currentChatId) return;
-            
-            try {
-                const messagesRef = db.collection('chats').doc(currentChatId).collection('messages');
-                const messagesSnapshot = await messagesRef.get();
-                
-                // Delete all messages
-                const deletePromises = messagesSnapshot.docs.map(async (doc) => {
-                    // Delete media files from storage if they exist
-                    if (doc.data().mediaURL) {
-                        const mediaRef = storage.refFromURL(doc.data().mediaURL);
-                        await mediaRef.delete().catch((error) => {
-                            console.error('Error deleting media:', error);
-                        });
-                    }
-                    await doc.ref.delete();
-                });
-                
-                await Promise.all(deletePromises);
-                
-                // Update chat document
-                await db.collection('chats').doc(currentChatId).update({
-                    lastMessage: {},
-                    unreadCount: {
-                        [currentUser.uid]: 0,
-                        [currentChatId.split('_').find(id => id !== currentUser.uid)]: 0
-                    }
-                });
-                
-                showToast('Chat cleared successfully!', 'success');
-            } catch (error) {
-                console.error('Error clearing chat:', error);
-                showToast('Failed to clear chat', 'danger');
-            }
-        });
-        
-        // Block user
-        blockUserBtn.addEventListener('click', async () => {
-            if (!currentChatId) return;
-            
-            const recipientId = currentChatId.split('_').find(id => id !== currentUser.uid);
-            
-            try {
-                // Add to blocked users list
-                await db.collection('users').doc(currentUser.uid).update({
-                    blockedUsers: firebase.firestore.FieldValue.arrayUnion(recipientId)
-                });
-                
-                // Clear chat
-                await clearChatBtn.click();
-                
-                // Remove contact from list
-                contacts = contacts.filter(contact => contact.id !== recipientId);
-                displayContacts(contacts);
-                
-                // Reset chat area
-                currentChatId = null;
-                emptyChatState.classList.remove('d-none');
-                chatContent.classList.add('d-none');
-                
-                showToast('User blocked successfully!', 'success');
-            } catch (error) {
-                console.error('Error blocking user:', error);
-                showToast('Failed to block user', 'danger');
-            }
-        });
-        
-        // Save profile changes
-        saveProfileBtn.addEventListener('click', async () => {
-            const name = document.getElementById('updateName').value;
-            const bio = document.getElementById('updateBio').value;
-            const status = document.querySelector('input[name="status"]:checked').value;
-            const profilePicture = document.getElementById('updateProfilePicture').files[0];
-            
-            try {
-                showToast('Updating profile...', 'info');
-                
-                let photoURL = '';
-                // Upload new profile picture if provided
-                if (profilePicture) {
-                    const storageRef = storage.ref(`profile_pictures/${currentUser.uid}`);
-                    const uploadTask = storageRef.put(profilePicture);
-                    
-                    await new Promise((resolve, reject) => {
-                        uploadTask.on('state_changed',
-                            (snapshot) => {
-                                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                                console.log('Upload is ' + progress + '% done');
-                            },
-                            (error) => {
-                                reject(error);
-                            },
-                            async () => {
-                                photoURL = await uploadTask.snapshot.ref.getDownloadURL();
-                                resolve();
-                            }
-                        );
-                    });
-                }
-                
-                // Update user document
-                const updateData = {
-                    name,
-                    bio,
-                    status,
-                    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                
-                if (photoURL) {
-                    updateData.photoURL = photoURL;
-                }
-                
-                await db.collection('users').doc(currentUser.uid).update(updateData);
-                
-                // Update displayed user info
-                displayUserInfo(currentUser.uid);
-                
-                showToast('Profile updated successfully!', 'success');
-                profileModal.hide();
-            } catch (error) {
-                console.error('Error updating profile:', error);
-                showToast('Failed to update profile: ' + error.message, 'danger');
-            }
-        });
-        
-        // Load media gallery
-        async function loadMediaGallery() {
-            if (!currentChatId) return;
-            
-            const imageGallery = document.getElementById('imageGallery');
-            const videoGallery = document.getElementById('videoGallery');
-            const audioGallery = document.getElementById('audioGallery');
-            
-            imageGallery.innerHTML = '';
-            videoGallery.innerHTML = '';
-            audioGallery.innerHTML = '';
-            
-            try {
-                const messagesRef = db.collection('chats').doc(currentChatId).collection('messages');
-                const messagesSnapshot = await messagesRef.get();
-                
-                let hasImages = false;
-                let hasVideos = false;
-                let hasAudios = false;
-                
-                messagesSnapshot.forEach((doc) => {
-                    const message = doc.data();
-                    
-                    if (message.mediaURL) {
-                        switch (message.mediaType) {
-                            case 'image':
-                                hasImages = true;
-                                const imageItem = document.createElement('div');
-                                imageItem.className = 'col-md-4 mb-3';
-                                imageItem.innerHTML = `
-                                    <img src="${message.mediaURL}" class="img-fluid rounded" alt="Image"
-                                         data-bs-toggle="modal" data-bs-target="#mediaPreviewModal"
-                                         data-media-type="image" data-media-url="${message.mediaURL}">
-                                `;
-                                imageGallery.appendChild(imageItem);
-                                break;
-                                
-                            case 'video':
-                                hasVideos = true;
-                                const videoItem = document.createElement('div');
-                                videoItem.className = 'col-md-4 mb-3';
-                                videoItem.innerHTML = `
-                                    <video src="${message.mediaURL}" class="img-fluid rounded" controls
-                                           data-bs-toggle="modal" data-bs-target="#mediaPreviewModal"
-                                           data-media-type="video" data-media-url="${message.mediaURL}"></video>
-                                `;
-                                videoGallery.appendChild(videoItem);
-                                break;
-                                
-                            case 'audio':
-                                hasAudios = true;
-                                const audioItem = document.createElement('div');
-                                audioItem.className = 'list-group-item';
-                                audioItem.innerHTML = `
-                                    <audio src="${message.mediaURL}" controls class="w-100"></audio>
-                                `;
-                                audioGallery.appendChild(audioItem);
-                                break;
-                        }
-                    }
-                });
-                
-                // Show/hide empty state messages
-                document.getElementById('noImagesMessage').style.display = hasImages ? 'none' : 'block';
-                document.getElementById('noVideosMessage').style.display = hasVideos ? 'none' : 'block';
-                document.getElementById('noAudiosMessage').style.display = hasAudios ? 'none' : 'block';
-                
-                // Add click handlers for media preview
-                const mediaElements = document.querySelectorAll('[data-bs-toggle="modal"]');
-                mediaElements.forEach(media => {
-                    media.addEventListener('click', () => {
-                        const mediaType = media.dataset.mediaType;
-                        const mediaUrl = media.dataset.mediaUrl;
-                        
-                        const mediaPreviewContent = document.getElementById('mediaPreviewContent');
-                        
-                        if (mediaType === 'image') {
-                            mediaPreviewContent.innerHTML = `<img src="${mediaUrl}" class="img-fluid" alt="Image">`;
-                        } else if (mediaType === 'video') {
-                            mediaPreviewContent.innerHTML = `<video src="${mediaUrl}" controls class="img-fluid"></video>`;
-                        }
-                        
-                        mediaPreviewModal.show();
-                    });
-                });
-            } catch (error) {
-                console.error('Error loading media gallery:', error);
-                showToast('Failed to load media gallery', 'danger');
-            }
-        }
-        
-        // Show media gallery when modal is opened
-        document.getElementById('mediaGalleryModal').addEventListener('shown.bs.modal', loadMediaGallery);
-        
-        // Typing indicator
-        let typingTimeout;
-        
-        messageInput.addEventListener('input', async () => {
-            if (!currentChatId) return;
-            
-            clearTimeout(typingTimeout);
-            
-            // Set typing status
-            await db.collection('chats').doc(currentChatId).update({
-                [`typing.${currentUser.uid}`]: true
-            });
-            
-            // Clear typing status after 3 seconds of inactivity
-            typingTimeout = setTimeout(async () => {
-                await db.collection('chats').doc(currentChatId).update({
-                    [`typing.${currentUser.uid}`]: false
-                });
-            }, 3000);
-        });
-        
-        // Listen for typing status
-        function listenForTyping() {
-            if (!currentChatId) return;
-            
-            const chatRef = db.collection('chats').doc(currentChatId);
-            
-            chatRef.onSnapshot((doc) => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    const recipientId = currentChatId.split('_').find(id => id !== currentUser.uid);
-                    
-                    if (data.typing && data.typing[recipientId]) {
-                        typingIndicator.classList.remove('d-none');
-                        typingUser.textContent = contacts.find(c => c.id === recipientId)?.name || 'User';
-                    } else {
-                        typingIndicator.classList.add('d-none');
-                    }
-                }
-            });
-        }
-        
-        // Get chat ID from two user IDs
-        function getChatId(userId1, userId2) {
-            return [userId1, userId2].sort().join('_');
-        }
-        
-        // Format time
-        function formatTime(date) {
-            const now = new Date();
-            const diff = now - date;
-            
-            // If message is from today, show only time
-            if (diff < 24 * 60 * 60 * 1000 && date.getDate() === now.getDate()) {
-                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            }
-            
-            // If message is from yesterday
-            if (diff < 2 * 24 * 60 * 60 * 1000 && date.getDate() === now.getDate() - 1) {
-                return 'Yesterday';
-            }
-            
-            // Otherwise, show full date
-            return date.toLocaleDateString();
-        }
-        
-        // Scroll to bottom of messages
-        function scrollToBottom() {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-        
-        // Show toast notification
-        function showToast(message, type) {
-            const toastContainer = document.querySelector('.toast-container');
-            
-            const toast = document.createElement('div');
-            toast.className = `toast align-items-center text-white bg-${type} border-0`;
-            toast.setAttribute('role', 'alert');
-            toast.setAttribute('aria-live', 'assertive');
-            toast.setAttribute('aria-atomic', 'true');
-            
-            toast.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">
-                        ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            `;
-            
-            toastContainer.appendChild(toast);
-            
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-            
-            // Auto-remove toast after it hides
-            toast.addEventListener('hidden.bs.toast', () => {
-                toast.remove();
-            });
-        }
-        
-        // Initialize chat when opening a new chat
-        chatContent.addEventListener('transitionend', () => {
-            if (!chatContent.classList.contains('d-none')) {
-                scrollToBottom();
-                listenForTyping();
-            }
-        });
-        
-        // Auto-resize textarea
-        messageInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = `${this.scrollHeight}px`;
-        });
-        
-        // Handle profile picture preview in edit profile modal
-        document.getElementById('updateProfilePicture').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const editProfilePic = document.getElementById('editProfilePic');
-                    editProfilePic.innerHTML = `<img src="${event.target.result}" alt="Profile Picture">`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        // Handle window resize for responsive design
-        window.addEventListener('resize', () => {
-            scrollToBottom();
-        });
-    </script>
+    <script src="main.js"></script>
 </body>
 </html>
