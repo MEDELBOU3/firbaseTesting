@@ -10,6 +10,7 @@
         //======================================================================
         // Firebase Configuration
         //======================================================================
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
            apiKey: "AIzaSyDp2V0ULE-32AcIJ92a_e3mhMe6f6yZ_H4",
            authDomain: "sm4movies.firebaseapp.com",
@@ -18,7 +19,7 @@
            messagingSenderId: "277353836953",
            appId: "1:277353836953:web:85e02783526c7cb58de308",
            measurementId: "G-690RSNJ2Q2"
-        };
+       };
     
         //======================================================================
         // App Configuration Constants
