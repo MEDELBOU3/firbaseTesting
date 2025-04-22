@@ -5,13 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pro Firebase Chat</title>
 
-    <!-- Bootstrap CSS -->
+       <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <!-- Bootstrap Icons (Optional, for navbar icon) -->
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <link rel="stylesheet" href="style.css">
     </head>
 <body>
+   <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
 
     <div id="app-container">
 
@@ -21,51 +28,65 @@
         <section id="auth-section">
             <div class="auth-container">
                 <!-- Login Form -->
-                <div class="card shadow" id="login-card">
-                    <div class="card-body p-4 p-md-5">
-                        <h3 class="card-title text-center mb-4">Welcome Back!</h3>
+                <div class="card shadow-lg" id="login-card">
+                     <div class="card-body p-4 p-md-5">
+                        <div class="text-center mb-4">
+                             <i class="bi bi-chat-dots-fill text-primary auth-icon"></i>
+                             <h3 class="card-title">Welcome Back</h3>
+                             <p class="text-muted">Sign in to Synergy Chat</p>
+                        </div>
                         <div id="login-error" class="alert alert-danger hidden" role="alert"></div>
                         <form id="login-form" novalidate>
                             <div class="mb-3">
-                                <label for="login-email" class="form-label">Email</label>
+                                <label for="login-email" class="form-label">Email Address</label>
                                 <input type="email" class="form-control form-control-lg" id="login-email" required autocomplete="username">
                             </div>
                             <div class="mb-4">
                                 <label for="login-password" class="form-label">Password</label>
                                 <input type="password" class="form-control form-control-lg" id="login-password" required autocomplete="current-password">
                             </div>
-                            <button type="submit" class="btn btn-primary w-100 btn-lg">Login</button>
+                            <button type="submit" class="btn btn-primary w-100 btn-lg d-flex align-items-center justify-content-center">
+                                <span class="btn-text">Sign In</span>
+                                <span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                            </button>
                         </form>
-                        <hr class="my-4">
-                        <p class="text-center text-muted mb-0">
-                            New here? <a href="#" id="show-signup" class="fw-bold">Create an Account</a>
+                        <hr>
+                        <p class="text-center text-muted mb-0 small">
+                            Don't have an account? <a href="#" id="show-signup" class="switch-auth-link">Sign Up Now</a>
                         </p>
                     </div>
                 </div>
 
-                <!-- Signup Form (Initially Hidden) -->
-                <div class="card shadow hidden" id="signup-card">
+                <!-- Signup Form -->
+                <div class="card shadow-lg hidden" id="signup-card">
                      <div class="card-body p-4 p-md-5">
-                        <h3 class="card-title text-center mb-4">Create Account</h3>
+                         <div class="text-center mb-4">
+                             <i class="bi bi-person-plus-fill text-success auth-icon"></i>
+                             <h3 class="card-title">Create Account</h3>
+                             <p class="text-muted">Join the Synergy</p>
+                        </div>
                         <div id="signup-error" class="alert alert-danger hidden" role="alert"></div>
                         <form id="signup-form" novalidate>
                             <div class="mb-3">
-                                <label for="signup-name" class="form-label">Display Name</label>
+                                <label for="signup-name" class="form-label">Your Name</label>
                                 <input type="text" class="form-control form-control-lg" id="signup-name" required>
                             </div>
                             <div class="mb-3">
-                                <label for="signup-email" class="form-label">Email</label>
+                                <label for="signup-email" class="form-label">Email Address</label>
                                 <input type="email" class="form-control form-control-lg" id="signup-email" required autocomplete="username">
                             </div>
                             <div class="mb-4">
-                                <label for="signup-password" class="form-label">Password (min. 6 characters)</label>
+                                <label for="signup-password" class="form-label">Password (Min. 6 characters)</label>
                                 <input type="password" class="form-control form-control-lg" id="signup-password" required minlength="6" autocomplete="new-password">
                             </div>
-                            <button type="submit" class="btn btn-success w-100 btn-lg">Sign Up</button>
+                             <button type="submit" class="btn btn-success w-100 btn-lg d-flex align-items-center justify-content-center">
+                                <span class="btn-text">Sign Up</span>
+                                <span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                            </button>
                         </form>
-                        <hr class="my-4">
-                        <p class="text-center text-muted mb-0">
-                            Already registered? <a href="#" id="show-login" class="fw-bold">Login Instead</a>
+                        <hr>
+                        <p class="text-center text-muted mb-0 small">
+                            Already have an account? <a href="#" id="show-login" class="switch-auth-link">Sign In</a>
                         </p>
                     </div>
                 </div>
@@ -76,100 +97,105 @@
         <!--   Chat Section     -->
         <!-- ================== -->
         <section id="chat-section" class="hidden">
-            <!-- Navbar -->
-            <nav class="navbar navbar-expand-sm navbar-dark shadow-sm">
-                <div class="container-fluid">
-                    <a class="navbar-brand" href="#">
-                        <i class="bi bi-chat-dots-fill"></i> <!-- Example icon -->
-                        Pro Chat
-                    </a>
+
+            <!-- Sidebar -->
+            <aside id="user-sidebar">
+                <div id="sidebar-header" class="d-flex justify-content-between align-items-center">
+                    <span>Online (<span id="online-user-count">0</span>)</span>
+                    <button class="btn btn-sm btn-close d-md-none p-0" id="sidebar-close-button" aria-label="Close sidebar"></button>
+                </div>
+                <ul id="user-list">
+                    <li class="loading-placeholder">Loading users...</li>
+                </ul>
+            </aside>
+
+            <!-- Main Chat Area -->
+            <main id="chat-main">
+                <!-- Chat Navbar -->
+                <nav id="chat-navbar">
+                     <div class="d-flex align-items-center">
+                        <button class="btn btn-icon d-md-none me-2 p-1" id="sidebar-toggle-button" aria-label="Toggle user list">
+                            <i class="bi bi-list fs-5"></i>
+                        </button>
+                        <a class="navbar-brand" href="#">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                            <span>Synergy Chat</span>
+                        </a>
+                     </div>
                     <div class="d-flex align-items-center">
-                        <!-- Theme Switcher Dropdown -->
-                        <div class="dropdown me-3">
-                            <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-palette-fill"></i> Theme
+                        <div class="dropdown me-2">
+                            <button class="btn btn-icon dropdown-toggle p-1" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Change Theme">
+                                <i class="bi bi-palette-fill fs-5"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown" id="theme-selector">
-                                <li><button class="dropdown-item" data-theme="light" type="button">Default Light</button></li>
-                                <li><button class="dropdown-item" data-theme="dark" type="button">Dark Mode</button></li>
-                                <li><button class="dropdown-item" data-theme="ocean" type="button">Ocean Blue</button></li>
-                                <li><button class="dropdown-item" data-theme="forest" type="button">Forest Green</button></li>
-                                <li><button class="dropdown-item" data-theme="sunset" type="button">Sunset Orange</button></li>
+                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="themeDropdown" id="theme-selector">
+                                <!-- Populated by JS -->
                             </ul>
                         </div>
-
-                         <!-- User Info -->
-                        <div class="text-white d-flex align-items-center user-info cursor-pointer" id="navbar-user-info" data-bs-toggle="modal" data-bs-target="#profileModal">
-                            <span id="user-display-name" class="me-2 d-none d-sm-inline">Loading...</span>
+                        <div class="d-flex align-items-center user-info cursor-pointer me-3" id="navbar-user-info" title="View Profile">
+                            <span id="user-display-name" class="me-2 d-none d-sm-inline text-truncate" style="max-width: 150px;"></span>
                             <div id="navbar-avatar" class="avatar">?</div>
                         </div>
-                        <button class="btn btn-sm btn-outline-light ms-3" id="logout-button" title="Logout">
-                             <i class="bi bi-box-arrow-right"></i>
-                             <span class="d-none d-sm-inline ms-1">Logout</span>
+                        <button class="btn btn-icon p-1" id="logout-button" title="Logout">
+                            <i class="bi bi-box-arrow-right fs-5"></i>
+                            <span class="logout-text visually-hidden">Logout</span> <!-- For screen readers -->
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                         </button>
                     </div>
-                </div>
-            </nav>
+                </nav>
 
-            <!-- Main Chat Content Area -->
-             <main id="chat-main-content">
-                <!-- Chat Messages -->
-                <div id="chat-box">
-                    <p class="text-center loading-placeholder py-5">Initializing chat room...</p>
+                <!-- Chat Box Wrapper -->
+                <div id="chat-box-wrapper">
+                    <div id="chat-box">
+                        <p class="loading-placeholder py-5">Initializing chat room...</p>
+                    </div>
+                    <div id="typing-indicator"></div>
+                </div>
+
+                <!-- Message Input Form -->
+                <div id="message-form-container">
+                    <div id="chat-error" class="error-text mb-2 small text-center"></div>
+                    <form id="message-form" class="d-flex align-items-center">
+                        <input type="text" id="message-input" class="form-control form-control-lg me-2" placeholder="Type a message..." autocomplete="off" required>
+                        <button type="submit" id="send-button" class="btn btn-primary btn-lg d-flex align-items-center justify-content-center" title="Send Message">
+                            <span class="btn-text"><i class="bi bi-send-fill"></i></span>
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        </button>
+                    </form>
                 </div>
             </main>
-
-            <!-- Message Input Form Container -->
-            <div id="message-form-container">
-                 <div id="chat-error" class="error-text mb-2 small text-center"></div>
-                 <form id="message-form" class="d-flex align-items-center">
-                    <input type="text" id="message-input" class="form-control form-control-lg me-2" placeholder="Type your message here..." autocomplete="off" required>
-                    <button type="submit" id="send-button" class="btn btn-success btn-lg">
-                        <i class="bi bi-send-fill"></i>
-                    </button>
-                </form>
-            </div>
 
         </section>
 
     </div> <!-- End #app-container -->
 
-    <!-- ================== -->
-    <!-- Profile Modal      -->
-    <!-- ================== -->
+    <!-- Profile Modal -->
     <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered modal-sm"> <!-- Smaller modal -->
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="profileModalLabel">User Profile</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <div class="modal-header border-0">
+            <h5 class="modal-title visually-hidden" id="profileModalLabel">User Profile</h5> <!-- Hide default title -->
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body text-center">
+          <div class="modal-body text-center pt-0"> <!-- Remove top padding -->
              <div id="modal-avatar" class="avatar avatar-lg mx-auto mb-3">?</div>
-             <h5 id="modal-display-name">User Name</h5>
-             <p id="modal-email" class="text-muted small">user@example.com</p>
-             <p id="modal-uid" class="text-muted small" style="font-size: 0.7rem; word-wrap: break-word;"></p>
-             <!-- Add more profile fields here if fetched from DB later -->
+             <h4 id="modal-display-name" class="mb-1">User Name</h4>
+             <p id="modal-status" class="mb-2"><span class="badge rounded-pill text-bg-secondary">Offline</span></p>
+             <p id="modal-email" class="text-muted small mb-1">user@example.com</p>
+             <p id="modal-uid" class="text-muted" style="font-size: 0.7rem; word-wrap: break-word; opacity: 0.7;"></p>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <!-- Optional: Add action button like "View Full Profile" if implemented -->
-          </div>
+          <!-- Optional footer removed for cleaner look -->
         </div>
       </div>
     </div>
-  <!-- ================== -->
-    <!-- Firebase SDKs      -->
-    <!-- ================== -->
-    <!-- Use the latest compatible v9 COMPAT libraries -->
+
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
-    <!-- ================== -->
-    <!-- Bootstrap JS       -->
-    <!-- ================== -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
     <script src="main.js"></script>
 </body>
 </html>
