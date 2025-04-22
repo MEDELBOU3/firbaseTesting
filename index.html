@@ -452,9 +452,32 @@
     <!-- Optional: Firestore (if you switch later) -->
     <!-- <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script> -->
 
+    <!-- **** START: TEMPORARY TEST SCRIPT **** -->
+    <script>
+        console.log("--- Firebase Test Script Running ---");
+        if (typeof firebase !== 'undefined') {
+            console.log("✅ SUCCESS: Global 'firebase' object FOUND immediately after SDKs.");
+            console.log("Value:", firebase); // See what's inside the firebase object
+            if (typeof firebase.initializeApp === 'function') {
+                 console.log("✅ SUCCESS: 'firebase.initializeApp' function FOUND.");
+            } else {
+                 console.error("❌ FAILURE: 'firebase.initializeApp' function NOT FOUND on firebase object.");
+            }
+             if (typeof firebase.auth === 'object' && typeof firebase.auth.getAuth === 'function') {
+                 console.log("✅ SUCCESS: 'firebase.auth.getAuth' function FOUND.");
+            } else {
+                 console.error("❌ FAILURE: 'firebase.auth.getAuth' function NOT FOUND or 'auth' is not an object.");
+            }
+            // Add similar checks for database/storage if needed
+        } else {
+            console.error("❌ FAILURE: Global 'firebase' object NOT FOUND immediately after SDKs.");
+        }
+        console.log("--- Firebase Test Script Finished ---");
+    </script>
+    <!-- **** END: TEMPORARY TEST SCRIPT **** -->
+
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
     <script src="main.js"></script>
 </body>
 </html>
