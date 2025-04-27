@@ -946,54 +946,60 @@ function createPlaylistCard(playlist) {
 }
 
 // Play a track
+// Play a track
 function playTrack(track) {
-    // Reset current playback
+    // Stop the current track if playing
     audioElement.pause();
     audioElement.currentTime = 0;
     
     // Get preview URL
     const previewUrl = track.preview_url;
     
-    // Always update UI
-    showPlayerUI(track);
-    currentTrack = track;
-    
     if (!previewUrl) {
-        // No preview available - use simulated playback
+        // Show a more informative message
+        showToast('This track has no preview available. This is a limitation of Spotify\'s free API.', 'warning');
+        
+        // Still update the UI to show what would play
         isPlaying = false;
         updatePlayPauseButton();
-        showToast('No audio preview available for this track', 'info');
-        
-        // You could implement a visualization-only mode here
-        // that shows the track info but doesn't play audio
+        showPlayerUI(track);
+        currentTrack = track;
         return;
     }
     
-    // Actual audio playback when preview is available
+    // Set the audio source
     audioElement.src = previewUrl;
     audioElement.volume = volume / 100;
     
+    // Play the audio
     const playPromise = audioElement.play();
+    
     if (playPromise !== undefined) {
         playPromise.then(_ => {
+            // Update UI
             isPlaying = true;
             updatePlayPauseButton();
-            setupAudioAnalyzer();
-        }).catch(error => {
-            console.error('Playback failed:', error);
-            isPlaying = false;
-            updatePlayPauseButton();
+            showPlayerUI(track);
             
-            // Detailed error reporting
+            // Set up audio analyzer for visualizer if not already done
+            setupAudioAnalyzer();
+            
+            // Store the current track
+            currentTrack = track;
+        }).catch(error => {
+            console.error('Error playing track:', error);
+            
+            // More specific error message
             if (error.name === 'NotAllowedError') {
-                showToast('Browser blocked autoplay. Click play to listen.', 'warning');
+                showToast('Playback was blocked. Try interacting with the page first.', 'error');
+            } else if (error.name === 'NotSupportedError') {
+                showToast('This audio format is not supported by your browser.', 'error');
             } else {
-                showToast('Playback error: ' + error.message, 'error');
+                showToast('Failed to play track: ' + error.message, 'error');
             }
         });
     }
 }
-
 // Play top tracks from an artist
 async function playArtistTopTracks(artistId) {
     showLoading();
