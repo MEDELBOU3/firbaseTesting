@@ -878,12 +878,6 @@
 
         // --- Initialization ---
         function init() {
-            if (SPOTIFY_CLIENT_ID === '414c70fe6b3e4d5f9a8fe0fc8d91a86d') {
-                 alert('ERROR: Spotify Client ID is not set. Please replace "YOUR_SPOTIFY_CLIENT_ID" in the script with your actual Client ID.');
-                 loginButton.disabled = true;
-                 loginButton.textContent = 'Configuration Needed';
-                 return;
-            }
             checkAuth();
             setupEventListeners();
             createVisualizerBars();
