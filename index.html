@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Advanced Music Player</title>
+    <title>Spotify Advanced Music Player (SDK)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Spotify Web Playback SDK Script -->
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
     <style>
+        /* CSS styles remain largely the same as the previous version */
+        /* Remove .visualizer-container and .visualizer-bar styles if they exist */
         :root {
             --spotify-green: #1DB954;
             --spotify-black: #121212; /* Slightly lighter black */
@@ -22,7 +26,7 @@
             color: var(--spotify-white);
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             min-height: 100vh;
-            padding-bottom: 110px; /* Increased for player height */
+            padding-bottom: 110px; /* Player height */
             overflow-x: hidden;
         }
 
@@ -134,18 +138,10 @@
             scrollbar-width: thin; /* Firefox */
             scrollbar-color: var(--spotify-medium-gray) var(--spotify-dark-gray); /* Firefox */
         }
-        .category-pills::-webkit-scrollbar {
-            height: 8px;
-        }
-        .category-pills::-webkit-scrollbar-track {
-            background: var(--spotify-dark-gray);
-            border-radius: 10px;
-        }
-        .category-pills::-webkit-scrollbar-thumb {
-            background-color: var(--spotify-medium-gray);
-            border-radius: 10px;
-            border: 2px solid var(--spotify-dark-gray);
-        }
+        .category-pills::-webkit-scrollbar { height: 8px; }
+        .category-pills::-webkit-scrollbar-track { background: var(--spotify-dark-gray); border-radius: 10px; }
+        .category-pills::-webkit-scrollbar-thumb { background-color: var(--spotify-medium-gray); border-radius: 10px; border: 2px solid var(--spotify-dark-gray); }
+
         .category-pill {
             background-color: var(--spotify-medium-gray);
             color: var(--spotify-white);
@@ -159,14 +155,8 @@
             font-size: 0.9rem;
             font-weight: 500;
         }
-        .category-pill:hover {
-             background-color: var(--spotify-highlight);
-        }
-        .category-pill.active {
-            background-color: var(--spotify-green);
-            color: var(--spotify-black);
-            font-weight: bold;
-        }
+        .category-pill:hover { background-color: var(--spotify-highlight); }
+        .category-pill.active { background-color: var(--spotify-green); color: var(--spotify-black); font-weight: bold; }
 
         /* Cards */
         .item-card {
@@ -177,489 +167,131 @@
             margin-bottom: 25px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             position: relative;
-            cursor: pointer; /* Make entire card clickable for details */
+            cursor: pointer;
         }
-        .item-card:hover {
-            background-color: var(--spotify-highlight);
-        }
-        .item-card:hover .play-button-wrapper {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .item-card:hover { background-color: var(--spotify-highlight); }
+        .item-card:hover .play-button-wrapper { opacity: 1; transform: translateY(0); }
 
-        .card-img-container {
-            position: relative;
-            padding: 15px; /* Padding around the image */
-        }
-        .item-img {
-            width: 100%;
-            aspect-ratio: 1/1;
-            object-fit: cover;
-            border-radius: 6px; /* Slightly rounded image corners */
-             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-        }
-         .artist-img {
-            border-radius: 50%; /* Circular images for artists */
-         }
+        .card-img-container { position: relative; padding: 15px; }
+        .item-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 6px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
+        .artist-img { border-radius: 50%; }
+        .card-info { padding: 10px 15px 15px 15px; }
+        .item-title { font-weight: bold; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1rem; color: var(--spotify-white); }
+        .item-subtitle { color: var(--spotify-light-gray); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-type-badge { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; color: var(--spotify-black); background-color: var(--spotify-green); padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 3px; }
 
-        .card-info {
-            padding: 10px 15px 15px 15px;
-        }
-        .item-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 1rem;
-            color: var(--spotify-white);
-        }
-        .item-subtitle {
-            color: var(--spotify-light-gray);
-            font-size: 0.85rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .item-type-badge {
-            font-size: 0.7rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            color: var(--spotify-black);
-            background-color: var(--spotify-green);
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 3px;
-        }
-
-
-        .play-button-wrapper {
-            position: absolute;
-            bottom: 25px; /* Adjusted position */
-            right: 25px;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-            z-index: 5; /* Ensure it's above other card elements */
-        }
-        .play-button {
-            background-color: var(--spotify-green);
-            color: var(--spotify-black);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
-            transition: all 0.2s ease;
-            cursor: pointer; /* Make sure button itself is clickable */
-        }
-        .play-button:hover {
-            transform: scale(1.1);
-            background-color: #1ed760;
-        }
-        .play-button i {
-            font-size: 1.2rem;
-        }
+        .play-button-wrapper { position: absolute; bottom: 25px; right: 25px; opacity: 0; transform: translateY(10px); transition: all 0.3s ease; z-index: 5; }
+        .play-button { background-color: var(--spotify-green); color: var(--spotify-black); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4); transition: all 0.2s ease; cursor: pointer; }
+        .play-button:hover { transform: scale(1.1); background-color: #1ed760; }
+        .play-button i { font-size: 1.2rem; }
 
         /* Sections */
-        .section-title {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin-bottom: 25px;
-            position: relative;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--spotify-medium-gray);
-        }
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -1px; /* Position over the border */
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background-color: var(--spotify-green);
-        }
+        .section-title { font-size: 1.8rem; font-weight: bold; margin-bottom: 25px; position: relative; padding-bottom: 10px; border-bottom: 1px solid var(--spotify-medium-gray); }
+        .section-title::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 60px; height: 3px; background-color: var(--spotify-green); }
 
         /* Loading Animation */
-        .loading-animation {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-            width: 100%;
-        }
-        .loading-bar {
-            width: 5px;
-            height: 25px;
-            margin: 0 6px;
-            background-color: var(--spotify-green);
-            border-radius: 3px;
-            animation: loading 1.2s ease-in-out infinite;
-        }
-        /* (loading keyframes remain the same) */
+        .loading-animation { display: flex; justify-content: center; align-items: center; height: 200px; width: 100%; }
+        .loading-bar { width: 5px; height: 25px; margin: 0 6px; background-color: var(--spotify-green); border-radius: 3px; animation: loading 1.2s ease-in-out infinite; }
         @keyframes loading { 0% { transform: scaleY(0.5); opacity: 0.7;} 50% { transform: scaleY(1.2); opacity: 1;} 100% { transform: scaleY(0.5); opacity: 0.7;} }
-        .loading-bar:nth-child(1) { animation-delay: 0s; }
-        .loading-bar:nth-child(2) { animation-delay: 0.1s; }
-        .loading-bar:nth-child(3) { animation-delay: 0.2s; }
-        .loading-bar:nth-child(4) { animation-delay: 0.3s; }
+        .loading-bar:nth-child(1) { animation-delay: 0s; } .loading-bar:nth-child(2) { animation-delay: 0.1s; } .loading-bar:nth-child(3) { animation-delay: 0.2s; } .loading-bar:nth-child(4) { animation-delay: 0.3s; }
 
         /* Player Container */
-        .player-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: var(--spotify-dark-gray);
-            padding: 15px 20px;
-            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.6);
-            display: none; /* Initially hidden */
-            z-index: 1000;
-            border-top: 1px solid var(--spotify-medium-gray);
-        }
+        .player-container { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--spotify-dark-gray); padding: 15px 20px; box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.6); display: none; z-index: 1000; border-top: 1px solid var(--spotify-medium-gray); }
+        .currently-playing { display: flex; align-items: center; }
+        .currently-playing-img { width: 56px; height: 56px; border-radius: 4px; margin-right: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .currently-playing-info { flex-grow: 1; min-width: 0; }
+        .currently-playing-title { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+        .currently-playing-artist { color: var(--spotify-light-gray); font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .currently-playing {
-            display: flex;
-            align-items: center;
-        }
-        .currently-playing-img {
-            width: 56px;
-            height: 56px;
-            border-radius: 4px;
-            margin-right: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        .currently-playing-info {
-            flex-grow: 1;
-            min-width: 0; /* Prevents text overflow issues */
-        }
-        .currently-playing-title {
-            font-weight: 600;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 2px;
-        }
-        .currently-playing-artist {
-            color: var(--spotify-light-gray);
-            font-size: 0.8rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .player-controls-center { display: flex; flex-direction: column; align-items: center; }
+        .player-buttons { display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+        .control-button { background: none; border: none; color: var(--spotify-light-gray); font-size: 1.1rem; margin: 0 15px; cursor: pointer; transition: all 0.2s ease; }
+        .control-button:hover:not(:disabled) { color: var(--spotify-white); }
+        .control-button:disabled { color: #555; cursor: not-allowed; }
+        .play-pause { width: 36px; height: 36px; border-radius: 50%; background-color: var(--spotify-white); color: var(--spotify-black); display: flex; align-items: center; justify-content: center; margin: 0 18px; transition: all 0.2s ease; border: none; }
+        .play-pause:hover:not(:disabled) { transform: scale(1.08); }
+        .play-pause:disabled { background-color: #777; }
+        .play-pause i { font-size: 1rem; }
 
-        .player-controls-center {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .player-buttons {
-             display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 8px;
-        }
-        .control-button {
-            background: none;
-            border: none;
-            color: var(--spotify-light-gray);
-            font-size: 1.1rem; /* Slightly smaller */
-            margin: 0 15px; /* More spacing */
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .control-button:hover {
-            color: var(--spotify-white);
-        }
-        .control-button:disabled {
-            color: #555;
-            cursor: not-allowed;
-        }
-        .play-pause {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background-color: var(--spotify-white);
-            color: var(--spotify-black);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 18px;
-            transition: all 0.2s ease;
-            border: none;
-        }
-        .play-pause:hover {
-            transform: scale(1.08);
-        }
-        .play-pause i {
-            font-size: 1rem; /* Adjusted icon size */
-        }
-
-        .progress-wrapper {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            max-width: 500px; /* Limit progress bar width */
-            margin: 0 auto;
-        }
-        .time-display {
-            color: var(--spotify-light-gray);
-            font-size: 0.75rem;
-            min-width: 35px;
-            text-align: center;
-        }
-        .progress-container {
-            flex-grow: 1;
-            height: 12px; /* Make clickable area larger */
-            display: flex;
-            align-items: center;
-            margin: 0 10px;
-            cursor: pointer;
-        }
-        .progress {
-            height: 4px;
-            background-color: #4d4d4d;
-            border-radius: 2px;
-            width: 100%;
-            overflow: hidden; /* Ensure progress bar stays within bounds */
-        }
-        .progress-bar {
-            background-color: var(--spotify-white);
-            border-radius: 2px;
-            height: 100%;
-            transition: width 0.1s linear; /* Smooth progress updates */
-        }
-        .progress-container:hover .progress-bar {
-            background-color: var(--spotify-green);
-        }
-        .progress-container:hover .progress-bar::after { /* Add circle on hover */
+        .progress-wrapper { display: flex; align-items: center; width: 100%; max-width: 500px; margin: 0 auto; }
+        .time-display { color: var(--spotify-light-gray); font-size: 0.75rem; min-width: 35px; text-align: center; }
+        .progress-container { flex-grow: 1; height: 12px; display: flex; align-items: center; margin: 0 10px; cursor: pointer; }
+        .progress { height: 4px; background-color: #4d4d4d; border-radius: 2px; width: 100%; overflow: visible; /* Allow hover dot */ position: relative;}
+        .progress-bar { background-color: var(--spotify-light-gray); border-radius: 2px; height: 100%; width: 0%; /* Controlled by JS */ transition: width 0.2s linear, background-color 0.2s ease; display: block; position: relative; }
+        .progress-container:hover .progress-bar { background-color: var(--spotify-green); }
+        /* Add circle on hover using pseudo-element */
+        .progress-bar::after {
             content: '';
             position: absolute;
-            right: -6px; /* Adjust based on bar width */
-            top: -4px;
+            right: -6px; /* Position relative to the end of the progress bar */
+            top: 50%;
+            transform: translateY(-50%);
             width: 12px;
             height: 12px;
             background-color: var(--spotify-white);
             border-radius: 50%;
-            display: block;
+            display: none; /* Hidden by default */
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        .progress-container:hover .progress-bar::after {
+            display: block; /* Show on hover */
         }
 
-        .volume-control {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-        }
-        .volume-slider {
-            width: 100px;
-            height: 4px;
-            cursor: pointer;
-            accent-color: var(--spotify-white); /* Modern way to style range input */
-            transition: accent-color 0.2s ease;
-        }
-         .volume-slider:hover {
-             accent-color: var(--spotify-green);
-         }
-        #volume-button { /* Target specifically */
-             margin-right: 10px;
-             font-size: 1.1rem;
-        }
 
-        .visualizer-container {
-            height: 30px; /* Reduced height */
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            margin-top: 5px;
-            opacity: 0.6;
-            transition: opacity 0.3s ease;
-        }
-         .player-container:hover .visualizer-container {
-             opacity: 0.8;
-         }
-        .visualizer-bar {
-            width: 3px; /* Thinner bars */
-            background-color: var(--spotify-light-gray);
-            margin: 0 1.5px; /* Less margin */
-            border-radius: 2px 2px 0 0;
-            transition: height 0.1s ease, background-color 0.2s ease;
-        }
-        .player-container:hover .visualizer-bar {
-            background-color: var(--spotify-green);
-        }
+        .volume-control { display: flex; align-items: center; justify-content: flex-end; }
+        .volume-slider { width: 100px; height: 4px; cursor: pointer; accent-color: var(--spotify-white); transition: accent-color 0.2s ease; }
+        .volume-slider:hover { accent-color: var(--spotify-green); }
+        #volume-button { margin-right: 10px; font-size: 1.1rem; }
 
         /* Details View */
-        #details-view {
-             padding: 30px 0;
-        }
-        .details-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 40px;
-            gap: 30px;
-        }
-        .details-img {
-            width: 200px;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-        .details-img.artist {
-            border-radius: 50%;
-        }
-        .details-info h1 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .details-info p {
-            color: var(--spotify-light-gray);
-            font-size: 1rem;
-            margin-bottom: 5px;
-        }
-        .details-info .item-type-badge { /* Reuse badge */
-            margin-top: 10px;
-            font-size: 0.8rem;
-            padding: 4px 8px;
-        }
-        .back-button {
-            margin-bottom: 20px;
-            background: none;
-            border: 1px solid var(--spotify-light-gray);
-            color: var(--spotify-light-gray);
-            border-radius: 500px;
-            padding: 8px 18px;
-            transition: all 0.3s ease;
-        }
-        .back-button:hover {
-            color: var(--spotify-white);
-            border-color: var(--spotify-white);
-            background-color: var(--spotify-highlight);
-        }
-        .track-list {
-            list-style: none;
-            padding: 0;
-        }
-        .track-list-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            transition: background-color 0.2s ease;
-        }
-        .track-list-item:hover {
-            background-color: var(--spotify-highlight);
-        }
-         .track-list-item:hover .track-play-button {
-             opacity: 1;
-         }
-        .track-number {
-            color: var(--spotify-light-gray);
-            width: 30px;
-            text-align: right;
-            margin-right: 15px;
-            font-size: 0.9rem;
-        }
-        .track-details {
-            flex-grow: 1;
-            min-width: 0; /* Allow text ellipsis */
-        }
-        .track-list-title {
-            color: var(--spotify-white);
-            font-weight: 500;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .track-list-artist {
-            color: var(--spotify-light-gray);
-            font-size: 0.85rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .track-duration {
-             color: var(--spotify-light-gray);
-            font-size: 0.9rem;
-            margin-left: 15px;
-        }
-        .track-play-button {
-            background: none;
-            border: none;
-            color: var(--spotify-white);
-            font-size: 1.2rem;
-            cursor: pointer;
-            margin-left: 15px;
-            opacity: 0; /* Hidden by default */
-            transition: opacity 0.2s ease, color 0.2s ease;
-        }
-         .track-play-button:hover {
-             color: var(--spotify-green);
-         }
+        #details-view { padding: 30px 0; }
+        .details-header { display: flex; align-items: center; margin-bottom: 40px; gap: 30px; }
+        .details-img { width: 200px; height: 200px; object-fit: cover; border-radius: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+        .details-img.artist { border-radius: 50%; }
+        .details-info h1 { font-size: 2.5rem; font-weight: bold; margin-bottom: 10px; }
+        .details-info p { color: var(--spotify-light-gray); font-size: 1rem; margin-bottom: 5px; }
+        .details-info .item-type-badge { margin-top: 10px; font-size: 0.8rem; padding: 4px 8px; }
+        .back-button { margin-bottom: 20px; background: none; border: 1px solid var(--spotify-light-gray); color: var(--spotify-light-gray); border-radius: 500px; padding: 8px 18px; transition: all 0.3s ease; }
+        .back-button:hover { color: var(--spotify-white); border-color: var(--spotify-white); background-color: var(--spotify-highlight); }
+        .track-list { list-style: none; padding: 0; }
+        .track-list-item { display: flex; align-items: center; padding: 12px 15px; border-radius: 6px; margin-bottom: 8px; transition: background-color 0.2s ease; cursor: default; /* Remove cursor pointer */ }
+        .track-list-item:hover { background-color: var(--spotify-highlight); }
+        .track-list-item:hover .track-play-button { opacity: 1; }
+        .track-number { color: var(--spotify-light-gray); width: 30px; text-align: right; margin-right: 15px; font-size: 0.9rem; }
+        .track-details { flex-grow: 1; min-width: 0; }
+        .track-list-title { color: var(--spotify-white); font-weight: 500; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-list-artist { color: var(--spotify-light-gray); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-duration { color: var(--spotify-light-gray); font-size: 0.9rem; margin-left: 15px; }
+        .track-play-button { background: none; border: none; color: var(--spotify-white); font-size: 1.2rem; cursor: pointer; margin-left: 15px; opacity: 0; transition: opacity 0.2s ease, color 0.2s ease; }
+        .track-play-button:hover:not(:disabled) { color: var(--spotify-green); }
+         .track-play-button:disabled { color: #555; cursor: not-allowed; opacity: 0.5; }
 
 
         /* Toast Notification */
-        .toast-container {
-            position: fixed;
-            bottom: 120px; /* Above player */
-            right: 20px;
-            z-index: 1100;
-        }
-        .toast {
-            background-color: var(--spotify-green);
-            color: var(--spotify-black);
-            padding: 12px 20px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        .toast.show {
-            opacity: 1;
-            transform: translateX(0);
-        }
-         .toast.error { background-color: #F44336; color: white;}
-         .toast.warning { background-color: #FF9800; color: white;}
-         .toast.info { background-color: #2196F3; color: white;}
+        .toast-container { position: fixed; bottom: 120px; right: 20px; z-index: 1100; }
+        .toast { background-color: var(--spotify-green); color: var(--spotify-black); padding: 12px 20px; border-radius: 6px; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); opacity: 0; transform: translateX(100%); transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); font-weight: 500; font-size: 0.9rem; }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        .toast.error { background-color: #F44336; color: white;}
+        .toast.warning { background-color: #FF9800; color: white;}
+        .toast.info { background-color: #2196F3; color: white;}
+        .toast.success { background-color: var(--spotify-green); color: var(--spotify-black);} /* Explicit success style */
+
 
         /* Responsive adjustments */
-        @media (max-width: 992px) {
-            .player-container .col-md-3:last-child { /* Volume control */
-                 justify-content: flex-start;
-                 margin-top: 5px;
-            }
-        }
+        @media (max-width: 992px) { .player-container .col-md-3:last-child { justify-content: flex-start; margin-top: 5px; } }
         @media (max-width: 768px) {
              body { padding-bottom: 180px; } /* More space for stacked player */
-             .player-container .row > div {
-                 margin-bottom: 10px;
-             }
-             .player-container .col-md-3:first-child { /* Currently Playing */
-                 width: 100%;
-                 justify-content: center;
-             }
+             .player-container .row > div { margin-bottom: 10px; }
+             .player-container .col-md-3:first-child { width: 100%; justify-content: center; }
             .player-controls-center { order: 1;}
             .currently-playing { order: 2;}
              .volume-control { order: 3; justify-content: center !important;}
              .volume-slider { width: 150px; }
-
              .currently-playing-title { max-width: calc(100vw - 100px); }
              .currently-playing-artist { max-width: calc(100vw - 100px); }
-
              .details-header { flex-direction: column; text-align: center;}
              .details-img { width: 150px; height: 150px;}
              .details-info h1 { font-size: 1.8rem;}
-
              .track-list-item { padding: 10px 5px;}
              .track-number { margin-right: 8px;}
              .track-play-button { opacity: 1; } /* Always visible on mobile */
@@ -671,7 +303,7 @@
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="#">
                 <svg class="logo" viewBox="0 0 1134 340" xmlns="http://www.w3.org/2000/svg"><path fill="#1DB954" d="M8 171c0 92 76 168 168 168s168-76 168-168S268 4 176 4 8 79 8 171zm230 78c-39-24-89-30-147-17-14 2-16-18-4-20 64-15 118-8 162 19 11 7 0 24-11 18zm17-45c-45-28-114-36-167-20-17 5-23-21-7-25 61-18 136-9 188 23 14 9 0 31-14 22zM80 133c-17 6-28-23-9-30 59-18 159-15 221 22 17 9 1 37-17 27-54-32-144-35-195-19zm379 91c-17 0-33-6-47-20-1 0-1 1-1 1l-16 19c-1 1-1 2 0 3 18 16 40 24 64 24 34 0 55-19 55-47 0-24-15-37-50-46-29-7-34-12-34-22s10-16 23-16 25 5 39 15c0 0 1 1 2 1s1-1 1-1l14-20c1-1 1-1 0-2-16-13-35-20-56-20-31 0-53 19-53 46 0 29 20 38 52 46 28 6 32 12 32 22 0 11-10 17-25 17zm95-77v-13c0-1-1-2-2-2h-26c-1 0-2 1-2 2v147c0 1 1 2 2 2h26c1 0 2-1 2-2v-46c10 11 21 16 36 16 27 0 54-21 54-61s-27-60-54-60c-15 0-26 5-36 17zm30 78c-18 0-31-15-31-35s13-34 31-34 30 14 30 34-12 35-30 35zm68-34c0 34 27 60 62 60s62-27 62-61-26-60-61-60-63 27-63 61zm30-1c0-20 13-34 32-34s33 15 33 35-13 34-32 34-33-15-33-35zm140-58v-29c0-1 0-2-1-2h-26c-1 0-2 1-2 2v29h-13c-1 0-2 1-2 2v22c0 1 1 2 2 2h13v58c0 23 11 35 34 35 9 0 18-2 25-6 1 0 1-1 1-2v-21c0-1 0-2-1-2h-2c-5 3-11 4-16 4-8 0-12-4-12-12v-54h30c1 0 2-1 2-2v-22c0-1-1-2-2-2h-30zm129-3c0-11 4-15 13-15 5 0 10 0 15 2h1s1-1 1-2V93c0-1 0-2-1-2-5-2-12-3-22-3-24 0-36 14-36 39v5h-13c-1 0-2 1-2 2v22c0 1 1 2 2 2h13v89c0 1 1 2 2 2h26c1 0 1-1 1-2v-89h25l38 89c-4 9-8 11-14 11-5 0-10-1-15-4h-1l-1 1-9 19c0 1 0 3 1 3 9 5 17 7 27 7 19 0 30-9 39-33l45-116v-2c0-1-1-1-2-1h-27c-1 0-1 1-1 2l-28 78-30-78c0-1-1-2-2-2h-44v-3zm-83 3c-1 0-2 1-2 2v113c0 1 1 2 2 2h26c1 0 1-1 1-2V134c0-1 0-2-1-2h-26zm-6-33c0 10 9 19 19 19s18-9 18-19-8-18-18-18-19 8-19 18zm245 69c10 0 19-8 19-18s-9-18-19-18-18 8-18 18 8 18 18 18zm0-34c9 0 17 7 17 16s-8 16-17 16-16-7-16-16 7-16 16-16zm4 18c3-1 5-3 5-6 0-4-4-6-8-6h-8v19h4v-6h4l4 6h5zm-3-9c2 0 4 1 4 3s-2 3-4 3h-4v-6h4z"></path></svg>
-                <span>Spotify Advanced Player</span>
+                <span>Spotify Advanced Player (SDK)</span>
             </a>
             <div id="user-profile" class="d-none d-flex align-items-center">
                 <span id="user-name" class="text-white me-2"></span>
@@ -682,8 +314,9 @@
 
     <div class="container content-wrapper">
         <div id="login-section" class="login-section">
-            <h1 class="mb-3 display-4 fw-bold">Welcome Back!</h1>
-            <p class="mb-5 fs-5 text-white-50">Connect your Spotify account to unlock a world of music.</p>
+            <h1 class="mb-3 display-4 fw-bold">Full Playback Experience</h1>
+             <p class="mb-4 fs-5 text-white-50">Connect Spotify Premium to play full songs.</p>
+             <p class="mb-5 small text-warning">(Requires HTTPS and a Premium Account)</p>
             <button id="login-button" class="login-button">
                 <i class="fab fa-spotify"></i> Connect with Spotify
             </button>
@@ -692,9 +325,9 @@
         <div id="main-content" class="d-none">
             <!-- Search and Filters -->
              <div class="search-container">
-                <div class="row g-2 align-items-center">
+                 <div class="row g-2 align-items-center">
                     <div class="col-md-10">
-                        <input type="text" id="search-input" class="form-control search-input" placeholder="What do you want to listen to?">
+                        <input type="text" id="search-input" class="form-control search-input" placeholder="What do you want to play?">
                     </div>
                     <div class="col-md-2">
                         <button id="search-button" class="btn search-button w-100">
@@ -716,40 +349,31 @@
                 <div class="loading-bar"></div><div class="loading-bar"></div><div class="loading-bar"></div><div class="loading-bar"></div>
             </div>
 
-            <div id="search-results" class="row">
-                 <!-- Search results appear here -->
-            </div>
+            <div id="search-results" class="row"></div>
 
             <div id="recommendations-section" class="recommendations-section mt-5 d-none">
                 <h2 class="section-title">Recommended for You</h2>
                 <div id="recommendations" class="row"></div>
-                 <div id="loading-recommendations" class="loading-animation d-none">
-                    <div class="loading-bar"></div><div class="loading-bar"></div><div class="loading-bar"></div><div class="loading-bar"></div>
-                </div>
+                 <div id="loading-recommendations" class="loading-animation d-none"></div>
             </div>
 
             <div id="playlists-section" class="playlists-section mt-5 d-none">
                 <h2 class="section-title">Your Playlists</h2>
                 <div id="playlists" class="row"></div>
-                 <div id="loading-playlists" class="loading-animation d-none">
-                     <div class="loading-bar"></div><div class="loading-bar"></div><div class="loading-bar"></div><div class="loading-bar"></div>
-                 </div>
+                 <div id="loading-playlists" class="loading-animation d-none"></div>
             </div>
         </div>
 
         <div id="details-view" class="d-none">
             <button id="back-button" class="back-button"><i class="fas fa-arrow-left me-2"></i> Back</button>
-            <div id="details-content">
-                <!-- Details (Artist, Album, Playlist) loaded here -->
-            </div>
-             <div id="loading-details" class="loading-animation d-none">
-                <div class="loading-bar"></div><div class="loading-bar"></div><div class="loading-bar"></div><div class="loading-bar"></div>
-            </div>
+            <div id="details-content"></div>
+             <div id="loading-details" class="loading-animation d-none"></div>
         </div>
     </div>
 
     <div id="player-container" class="player-container">
         <div class="row align-items-center">
+            <!-- Currently Playing Info -->
             <div class="col-md-3 col-sm-12">
                 <div class="currently-playing">
                     <img id="currently-playing-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Currently Playing" class="currently-playing-img">
@@ -759,6 +383,7 @@
                     </div>
                 </div>
             </div>
+            <!-- Player Controls -->
             <div class="col-md-6 col-sm-12 player-controls-center">
                  <div class="player-buttons">
                     <button id="prev-button" class="control-button" title="Previous" disabled>
@@ -771,7 +396,7 @@
                         <i class="fas fa-step-forward"></i>
                     </button>
                  </div>
-                <div class="progress-wrapper">
+                 <div class="progress-wrapper">
                     <span id="current-time" class="time-display">0:00</span>
                      <div class="progress-container" id="progress-bar-container">
                          <div class="progress">
@@ -779,17 +404,16 @@
                          </div>
                      </div>
                      <span id="total-time" class="time-display">0:00</span>
-                </div>
-                 <div class="visualizer-container" id="audio-visualizer">
-                    <!-- Visualizer bars generated by JS -->
-                </div>
+                 </div>
+                 <!-- Removed Visualizer Container -->
             </div>
+            <!-- Volume Control -->
             <div class="col-md-3 col-sm-12">
                 <div class="volume-control">
-                    <button id="volume-button" class="control-button" title="Mute/Unmute">
+                    <button id="volume-button" class="control-button" title="Mute/Unmute" disabled>
                         <i class="fas fa-volume-up"></i>
                     </button>
-                    <input type="range" class="form-range volume-slider" id="volume-slider" min="0" max="100" value="80">
+                    <input type="range" class="form-range volume-slider" id="volume-slider" min="0" max="100" value="80" disabled>
                 </div>
             </div>
         </div>
@@ -800,42 +424,49 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // --- Configuration ---
-        // IMPORTANT: Replace with your actual Spotify Client ID.
-        // You need to register an app at https://developer.spotify.com/dashboard/
-        const SPOTIFY_CLIENT_ID = '414c70fe6b3e4d5f9a8fe0fc8d91a86d'; // <--- REPLACE THIS
+        const SPOTIFY_CLIENT_ID = '414c70fe6b3e4d5f9a8fe0fc8d91a86d'; // KEEP YOUR CLIENT ID HERE
         const REDIRECT_URI = window.location.origin + window.location.pathname;
+        // ****** IMPORTANT: ADD 'streaming' SCOPE ******
         const SCOPE = [
+            'streaming', // Required for SDK playback control
             'user-read-private',
             'user-read-email',
-            'user-read-playback-state', // Needed for SDK, but useful for context
-            'user-modify-playback-state', // Needed for SDK, but useful for context
+            'user-read-playback-state',
+            'user-modify-playback-state',
             'user-read-recently-played',
-            'user-top-read', // For recommendations
+            'user-top-read',
             'user-library-read',
-            'playlist-read-private', // Read user's private playlists
+            'playlist-read-private',
             'playlist-read-collaborative'
         ].join(' ');
 
         // --- State Variables ---
         let accessToken = null;
-        let currentTrack = null;
-        let isPlaying = false;
-        let currentVolume = 80;
+        let spotifyPlayer = null; // Holds the SDK player instance
+        let currentDeviceId = null; // Holds the active device ID from the SDK
+        let currentTrack = null; // Holds the track object currently playing *according to SDK state*
+        let isPlaying = false; // Playback state *according to SDK state*
+        let currentVolume = 80; // UI volume (0-100)
         let isMuted = false;
         let previousVolume = 80;
-        let audioElement = new Audio();
-        let currentQueue = []; // Array of track objects
-        let currentQueueIndex = -1; // Index in the currentQueue
-        let visualizerAnimationFrame = null;
-        let audioContext = null;
-        let analyser = null;
-        let sourceNode = null;
-        let dataArray = null;
-        let currentCategory = 'all';
-        let currentView = 'main'; // 'main' or 'details'
-        let lastSearchData = null; // Cache last search result for filtering
+        // Remove audioElement and related visualizer variables
+        // let audioElement = new Audio(); // NO LONGER NEEDED
+        // let visualizerAnimationFrame = null; // NO LONGER NEEDED
+        // let audioContext = null; // NO LONGER NEEDED
+        // let analyser = null; // NO LONGER NEEDED
+        // let sourceNode = null; // NO LONGER NEEDED
+        // let dataArray = null; // NO LONGER NEEDED
+        let currentQueue = []; // Still useful for context (URIs)
+        let currentQueueIndex = -1; // Still useful for context
+        let currentProgressMs = 0; // Store progress from SDK state
+        let currentDurationMs = 0; // Store duration from SDK state
+        let progressUpdateInterval = null; // Interval timer for smoother progress bar UI
 
-        // --- DOM Elements ---
+        let currentCategory = 'all';
+        let currentView = 'main';
+        let lastSearchData = null;
+
+        // --- DOM Elements (mostly the same) ---
         const loginSection = document.getElementById('login-section');
         const mainContent = document.getElementById('main-content');
         const detailsView = document.getElementById('details-view');
@@ -861,7 +492,7 @@
         const totalTimeDisplay = document.getElementById('total-time');
         const volumeSlider = document.getElementById('volume-slider');
         const volumeButton = document.getElementById('volume-button');
-        const audioVisualizer = document.getElementById('audio-visualizer');
+        // Removed audioVisualizer element
         const userProfile = document.getElementById('user-profile');
         const userName = document.getElementById('user-name');
         const userAvatar = document.getElementById('user-avatar');
@@ -874,18 +505,155 @@
         const toastContainer = document.getElementById('toast-container');
 
         // --- Constants ---
-        const PLACEHOLDER_IMAGE = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22300%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20300%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_17a7b2b7c8c%20text%20%7B%20fill%3Argba(255%2C255%2C255%2C.75)%3Bfont-weight%3Anormal%3Bfont-family%3AHelvetica%2C%20monospace%3Bfont-size%3A15pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_17a7b2b7c8c%22%3E%3Crect%20width%3D%22300%22%20height%3D%22300%22%20fill%3D%22%23777%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22112.5%22%20y%3D%22156.6%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E'; // Simple SVG placeholder
+        const PLACEHOLDER_IMAGE = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22300%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20300%20300%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_17a7b2b7c8c%20text%20%7B%20fill%3Argba(255%2C255%2C255%2C.75)%3Bfont-weight%3Anormal%3Bfont-family%3AHelvetica%2C%20monospace%3Bfont-size%3A15pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_17a7b2b7c8c%22%3E%3Crect%20width%3D%22300%22%20height%3D%22300%22%20fill%3D%22%23777%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22112.5%22%20y%3D%22156.6%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E';
 
         // --- Initialization ---
         function init() {
-            checkAuth();
+            // Check if Client ID is still the placeholder - REMOVED the check as per previous fix.
+             if (SPOTIFY_CLIENT_ID === 'YOUR_SPOTIFY_CLIENT_ID_PLACEHOLDER') { // Keep a placeholder check just in case
+                 alert('ERROR: Spotify Client ID is not set. Please replace the placeholder in the script.');
+                 loginButton.disabled = true;
+                 loginButton.textContent = 'Configuration Needed';
+                 return;
+            }
+
+            // Check for HTTPS (SDK Requirement)
+             if (window.location.protocol !== 'https:') {
+                 console.warn('Spotify SDK requires HTTPS. Playback might not work.');
+                // Optionally show a more prominent warning to the user
+                // showToast("Warning: HTTPS is required for playback.", "warning");
+             }
+
+            checkAuth(); // Checks for existing token
             setupEventListeners();
-            createVisualizerBars();
-            audioElement.volume = currentVolume / 100;
-            volumeSlider.value = currentVolume;
-            updateVolumeIcon();
+            // Removed createVisualizerBars();
+            updateVolumeIcon(); // Update based on default volume
         }
 
+        // --- SDK Initialization ---
+        // This function is called by the SDK script tag once it's loaded
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            console.log("Spotify Web Playback SDK is ready.");
+            // Initialize player only if we have an access token already
+            if (accessToken) {
+                initializeSpotifyPlayer();
+            }
+             // If accessToken is not ready yet, initializeSpotifyPlayer will be called later in onAuthenticated()
+        };
+
+        function initializeSpotifyPlayer() {
+            if (!accessToken) {
+                console.error("Cannot initialize player without an access token.");
+                return;
+            }
+            if (spotifyPlayer) {
+                console.log("Player already initialized.");
+                // Optionally disconnect existing player if re-initializing?
+                // spotifyPlayer.disconnect();
+                 // return;
+            }
+
+            spotifyPlayer = new Spotify.Player({
+                name: 'Spotify Advanced Web Player', // Name shown in Spotify Connect
+                getOAuthToken: cb => { cb(accessToken); },
+                volume: currentVolume / 100 // Initial volume (0.0 to 1.0)
+            });
+
+            // Error handling
+            spotifyPlayer.addListener('initialization_error', ({ message }) => {
+                console.error('Failed to initialize player:', message);
+                showToast(`Player Init Error: ${message}`, 'error');
+                disablePlayerControls();
+            });
+            spotifyPlayer.addListener('authentication_error', ({ message }) => {
+                console.error('Failed to authenticate player:', message);
+                showToast(`Player Auth Error: ${message}. Try refreshing or re-logging.`, 'error');
+                disablePlayerControls();
+                // Potentially force re-authentication
+                 sessionStorage.removeItem('spotify_access_token');
+                 // showLoginView(); // Or reload page
+            });
+            spotifyPlayer.addListener('account_error', ({ message }) => {
+                console.error('Failed to validate Spotify account:', message);
+                showToast(`Account Error: ${message}. (Premium Required?)`, 'error');
+                disablePlayerControls();
+            });
+            spotifyPlayer.addListener('playback_error', ({ message }) => {
+                console.error('Failed to perform playback:', message);
+                showToast(`Playback Error: ${message}`, 'error');
+                 // State might be inconsistent, fetch current state?
+                 // getCurrentPlaybackState();
+            });
+
+            // Playback status updates
+            spotifyPlayer.addListener('player_state_changed', state => {
+                if (!state) {
+                    console.warn("Player state changed to null. Device disconnected?");
+                    // Handle disconnection: disable controls, clear UI?
+                    disablePlayerControls();
+                     updatePlayerUI(null); // Clear UI
+                    currentTrack = null;
+                    isPlaying = false;
+                    currentDeviceId = null; // Clear device ID as it's no longer valid
+                    return;
+                }
+                console.log('Player state changed:', state);
+
+                // Update internal state based on the SDK's report
+                currentTrack = state.track_window.current_track;
+                isPlaying = !state.paused;
+                currentProgressMs = state.position;
+                currentDurationMs = state.duration;
+
+                // Update UI elements
+                updatePlayerUI(currentTrack);
+                updatePlayPauseButton();
+                 updateNextPrevButtons(state.disallows); // Pass disallows object
+                updateProgressBar();
+
+                // Update volume UI based on SDK state ONLY if the device is the current one
+                 if (state.device && state.device.id === currentDeviceId) {
+                     const sdkVolume = Math.round(state.device.volume_percent); // SDK provides 0-100
+                     if (currentVolume !== sdkVolume) { // Avoid feedback loop if user just changed it
+                         currentVolume = sdkVolume;
+                         volumeSlider.value = currentVolume;
+                         updateVolumeIcon();
+                     }
+                 }
+            });
+
+            // Ready
+            spotifyPlayer.addListener('ready', ({ device_id }) => {
+                console.log('Ready with Device ID', device_id);
+                currentDeviceId = device_id;
+                showToast('Web Player Connected', 'success');
+                enablePlayerControls();
+                 // Optionally, transfer playback here automatically?
+                 // transferPlaybackHere();
+            });
+
+            // Not Ready
+            spotifyPlayer.addListener('not_ready', ({ device_id }) => {
+                console.log('Device ID has gone offline', device_id);
+                if (device_id === currentDeviceId) {
+                     showToast('Web Player Disconnected', 'warning');
+                    disablePlayerControls();
+                    currentDeviceId = null; // Clear the ID
+                }
+            });
+
+            // Connect to the player!
+            spotifyPlayer.connect().then(success => {
+                if (success) {
+                    console.log('The Web Playback SDK successfully connected to Spotify!');
+                } else {
+                     console.error('The Web Playback SDK failed to connect to Spotify.');
+                     showToast('Failed to connect web player.', 'error');
+                }
+            });
+        }
+
+        // --- Authentication & Authorization ---
         function checkAuth() {
             const hash = window.location.hash.substring(1);
             const params = new URLSearchParams(hash);
@@ -893,75 +661,33 @@
 
             if (token) {
                 accessToken = token;
-                sessionStorage.setItem('spotify_access_token', token); // Store token
-                window.location.hash = ''; // Clear hash from URL
+                sessionStorage.setItem('spotify_access_token', token);
+                window.location.hash = '';
                 onAuthenticated();
             } else {
                 accessToken = sessionStorage.getItem('spotify_access_token');
                 if (accessToken) {
-                    onAuthenticated();
+                    // Validate token? Optional - make a simple API call like /me
+                     spotifyApiFetch('me').then(profile => {
+                         console.log("Token seems valid.", profile.display_name);
+                         onAuthenticated(); // Proceed if token works
+                     }).catch(error => {
+                         console.warn("Cached token might be invalid.", error);
+                         sessionStorage.removeItem('spotify_access_token');
+                         accessToken = null;
+                         showLoginView(); // Ask for login if token fails
+                     });
                 } else {
                     showLoginView();
                 }
             }
         }
 
-        function setupEventListeners() {
-            loginButton.addEventListener('click', authenticate);
-            searchButton.addEventListener('click', () => performSearch(true)); // Force new search
-            searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(true); });
-            playPauseButton.addEventListener('click', togglePlayPause);
-            prevButton.addEventListener('click', playPrevious);
-            nextButton.addEventListener('click', playNext);
-            progressBarContainer.addEventListener('click', seekTrack);
-            volumeSlider.addEventListener('input', changeVolume);
-            volumeButton.addEventListener('click', toggleMute);
-            backButton.addEventListener('click', showMainView);
-
-            audioElement.addEventListener('timeupdate', updateProgressBar);
-            audioElement.addEventListener('loadedmetadata', updateProgressBar); // Update total time once loaded
-            audioElement.addEventListener('ended', playNext);
-            audioElement.addEventListener('error', handleAudioError);
-            audioElement.addEventListener('play', () => { isPlaying = true; updatePlayPauseButton(); startVisualizer(); });
-            audioElement.addEventListener('pause', () => { isPlaying = false; updatePlayPauseButton(); stopVisualizer(); });
-
-            categoryPills.forEach(pill => {
-                pill.addEventListener('click', function() {
-                    categoryPills.forEach(p => p.classList.remove('active'));
-                    this.classList.add('active');
-                    currentCategory = this.dataset.category;
-                    filterAndDisplayResults(lastSearchData); // Re-filter existing data
-                });
-            });
-        }
-
-        function showLoginView() {
-            loginSection.classList.remove('d-none');
-            mainContent.classList.add('d-none');
-            detailsView.classList.add('d-none');
-            playerContainer.style.display = 'none';
-            userProfile.classList.add('d-none');
-        }
-
-        function showMainView() {
-            loginSection.classList.add('d-none');
-            mainContent.classList.remove('d-none');
-            detailsView.classList.add('d-none');
-            detailsContent.innerHTML = ''; // Clear details content
-            currentView = 'main';
-             // Restore scroll position? Maybe not needed for now.
-        }
-
-         function showDetailsLoading() {
-             detailsContent.innerHTML = ''; // Clear previous content
-             loadingDetails.classList.remove('d-none');
-         }
-         function hideDetailsLoading() {
-             loadingDetails.classList.add('d-none');
-         }
-
-        // --- Authentication ---
         function authenticate() {
+             if (!SPOTIFY_CLIENT_ID || SPOTIFY_CLIENT_ID === 'YOUR_SPOTIFY_CLIENT_ID_PLACEHOLDER') {
+                 alert("Spotify Client ID is not configured properly in the script.");
+                 return;
+             }
             const authUrl = `https://accounts.spotify.com/authorize?client_id=${SPOTIFY_CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPE)}&show_dialog=true`;
             window.location.href = authUrl;
         }
@@ -969,58 +695,86 @@
         function onAuthenticated() {
             loginSection.classList.add('d-none');
             mainContent.classList.remove('d-none');
-            detailsView.classList.add('d-none'); // Ensure details view is hidden initially
+            detailsView.classList.add('d-none');
             currentView = 'main';
-            fetchUserProfile();
+
+            fetchUserProfile(); // Fetch user info for navbar
             fetchRecommendations();
             fetchUserPlaylists();
+
+             // Initialize the player now that we have the token
+             // Check if SDK is already loaded (it might be if token was from sessionStorage)
+            if (typeof Spotify !== 'undefined') {
+                 initializeSpotifyPlayer();
+            } else {
+                 console.warn("Spotify SDK not ready yet, waiting for onSpotifyWebPlaybackSDKReady...");
+                 // onSpotifyWebPlaybackSDKReady will call initializeSpotifyPlayer when loaded
+            }
         }
 
+        // --- API Fetch Helper ---
         async function spotifyApiFetch(endpoint, options = {}) {
-             const defaultHeaders = {
-                 'Authorization': `Bearer ${accessToken}`
-             };
-             const config = {
-                 ...options,
-                 headers: {
-                     ...defaultHeaders,
-                     ...options.headers,
-                 },
-             };
-
-             try {
-                 const response = await fetch(`https://api.spotify.com/v1/${endpoint}`, config);
-
-                 if (response.status === 401) {
-                     showToast('Session expired. Please log in again.', 'warning');
-                     sessionStorage.removeItem('spotify_access_token');
-                     accessToken = null;
-                     showLoginView();
-                     throw new Error('Unauthorized'); // Stop further execution in this chain
-                 }
-                 if (!response.ok) {
-                     const errorData = await response.json().catch(() => ({})); // Try to get error details
-                     console.error(`API Error ${response.status}: ${response.statusText}`, errorData);
-                     throw new Error(`API Error: ${response.status} ${response.statusText}`);
-                 }
-                 // Handle cases where response might be empty (e.g., PUT requests)
-                 if (response.status === 204 || response.headers.get('content-length') === '0') {
-                     return null; // Or return an empty object/true based on context
-                 }
-                 return await response.json();
-             } catch (error) {
-                 if (error.message !== 'Unauthorized') { // Don't double-toast for auth errors
-                    console.error('Network or API fetch error:', error);
-                     showToast(`Error communicating with Spotify: ${error.message}`, 'error');
-                 }
-                 throw error; // Re-throw to be caught by calling function if needed
-             }
-         }
+            if (!accessToken) {
+                showToast('Not authenticated.', 'error');
+                showLoginView(); // Should not happen if logic is correct, but safety check
+                throw new Error('No access token');
+            }
+            const defaultHeaders = {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json' // Assume JSON unless specified otherwise
+            };
+            const config = {
+                ...options,
+                headers: { ...defaultHeaders, ...options.headers },
+            };
+            // Stringify body if it's an object and method needs it
+            if (config.body && typeof config.body === 'object' && (config.method === 'PUT' || config.method === 'POST' || config.method === 'DELETE')) {
+                config.body = JSON.stringify(config.body);
+            }
 
 
-        // --- API Calls & Data Handling ---
-        async function fetchUserProfile() {
             try {
+                const response = await fetch(`https://api.spotify.com/v1/${endpoint}`, config);
+                if (response.status === 401) { // Unauthorized
+                    showToast('Session expired. Please log in again.', 'warning');
+                    sessionStorage.removeItem('spotify_access_token');
+                    accessToken = null;
+                     if(spotifyPlayer) spotifyPlayer.disconnect(); // Disconnect SDK
+                    showLoginView();
+                    throw new Error('Unauthorized');
+                }
+                 if (response.status === 403) { // Forbidden (e.g., Premium required for playback actions)
+                     const errorData = await response.json().catch(() => ({}));
+                     console.error(`API Error 403: Forbidden`, errorData);
+                     const reason = errorData?.error?.reason;
+                     if (reason === 'PREMIUM_REQUIRED' || errorData?.error?.message?.includes('Premium required')) {
+                        showToast('Spotify Premium required for this action.', 'warning');
+                     } else {
+                        showToast(`Action forbidden: ${errorData?.error?.message || 'Check permissions/scopes.'}`, 'warning');
+                     }
+                    throw new Error(`Forbidden: ${reason || response.statusText}`);
+                 }
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error(`API Error ${response.status}: ${response.statusText}`, errorData);
+                    throw new Error(`API Error (${response.status}): ${errorData?.error?.message || response.statusText}`);
+                }
+                if (response.status === 204 || response.headers.get('content-length') === '0') {
+                    return null; // No content
+                }
+                return await response.json();
+            } catch (error) {
+                if (error.message !== 'Unauthorized' && !error.message.startsWith('Forbidden')) {
+                    console.error('Network or API fetch error:', error);
+                    showToast(`Error: ${error.message}`, 'error');
+                }
+                throw error; // Re-throw
+            }
+        }
+
+        // --- UI / Data Fetching (mostly unchanged, but adapted for SDK context) ---
+        async function fetchUserProfile() { /* Unchanged */
+             try {
                 const data = await spotifyApiFetch('me');
                 userName.textContent = data.display_name || 'User';
                 userAvatar.src = data.images?.[0]?.url || PLACEHOLDER_IMAGE;
@@ -1029,846 +783,561 @@
                 showToast('Failed to load user profile.', 'error');
             }
         }
-
-        async function performSearch(forceNew = false) {
-            const query = searchInput.value.trim();
-            if (!query) {
-                showToast('Please enter a search term.', 'warning');
-                return;
-            }
-
-             // If not forcing new and query is same as last, just filter
-             if (!forceNew && lastSearchData && lastSearchData.query === query) {
-                 filterAndDisplayResults(lastSearchData);
-                 return;
-             }
+        async function performSearch(forceNew = false) { /* Unchanged logic, calls filterAndDisplayResults */
+             const query = searchInput.value.trim();
+            if (!query) { showToast('Please enter a search term.', 'warning'); return; }
+            if (!forceNew && lastSearchData && lastSearchData.query === query) { filterAndDisplayResults(lastSearchData); return; }
 
             showLoading(searchResultsContainer);
-            searchResultsContainer.innerHTML = ''; // Clear previous results immediately
-            // Hide recommendations/playlists during search
+            searchResultsContainer.innerHTML = '';
             recommendationsSection.classList.add('d-none');
             playlistsSection.classList.add('d-none');
 
             try {
-                const data = await spotifyApiFetch(`search?q=${encodeURIComponent(query)}&type=track,artist,album,playlist&limit=20`);
-                lastSearchData = { ...data, query: query }; // Cache the result with the query
+                const data = await spotifyApiFetch(`search?q=${encodeURIComponent(query)}&type=track,artist,album,playlist&limit=20&market=from_token`);
+                lastSearchData = { ...data, query: query };
                 filterAndDisplayResults(lastSearchData);
-            } catch (error) {
-                searchResultsContainer.innerHTML = `<p class="text-center text-white-50">Search failed. Please try again later.</p>`;
-            } finally {
-                hideLoading(searchResultsContainer);
-            }
+            } catch (error) { searchResultsContainer.innerHTML = `<p class="text-center text-white-50">Search failed.</p>`; }
+            finally { hideLoading(searchResultsContainer); }
         }
-
-        function filterAndDisplayResults(data) {
-             if (!data) return;
-
-            searchResultsContainer.innerHTML = ''; // Clear previous filtered results
+        function filterAndDisplayResults(data) { /* Unchanged */
+            if (!data) return;
+            searchResultsContainer.innerHTML = '';
             let hasResults = false;
-            const fragment = document.createDocumentFragment(); // Use fragment for performance
-
-             // Helper to check category match
+            const fragment = document.createDocumentFragment();
             const categoryMatch = (itemType) => currentCategory === 'all' || currentCategory === itemType;
 
-            if (data.tracks?.items && categoryMatch('track')) {
-                data.tracks.items.forEach(item => { fragment.appendChild(createCard(item, 'track')); hasResults = true; });
-            }
-            if (data.artists?.items && categoryMatch('artist')) {
-                data.artists.items.forEach(item => { fragment.appendChild(createCard(item, 'artist')); hasResults = true; });
-            }
-            if (data.albums?.items && categoryMatch('album')) {
-                data.albums.items.forEach(item => { fragment.appendChild(createCard(item, 'album')); hasResults = true; });
-            }
-             if (data.playlists?.items && categoryMatch('playlist')) {
-                 data.playlists.items.forEach(item => { fragment.appendChild(createCard(item, 'playlist')); hasResults = true; });
-             }
+            if (data.tracks?.items && categoryMatch('track')) { data.tracks.items.forEach(item => { fragment.appendChild(createCard(item, 'track')); hasResults = true; }); }
+            if (data.artists?.items && categoryMatch('artist')) { data.artists.items.forEach(item => { fragment.appendChild(createCard(item, 'artist')); hasResults = true; }); }
+            if (data.albums?.items && categoryMatch('album')) { data.albums.items.forEach(item => { fragment.appendChild(createCard(item, 'album')); hasResults = true; }); }
+            if (data.playlists?.items && categoryMatch('playlist')) { data.playlists.items.forEach(item => { fragment.appendChild(createCard(item, 'playlist')); hasResults = true; }); }
 
             searchResultsContainer.appendChild(fragment);
-
-             if (!hasResults && searchInput.value.trim()) {
-                 searchResultsContainer.innerHTML = `
-                    <div class="col-12 text-center p-5">
-                        <h4 class="text-white-50">No results found for "${searchInput.value}" in this category.</h4>
-                        <p class="text-muted">Try searching again or selecting a different category.</p>
-                    </div>
-                `;
-             }
-         }
-
-        async function fetchRecommendations() {
+            if (!hasResults && searchInput.value.trim()) { searchResultsContainer.innerHTML = `<div class="col-12 text-center p-5"><h4 class="text-white-50">No results found.</h4></div>`; }
+        }
+        async function fetchRecommendations() { /* Unchanged logic */
             showLoading(recommendationsContainer, loadingRecommendations);
-            recommendationsSection.classList.add('d-none'); // Hide until loaded
+            recommendationsSection.classList.add('d-none');
             try {
                 const topTracksData = await spotifyApiFetch('me/top/tracks?limit=5&time_range=short_term');
                 let seedTracks = '';
-                if (topTracksData?.items?.length > 0) {
-                    seedTracks = topTracksData.items.map(track => track.id).join(',');
-                } else {
-                    // Fallback: Use featured playlists' first track as seed if no top tracks
+                if (topTracksData?.items?.length > 0) { seedTracks = topTracksData.items.map(track => track.id).join(','); }
+                else {
                     const featuredPlaylists = await spotifyApiFetch('browse/featured-playlists?limit=1');
                     if (featuredPlaylists?.playlists?.items?.[0]?.id) {
-                         const playlistTracks = await spotifyApiFetch(`playlists/${featuredPlaylists.playlists.items[0].id}/tracks?limit=1`);
-                         if (playlistTracks?.items?.[0]?.track?.id) {
-                             seedTracks = playlistTracks.items[0].track.id;
-                         }
+                        const playlistTracks = await spotifyApiFetch(`playlists/${featuredPlaylists.playlists.items[0].id}/tracks?limit=1`);
+                        if (playlistTracks?.items?.[0]?.track?.id) { seedTracks = playlistTracks.items[0].track.id; }
                     }
                 }
-
                 if (!seedTracks) {
-                    console.warn("Could not find seed tracks for recommendations.");
-                     recommendationsContainer.innerHTML = '<p class="text-center text-white-50">Could not load recommendations at this time.</p>';
-                     recommendationsSection.classList.remove('d-none');
-                     return;
+                    recommendationsContainer.innerHTML = '<p class="text-center text-white-50 col-12">Could not determine recommendations.</p>';
+                    recommendationsSection.classList.remove('d-none');
+                    return;
                 }
-
-                const recommendationsData = await spotifyApiFetch(`recommendations?seed_tracks=${seedTracks}&limit=8`);
-                displayItems(recommendationsData.tracks, recommendationsContainer, 'track', true); // isRecommendation = true
+                const recommendationsData = await spotifyApiFetch(`recommendations?seed_tracks=${seedTracks}&limit=8&market=from_token`);
+                displayItems(recommendationsData.tracks, recommendationsContainer, 'track', true);
                 recommendationsSection.classList.remove('d-none');
-            } catch (error) {
-                recommendationsContainer.innerHTML = '<p class="text-center text-white-50">Could not load recommendations.</p>';
-                 recommendationsSection.classList.remove('d-none'); // Show section even with error message
-            } finally {
-                hideLoading(recommendationsContainer, loadingRecommendations);
-            }
-        }
-
-        async function fetchUserPlaylists() {
-            showLoading(playlistsContainer, loadingPlaylists);
+            } catch (error) { recommendationsContainer.innerHTML = '<p class="text-center text-white-50 col-12">Could not load recommendations.</p>'; recommendationsSection.classList.remove('d-none');}
+            finally { hideLoading(recommendationsContainer, loadingRecommendations); }
+         }
+        async function fetchUserPlaylists() { /* Unchanged logic */
+             showLoading(playlistsContainer, loadingPlaylists);
             playlistsSection.classList.add('d-none');
             try {
                 const data = await spotifyApiFetch('me/playlists?limit=12');
                 displayItems(data.items, playlistsContainer, 'playlist');
                 playlistsSection.classList.remove('d-none');
-            } catch (error) {
-                 playlistsContainer.innerHTML = '<p class="text-center text-white-50">Could not load your playlists.</p>';
-                 playlistsSection.classList.remove('d-none');
-            } finally {
-                hideLoading(playlistsContainer, loadingPlaylists);
-            }
+            } catch (error) { playlistsContainer.innerHTML = '<p class="text-center text-white-50 col-12">Could not load your playlists.</p>'; playlistsSection.classList.remove('d-none'); }
+            finally { hideLoading(playlistsContainer, loadingPlaylists); }
         }
-
-        async function fetchDetails(type, id) {
-            showMainView(); // Go back to main content structure
-            mainContent.classList.add('d-none'); // Hide main content grid
-            detailsView.classList.remove('d-none'); // Show details container
-            showDetailsLoading(); // Show loading indicator in details view
+        async function fetchDetails(type, id) { /* Unchanged logic, calls createDetailsHeader and renderDetailsPage */
+            showMainView();
+            mainContent.classList.add('d-none');
+            detailsView.classList.remove('d-none');
+            showDetailsLoading();
             currentView = 'details';
-
             try {
-                 let detailsData, items = [], itemTypeForList = 'track'; // Usually tracks
-                 let headerHtml = '';
-
+                 let detailsData, items = [], itemTypeForList = 'track', headerHtml = '';
                  switch (type) {
                      case 'artist':
                          detailsData = await spotifyApiFetch(`artists/${id}`);
-                         const topTracks = await spotifyApiFetch(`artists/${id}/top-tracks?market=US`); // Use a market
+                         const topTracks = await spotifyApiFetch(`artists/${id}/top-tracks?market=US`);
                          items = topTracks?.tracks || [];
                          headerHtml = createDetailsHeader(detailsData, type);
                          break;
                      case 'album':
-                         detailsData = await spotifyApiFetch(`albums/${id}`);
-                         items = detailsData?.tracks?.items || [];
-                         // Album tracks might be simplified, fetch full track data for the first few if needed for previews
-                         // For now, we assume they have enough info or use the album context for playing
+                         detailsData = await spotifyApiFetch(`albums/${id}?market=from_token`);
+                         items = detailsData?.tracks?.items || []; // Need full track for play button state
                          headerHtml = createDetailsHeader(detailsData, type);
                          break;
                      case 'playlist':
-                         detailsData = await spotifyApiFetch(`playlists/${id}`);
-                         const playlistTracks = await spotifyApiFetch(`playlists/${id}/tracks?limit=50`);
-                         items = playlistTracks?.items?.map(item => item.track).filter(Boolean) || []; // Extract track object and filter nulls
+                         detailsData = await spotifyApiFetch(`playlists/${id}?market=from_token`);
+                         const playlistTracks = await spotifyApiFetch(`playlists/${id}/tracks?limit=50&market=from_token`);
+                         items = playlistTracks?.items?.map(item => item.track).filter(Boolean) || [];
                          headerHtml = createDetailsHeader(detailsData, type);
                          break;
-                    case 'track': // Although less common to have a "details" page for a single track
-                        detailsData = await spotifyApiFetch(`tracks/${id}`);
-                         items = [detailsData]; // List contains only this track
-                        headerHtml = createDetailsHeader(detailsData.album, 'album', detailsData); // Show album art/info, pass track
+                    case 'track':
+                        detailsData = await spotifyApiFetch(`tracks/${id}?market=from_token`);
+                         items = [detailsData];
+                        headerHtml = createDetailsHeader(detailsData.album, 'album', detailsData);
                         itemTypeForList = 'track';
                         break;
-                     default:
-                         throw new Error('Unknown details type');
+                     default: throw new Error('Unknown details type');
                  }
-
-                 renderDetailsPage(headerHtml, items, itemTypeForList, detailsData); // Pass original data for context if needed
-
-             } catch (error) {
-                 detailsContent.innerHTML = `<p class="text-center text-white-50">Failed to load details. ${error.message}</p>`;
-                 showToast('Error loading details.', 'error');
-             } finally {
-                hideDetailsLoading();
-             }
+                 renderDetailsPage(headerHtml, items, itemTypeForList, detailsData);
+             } catch (error) { detailsContent.innerHTML = `<p class="text-center text-white-50">Failed to load details. ${error.message}</p>`; showToast('Error loading details.', 'error'); }
+             finally { hideDetailsLoading(); }
         }
 
-
-        // --- UI Rendering ---
-        function displayItems(items, container, type, isRecommendation = false) {
-            container.innerHTML = ''; // Clear previous
-            if (!items || items.length === 0) {
-                container.innerHTML = `<p class="text-center text-white-50 col-12">No ${type}s found.</p>`;
-                return;
-            }
+        // --- UI Rendering (mostly unchanged, but createCard Play button calls handlePlayAction) ---
+        function displayItems(items, container, type, isRecommendation = false) { /* Unchanged */
+            container.innerHTML = '';
+            if (!items || items.length === 0) { container.innerHTML = `<p class="text-center text-white-50 col-12">No ${type}s found.</p>`; return; }
             const fragment = document.createDocumentFragment();
-            items.forEach(item => {
-                 if (item) { // Ensure item is not null/undefined
-                     fragment.appendChild(createCard(item, type, isRecommendation));
-                 }
-            });
+            items.forEach(item => { if (item) { fragment.appendChild(createCard(item, type, isRecommendation)); }});
             container.appendChild(fragment);
         }
-
-        function createCard(item, type, isRecommendation = false) {
-            const colDiv = document.createElement('div');
-             // Adjust column classes based on where the card is shown
-            colDiv.className = 'col-lg-3 col-md-4 col-sm-6 mb-4'; // Responsive grid
+        function createCard(item, type, isRecommendation = false) { /* Play button now calls handlePlayAction */
+             const colDiv = document.createElement('div');
+            colDiv.className = 'col-lg-3 col-md-4 col-sm-6 mb-4';
             colDiv.dataset.id = item.id;
             colDiv.dataset.type = type;
-
             let imageUrl, title, subtitle, badgeText, imageClass = 'item-img';
 
             switch (type) {
-                case 'track':
-                    imageUrl = item.album?.images?.[0]?.url || PLACEHOLDER_IMAGE;
-                    title = item.name;
-                    subtitle = item.artists?.map(a => a.name).join(', ') || 'Unknown Artist';
-                    badgeText = 'Song';
-                    break;
-                case 'artist':
-                    imageUrl = item.images?.[0]?.url || PLACEHOLDER_IMAGE;
-                    title = item.name;
-                    subtitle = `${(item.followers?.total || 0).toLocaleString()} followers`;
-                    badgeText = 'Artist';
-                    imageClass += ' artist-img'; // Add class for circle
-                    break;
-                case 'album':
-                    imageUrl = item.images?.[0]?.url || PLACEHOLDER_IMAGE;
-                    title = item.name;
-                    subtitle = item.artists?.map(a => a.name).join(', ') || 'Unknown Artist';
-                     badgeText = item.album_type ? item.album_type.charAt(0).toUpperCase() + item.album_type.slice(1) : 'Album';
-                    break;
-                case 'playlist':
-                    imageUrl = item.images?.[0]?.url || PLACEHOLDER_IMAGE;
-                    title = item.name;
-                    subtitle = `By ${item.owner?.display_name || 'Spotify'}`;
-                    badgeText = 'Playlist';
-                    break;
-                default:
-                    return colDiv; // Return empty div if type is unknown
+                case 'track': imageUrl = item.album?.images?.[0]?.url || PLACEHOLDER_IMAGE; title = item.name; subtitle = item.artists?.map(a => a.name).join(', ') || 'Unknown Artist'; badgeText = 'Song'; break;
+                case 'artist': imageUrl = item.images?.[0]?.url || PLACEHOLDER_IMAGE; title = item.name; subtitle = `${(item.followers?.total || 0).toLocaleString()} followers`; badgeText = 'Artist'; imageClass += ' artist-img'; break;
+                case 'album': imageUrl = item.images?.[0]?.url || PLACEHOLDER_IMAGE; title = item.name; subtitle = item.artists?.map(a => a.name).join(', ') || 'Unknown Artist'; badgeText = item.album_type ? item.album_type.charAt(0).toUpperCase() + item.album_type.slice(1) : 'Album'; break;
+                case 'playlist': imageUrl = item.images?.[0]?.url || PLACEHOLDER_IMAGE; title = item.name; subtitle = `By ${item.owner?.display_name || 'Spotify'}`; badgeText = 'Playlist'; break;
+                default: return colDiv;
             }
-
             colDiv.innerHTML = `
                 <div class="item-card">
-                    <div class="card-img-container">
-                        <img src="${imageUrl}" alt="${title}" class="${imageClass}" loading="lazy">
-                        <div class="play-button-wrapper">
-                            <button class="play-button" aria-label="Play ${title}">
-                                <i class="fas fa-play"></i>
-                            </button>
-                        </div>
+                    <div class="card-img-container"><img src="${imageUrl}" alt="${title}" class="${imageClass}" loading="lazy">
+                        <div class="play-button-wrapper"><button class="play-button" aria-label="Play ${title}"><i class="fas fa-play"></i></button></div>
                     </div>
                     <div class="card-info">
-                        <div class="item-title">${title}</div>
-                        <div class="item-subtitle">${subtitle}</div>
+                        <div class="item-title">${title}</div><div class="item-subtitle">${subtitle}</div>
                         ${badgeText ? `<span class="item-type-badge">${badgeText}</span>` : ''}
                     </div>
-                </div>
-            `;
+                </div>`;
 
-             // Event listener for the Play button specifically
             const playButton = colDiv.querySelector('.play-button');
-            playButton.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent card click event from firing
-                 handlePlayAction(item, type, isRecommendation);
-            });
+            playButton.addEventListener('click', (e) => { e.stopPropagation(); handlePlayAction(item, type); }); // Pass item and type
 
-             // Event listener for the entire card (for details view)
-             // Don't add details click for tracks shown in recommendations/search results directly
-             if (type !== 'track' || !isRecommendation) { // Allow clicking track cards if not in recs/search maybe? Or never for tracks? Let's disable for tracks for now.
-                 if (type !== 'track') {
-                     colDiv.querySelector('.item-card').addEventListener('click', () => {
-                        fetchDetails(type, item.id);
-                    });
-                 }
-             }
-
-
+            if (type !== 'track') { colDiv.querySelector('.item-card').addEventListener('click', () => { fetchDetails(type, item.id); }); }
             return colDiv;
         }
-
-        function createDetailsHeader(data, type, trackData = null) {
-             let imageUrl, title, subtitle1 = '', subtitle2 = '', badgeText = '';
-             let imgClass = 'details-img';
-
+        function createDetailsHeader(data, type, trackData = null) { /* Unchanged */
+             let imageUrl, title, subtitle1 = '', subtitle2 = '', badgeText = ''; let imgClass = 'details-img';
              switch (type) {
-                 case 'artist':
-                     imageUrl = data.images?.[0]?.url || PLACEHOLDER_IMAGE;
-                     title = data.name;
-                     subtitle1 = `${(data.followers?.total || 0).toLocaleString()} followers`;
-                     subtitle2 = data.genres?.slice(0, 3).map(g => g.charAt(0).toUpperCase() + g.slice(1)).join(', ') || '';
-                     badgeText = 'Artist';
-                     imgClass += ' artist'; // Circle image
-                     break;
-                 case 'album':
-                     imageUrl = data.images?.[0]?.url || PLACEHOLDER_IMAGE;
-                     title = data.name;
-                     if (trackData) { // If called from track details, show track info
-                         title = trackData.name;
-                         subtitle1 = `From "${data.name}"`;
-                         subtitle2 = trackData.artists?.map(a => a.name).join(', ') || 'Unknown Artist';
-                         badgeText = 'Song';
-                     } else {
-                         subtitle1 = data.artists?.map(a => a.name).join(', ') || 'Unknown Artist';
-                         subtitle2 = `${data.total_tracks || 0} tracks • ${data.release_date?.substring(0, 4) || ''}`;
-                         badgeText = data.album_type ? data.album_type.charAt(0).toUpperCase() + data.album_type.slice(1) : 'Album';
-                     }
-                     break;
-                 case 'playlist':
-                     imageUrl = data.images?.[0]?.url || PLACEHOLDER_IMAGE;
-                     title = data.name;
-                     subtitle1 = `By ${data.owner?.display_name || 'Spotify'}`;
-                     subtitle2 = `${data.tracks?.total || 0} tracks • ${data.followers?.total ? data.followers.total.toLocaleString() + ' followers' : ''}`;
-                     badgeText = 'Playlist';
-                     break;
-                 default: return '';
+                 case 'artist': imageUrl = data.images?.[0]?.url || PLACEHOLDER_IMAGE; title = data.name; subtitle1 = `${(data.followers?.total || 0).toLocaleString()} followers`; subtitle2 = data.genres?.slice(0, 3).map(g => g.charAt(0).toUpperCase() + g.slice(1)).join(', ') || ''; badgeText = 'Artist'; imgClass += ' artist'; break;
+                 case 'album': imageUrl = data.images?.[0]?.url || PLACEHOLDER_IMAGE; title = data.name; if (trackData) { title = trackData.name; subtitle1 = `From "${data.name}"`; subtitle2 = trackData.artists?.map(a => a.name).join(', ') || 'Unknown Artist'; badgeText = 'Song'; } else { subtitle1 = data.artists?.map(a => a.name).join(', ') || 'Unknown Artist'; subtitle2 = `${data.total_tracks || 0} tracks • ${data.release_date?.substring(0, 4) || ''}`; badgeText = data.album_type ? data.album_type.charAt(0).toUpperCase() + data.album_type.slice(1) : 'Album'; } break;
+                 case 'playlist': imageUrl = data.images?.[0]?.url || PLACEHOLDER_IMAGE; title = data.name; subtitle1 = `By ${data.owner?.display_name || 'Spotify'}`; subtitle2 = `${data.tracks?.total || 0} tracks ${data.followers?.total ? '• '+data.followers.total.toLocaleString() + ' followers' : ''}`; badgeText = 'Playlist'; break; default: return '';
              }
-
-             return `
-                 <div class="details-header">
-                     <img src="${imageUrl}" alt="${title}" class="${imgClass}">
-                     <div class="details-info">
-                         ${badgeText ? `<span class="item-type-badge mb-2">${badgeText}</span>` : ''}
-                         <h1>${title}</h1>
-                         ${subtitle1 ? `<p>${subtitle1}</p>` : ''}
-                         ${subtitle2 ? `<p class="text-white-50">${subtitle2}</p>` : ''}
-                         <!-- Add a Play button for the whole context (Album/Playlist/Artist Top) -->
-                         <button class="btn btn-success btn-lg mt-3 play-context-button" data-id="${data.id}" data-type="${type}">
-                             <i class="fas fa-play me-2"></i> Play
-                         </button>
-                     </div>
-                 </div>
-             `;
-         }
-
-         function renderDetailsPage(headerHtml, items, itemType, contextData) {
-             let listHtml = `<h3 class="mb-3">${itemType === 'track' ? 'Tracks' : 'Items'}</h3>`; // Adjust title based on what's listed
-
-             if (items && items.length > 0) {
-                 listHtml += '<ul class="track-list">';
-                 items.forEach((item, index) => {
-                     // Make sure we have a valid track object, especially for playlists
-                     const track = itemType === 'track' ? item : (item.track || item); // Handle playlist item structure
-                     if (track && track.id) { // Ensure track and its ID exist
-                        const imageUrl = track.album?.images?.slice(-1)[0]?.url; // Smallest image for list item maybe? Or none?
+             return `<div class="details-header"><img src="${imageUrl}" alt="${title}" class="${imgClass}"><div class="details-info">${badgeText ? `<span class="item-type-badge mb-2">${badgeText}</span>` : ''}<h1>${title}</h1>${subtitle1 ? `<p>${subtitle1}</p>` : ''}${subtitle2 ? `<p class="text-white-50">${subtitle2}</p>` : ''}<button class="btn btn-success btn-lg mt-3 play-context-button" data-uri="${data.uri}" data-type="${type}"><i class="fas fa-play me-2"></i> Play</button></div></div>`;
+        }
+        function renderDetailsPage(headerHtml, items, itemType, contextData) { /* Play buttons call handlePlayAction */
+            let listHtml = `<h3 class="mb-3">${itemType === 'track' ? 'Tracks' : 'Items'}</h3>`;
+            if (items && items.length > 0) {
+                listHtml += '<ul class="track-list">';
+                items.forEach((item, index) => {
+                    const track = itemType === 'track' ? item : (item.track || item);
+                     if (track && track.id && track.type === 'track') { // Ensure it's actually a track object
                          const duration = track.duration_ms ? formatTime(track.duration_ms / 1000) : '--:--';
+                         const isPlayable = track.is_playable !== false; // Check if track is playable in user's market
                          listHtml += `
-                             <li class="track-list-item" data-track-index="${index}">
-                                 <span class="track-number">${index + 1}</span>
-                                 <div class="track-details">
-                                     <div class="track-list-title">${track.name || 'Unknown Track'}</div>
-                                     <div class="track-list-artist">${track.artists?.map(a => a.name).join(', ') || 'Unknown Artist'}</div>
-                                 </div>
-                                 <span class="track-duration">${duration}</span>
-                                 <button class="track-play-button" aria-label="Play ${track.name}" ${track.preview_url ? '' : 'disabled title="Preview not available"'}>
-                                     <i class="fas fa-play"></i>
-                                 </button>
-                             </li>
-                         `;
-                    } else {
-                         console.warn("Skipping invalid track item in details list:", item);
-                    }
-                 });
-                 listHtml += '</ul>';
-             } else {
-                 listHtml += `<p class="text-white-50">No ${itemType}s found for this item.</p>`;
-             }
+                            <li class="track-list-item" data-track-index="${index}" data-track-uri="${track.uri}">
+                                <span class="track-number">${index + 1}</span>
+                                <div class="track-details">
+                                    <div class="track-list-title">${track.name || 'Unknown Track'}</div>
+                                    <div class="track-list-artist">${track.artists?.map(a => a.name).join(', ') || 'Unknown Artist'}</div>
+                                </div>
+                                <span class="track-duration">${duration}</span>
+                                <button class="track-play-button" aria-label="Play ${track.name}" ${!isPlayable ? 'disabled title="Track not available in your region"' : ''}>
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </li>`;
+                     } else { console.warn("Skipping invalid item in details list:", item); }
+                });
+                listHtml += '</ul>';
+            } else { listHtml += `<p class="text-white-50">No ${itemType}s found for this item.</p>`; }
 
-             detailsContent.innerHTML = headerHtml + listHtml;
-
-             // Add event listeners to the dynamically created elements
-             detailsContent.querySelectorAll('.track-list-item').forEach(itemEl => {
-                 const playButton = itemEl.querySelector('.track-play-button');
-                 if (playButton && !playButton.disabled) {
-                     playButton.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                         const trackIndex = parseInt(itemEl.dataset.trackIndex, 10);
-                         const trackToPlay = items[trackIndex].track || items[trackIndex]; // Handle playlist structure
-                         // Play this single track, but set the context to the full list
-                         playTrack(trackToPlay, items.map(i => i.track || i).filter(Boolean), trackIndex);
-                     });
-                 }
-             });
+            detailsContent.innerHTML = headerHtml + listHtml;
 
             // Add event listener for the main "Play" button for the context
             const contextPlayButton = detailsContent.querySelector('.play-context-button');
             if(contextPlayButton) {
                 contextPlayButton.addEventListener('click', () => {
-                    const contextId = contextPlayButton.dataset.id;
-                    const contextType = contextPlayButton.dataset.type;
-                     // Use the 'items' already fetched for the details page as the queue
-                    const validItems = items.map(i => i.track || i).filter(Boolean);
-                    if (validItems.length > 0) {
-                        playTrack(validItems[0], validItems, 0); // Start playing the first track with the full context
-                    } else {
-                        showToast(`No playable tracks found in this ${contextType}.`, 'warning');
-                    }
+                    handlePlayAction(contextData, contextData.type); // Play the whole context
                 });
             }
-         }
-
-        function showLoading(container, specificLoader = loadingElement) {
-             container.innerHTML = ''; // Clear container content
-             specificLoader.classList.remove('d-none');
-             // Optional: Insert loader into the container itself
-             // container.appendChild(specificLoader);
-         }
-
-         function hideLoading(container = null, specificLoader = loadingElement) {
-             specificLoader.classList.add('d-none');
-             // Optional: Remove loader if it was inserted
-             // if (container && container.contains(specificLoader)) {
-             //     container.removeChild(specificLoader);
-             // }
-         }
-
-        function showToast(message, type = 'info') { // Default to info
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`; // Add type class for styling
-            toast.textContent = message;
-            toastContainer.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.add('show');
-            }, 10); // Small delay to allow CSS transition
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => {
-                    if (toast.parentNode === toastContainer) { // Check if still attached
-                         toastContainer.removeChild(toast);
+            // Add listeners for individual track play buttons
+            detailsContent.querySelectorAll('.track-list-item .track-play-button:not(:disabled)').forEach(button => {
+                button.closest('.track-list-item').addEventListener('click', (e) => { // Make row clickable too
+                     if(e.target === button || button.contains(e.target)) { // If click was on button or inside it
+                        const trackIndex = parseInt(button.closest('.track-list-item').dataset.trackIndex, 10);
+                         const trackUri = button.closest('.track-list-item').dataset.trackUri;
+                         // We need the context URI (album/playlist) to play a track *within* that context
+                         const contextUri = contextData.uri;
+                         startPlayback(null, contextUri, trackUri); // Play specific track in context
                     }
-                }, 500); // Wait for fade out transition
-            }, 3500); // Duration toast is visible
+                });
+            });
         }
 
-        // --- Player Logic ---
-         async function handlePlayAction(item, type, isRecommendation = false) {
-             showToast(`Loading ${item.name}...`, 'info');
-             try {
-                let trackToPlay = null;
-                 let queue = [];
-                 let startIndex = 0;
+        // --- Loading/Toast Utilities (unchanged) ---
+        function showLoading(container, specificLoader = loadingElement) { container.innerHTML = ''; specificLoader.classList.remove('d-none'); container.appendChild(specificLoader);}
+        function hideLoading(container = null, specificLoader = loadingElement) { specificLoader.classList.add('d-none'); if (container && container.contains(specificLoader)) { container.removeChild(specificLoader); } }
+        function showToast(message, type = 'info') { const toast = document.createElement('div'); toast.className = `toast ${type}`; toast.textContent = message; toastContainer.appendChild(toast); setTimeout(() => { toast.classList.add('show'); }, 10); setTimeout(() => { toast.classList.remove('show'); setTimeout(() => { if (toast.parentNode === toastContainer) { toastContainer.removeChild(toast); } }, 500); }, 3500); }
 
-                 switch (type) {
-                     case 'track':
-                        trackToPlay = item;
-                        // If it's from recommendations or search, queue might be just this track or the visible list
-                         if (isRecommendation) {
-                            // Try to get the currently displayed recommendations as queue
-                            queue = Array.from(recommendationsContainer.querySelectorAll('.item-card[data-type="track"]'))
-                                       .map(card => lastSearchData?.tracks?.items.find(t => t.id === card.dataset.id) || item); // Simplified - needs better state
-                            startIndex = queue.findIndex(t => t.id === item.id);
-                         } else if (lastSearchData?.tracks?.items) {
-                             // If from search results, use the searched tracks list
-                             queue = lastSearchData.tracks.items.filter(t => currentCategory === 'all' || currentCategory === 'track');
-                             startIndex = queue.findIndex(t => t.id === item.id);
-                         } else {
-                            // Default to single track queue
-                            queue = [item];
-                            startIndex = 0;
-                        }
+        // --- SDK-Based Playback Logic ---
+
+         // This function now prepares the data for startPlayback
+        async function handlePlayAction(item, type) {
+            if (!currentDeviceId) {
+                showToast('Web Player not connected. Make sure Spotify is running and select this device.', 'warning');
+                // Attempt to transfer playback? Or just warn user.
+                 // transferPlaybackHere(); // Might be too aggressive
+                return;
+            }
+
+            let contextUri = null; // For albums, artists, playlists
+            let uris = null;       // For tracks or lists of tracks
+            let offset = null;     // To start at a specific track in a context
+
+            showToast(`Loading ${item.name}...`, 'info');
+
+            try {
+                switch (type) {
+                    case 'track':
+                        uris = [item.uri]; // Play a single track
+                        currentQueue = [item]; // Set queue for potential next/prev (limited)
+                        currentQueueIndex = 0;
                         break;
-                     case 'artist':
-                         const topTracks = await spotifyApiFetch(`artists/${item.id}/top-tracks?market=US`);
-                         if (topTracks?.tracks?.length > 0) {
-                            trackToPlay = topTracks.tracks[0];
-                            queue = topTracks.tracks;
-                            startIndex = 0;
-                         } else {
-                             showToast(`No playable tracks found for ${item.name}.`, 'warning'); return;
-                         }
-                         break;
-                     case 'album':
-                         const albumData = await spotifyApiFetch(`albums/${item.id}`);
-                         if (albumData?.tracks?.items?.length > 0) {
-                            // Need to potentially fetch full track details if preview_url isn't in album tracks
-                             const firstTrackId = albumData.tracks.items[0].id;
-                            trackToPlay = await spotifyApiFetch(`tracks/${firstTrackId}`); // Fetch full first track
-                            queue = albumData.tracks.items; // Use simplified album tracks for queue (playTrack will fetch full if needed)
-                             // Map album tracks to have basic structure expected by player
-                            queue = await Promise.all(albumData.tracks.items.map(async (albumTrack) => {
-                                // Fetch full track data if needed, or just use album track basic info
-                                // For now, let's just use the first track fetched fully and assume others might work
-                                // A more robust solution fetches full track data for all tracks in the album when needed.
-                                if (albumTrack.id === firstTrackId) return trackToPlay;
-                                return { // Create a basic track object
-                                    id: albumTrack.id,
-                                    name: albumTrack.name,
-                                    artists: albumTrack.artists,
-                                    preview_url: albumTrack.preview_url, // May be null
-                                    album: { images: item.images } // Use album cover art
-                                };
-                            }));
-                            startIndex = 0;
-                         } else {
-                            showToast(`No tracks found in the album ${item.name}.`, 'warning'); return;
-                        }
-                         break;
+                    case 'artist':
+                        // Option 1: Play artist's context URI (recommended)
+                         contextUri = item.uri;
+                         currentQueue = []; // Queue managed by Spotify context
+                         currentQueueIndex = -1;
+                        // Option 2: Play top tracks as a list (less like native Spotify)
+                        // const topTracks = await spotifyApiFetch(`artists/${item.id}/top-tracks?market=US`);
+                        // if (topTracks?.tracks?.length > 0) {
+                        //     uris = topTracks.tracks.map(t => t.uri);
+                        //     currentQueue = topTracks.tracks;
+                        //     currentQueueIndex = 0;
+                        // } else { throw new Error(`No top tracks found for ${item.name}.`); }
+                        break;
+                    case 'album':
+                        contextUri = item.uri; // Play the whole album context
+                         currentQueue = []; // Queue managed by Spotify context
+                         currentQueueIndex = -1;
+                        break;
                     case 'playlist':
-                        const playlistTracks = await spotifyApiFetch(`playlists/${item.id}/tracks?limit=50`);
-                        const validTracks = playlistTracks?.items?.map(i => i.track).filter(Boolean) || [];
-                         if (validTracks.length > 0) {
-                            trackToPlay = validTracks[0];
-                            queue = validTracks;
-                             startIndex = 0;
-                         } else {
-                             showToast(`Playlist ${item.name} is empty or tracks could not be loaded.`, 'warning'); return;
-                         }
-                         break;
+                        contextUri = item.uri; // Play the whole playlist context
+                         currentQueue = []; // Queue managed by Spotify context
+                         currentQueueIndex = -1;
+                        break;
                     default:
-                         showToast('Cannot play this item type.', 'warning'); return;
+                        throw new Error(`Cannot play item type: ${type}`);
                 }
 
-                if (trackToPlay) {
-                    playTrack(trackToPlay, queue, Math.max(0, startIndex)); // Ensure startIndex isn't -1
-                 } else if (type !== 'track') { // Only show if we expected tracks but found none (e.g., empty playlist)
-                    showToast(`No playable content found for ${item.name}.`, 'warning');
-                 }
+                // Call the function that interacts with the Spotify API
+                await startPlayback(uris, contextUri);
 
-             } catch (error) {
-                showToast(`Error playing ${item.name}.`, 'error');
-            }
-         }
-
-
-        async function playTrack(track, queue = [], queueIndex = 0) {
-            if (!track) {
-                console.error("playTrack called with null track");
-                return;
-            }
-
-            // If track object is simplified (e.g., from album list without preview_url), fetch full track
-            if (!track.preview_url && track.id) {
-                try {
-                    console.log(`Fetching full track details for ${track.name} (ID: ${track.id})`);
-                    const fullTrack = await spotifyApiFetch(`tracks/${track.id}`);
-                    if (fullTrack?.preview_url) {
-                        track = fullTrack; // Replace with full track data
-                    } else {
-                        showToast(`Preview is not available for ${track.name}. Skipping.`, 'warning');
-                        // Try playing next in queue if available
-                         if (queue && queue.length > 1) {
-                             playNext(); // This relies on playNext correctly handling skips
-                         }
-                        return;
-                    }
-                } catch (error) {
-                    showToast(`Could not load details for ${track.name}. Skipping.`, 'error');
-                     if (queue && queue.length > 1) { playNext(); }
-                    return;
-                }
-            } else if (!track.preview_url) {
-                // If still no preview_url after potential fetch (or wasn't fetched)
-                showToast(`Preview is not available for ${track.name}. Skipping.`, 'warning');
-                if (queue && queue.length > 1) { playNext(); }
-                return;
-            }
-
-
-            currentTrack = track;
-            currentQueue = queue.filter(Boolean); // Ensure no nulls in queue
-             currentQueueIndex = queueIndex;
-
-            console.log(`Playing: ${track.name}`, `Queue length: ${currentQueue.length}`, `Index: ${currentQueueIndex}`);
-
-            audioElement.src = track.preview_url;
-            audioElement.load(); // Important to load the new source
-
-            const playPromise = audioElement.play();
-
-            if (playPromise !== undefined) {
-                playPromise.then(_ => {
-                    // Playback started successfully
-                    updatePlayerUI(track);
-                    updatePlayPauseButton();
-                    updateNextPrevButtons();
-                    setupAudioAnalyzer(); // Ensure analyzer is ready
-                    showToast(`Playing: ${track.name}`, 'success');
-                }).catch(error => {
-                    console.error('Error playing track:', error);
-                     showToast(`Error playing ${track.name}: ${error.message}`, 'error');
-                    isPlaying = false;
-                    updatePlayPauseButton();
-                     updateNextPrevButtons();
-                });
-            } else {
-                 // Fallback for browsers that don't return a promise (older ones)
-                 updatePlayerUI(track);
-                 updatePlayPauseButton();
-                 updateNextPrevButtons();
-                 setupAudioAnalyzer();
-                 showToast(`Playing: ${track.name}`, 'success');
+            } catch (error) {
+                showToast(`Error starting playback: ${error.message}`, 'error');
+                console.error("Error in handlePlayAction:", error);
             }
         }
 
-        function togglePlayPause() {
-            if (!currentTrack || !audioElement.src) return;
-
-            if (audioElement.paused) {
-                const playPromise = audioElement.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.error("Error resuming playback:", error);
-                        showToast("Could not resume playback.", "error");
-                    });
-                }
-            } else {
-                audioElement.pause();
-            }
-            // State updates (isPlaying, button icon) are handled by 'play' and 'pause' event listeners
-        }
-
-        function playNext() {
-            if (currentQueue.length > 0 && currentQueueIndex < currentQueue.length - 1) {
-                currentQueueIndex++;
-                playTrack(currentQueue[currentQueueIndex], currentQueue, currentQueueIndex);
-            } else {
-                showToast('End of queue reached.', 'info');
-                // Optional: Stop playback or loop? For now, just stop.
-                 audioElement.pause();
-                 audioElement.currentTime = 0;
-                 isPlaying = false;
-                 updatePlayPauseButton();
-                 updateNextPrevButtons(); // Disable next button
-            }
-        }
-
-        function playPrevious() {
-            // If track is more than 3 seconds in, restart it, otherwise go to previous
-            if (audioElement.currentTime > 3 && currentQueueIndex >= 0) {
-                audioElement.currentTime = 0;
-            } else if (currentQueue.length > 0 && currentQueueIndex > 0) {
-                currentQueueIndex--;
-                playTrack(currentQueue[currentQueueIndex], currentQueue, currentQueueIndex);
-            } else {
-                // At the beginning of the queue, just restart the current track
-                 if (currentQueue.length > 0 && currentQueueIndex === 0) {
-                     audioElement.currentTime = 0;
-                 }
-                // Optionally show toast "Start of queue"
-            }
-        }
-
-
-        function updatePlayerUI(track) {
-            if (!track) return;
-            currentlyPlayingImg.src = track.album?.images?.[0]?.url || PLACEHOLDER_IMAGE;
-            currentlyPlayingTitle.textContent = track.name;
-            currentlyPlayingArtist.textContent = track.artists?.map(artist => artist.name).join(', ') || 'Unknown Artist';
-            playerContainer.style.display = 'block'; // Show player if hidden
-             playPauseButton.disabled = false; // Enable play/pause
-        }
-
-        function updatePlayPauseButton() {
-            playPauseButton.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
-            playPauseButton.title = isPlaying ? 'Pause' : 'Play';
-        }
-
-         function updateNextPrevButtons() {
-             prevButton.disabled = currentQueueIndex <= 0;
-             nextButton.disabled = currentQueueIndex >= currentQueue.length - 1;
-         }
-
-        function updateProgressBar() {
-            if (!audioElement.duration || !isFinite(audioElement.duration)) {
-                 // Set initial state or handle cases where duration is not available yet
-                 progressBar.style.width = '0%';
-                 currentTimeDisplay.textContent = '0:00';
-                 totalTimeDisplay.textContent = '--:--';
+        // Central function to start/resume playback via API
+         async function startPlayback(uris = null, contextUri = null, offsetUri = null) {
+             if (!currentDeviceId) {
+                 showToast('Web Player not connected.', 'warning');
                  return;
              }
-            const currentTime = audioElement.currentTime;
-            const duration = audioElement.duration;
-            const percentage = (currentTime / duration) * 100;
 
-            progressBar.style.width = `${percentage}%`;
-            currentTimeDisplay.textContent = formatTime(currentTime);
-            totalTimeDisplay.textContent = formatTime(duration);
+             const body = {};
+             if (contextUri) {
+                 body.context_uri = contextUri;
+                 if (offsetUri) { // If playing a specific track within a context
+                     body.offset = { uri: offsetUri };
+                 }
+             } else if (uris) {
+                 body.uris = uris;
+             } else {
+                 // If no specific context or uris, just try to resume
+                 console.log("Attempting to resume playback (no specific track/context).");
+                 // No body needed for simple resume
+                 await spotifyApiFetch(`me/player/play?device_id=${currentDeviceId}`, { method: 'PUT' });
+                 showToast('Resuming playback...', 'info'); // Provide feedback
+                 return; // Exit early for simple resume
+             }
+
+             try {
+                 console.log('Starting playback with:', body);
+                 await spotifyApiFetch(`me/player/play?device_id=${currentDeviceId}`, {
+                     method: 'PUT',
+                     body: body // API expects JSON body
+                 });
+                  showToast('Playback started!', 'success');
+                  // SDK's player_state_changed event will update the UI shortly
+             } catch (error) {
+                 console.error('Failed to start playback via API:', error);
+                 showToast(`Failed to start playback: ${error.message}`, 'error');
+                 // Handle specific errors like Premium required, device not found etc.
+             }
+         }
+
+
+        async function togglePlayPause() {
+            if (!spotifyPlayer || !currentDeviceId) { showToast('Player not ready.', 'warning'); return; }
+            try {
+                 if (isPlaying) { // If currently playing, pause it
+                     await spotifyApiFetch(`me/player/pause?device_id=${currentDeviceId}`, { method: 'PUT' });
+                     // Don't manually set isPlaying = false; wait for player_state_changed event
+                 } else { // If paused, play (resume or start based on context)
+                     // The generic play endpoint works for resuming
+                     await spotifyApiFetch(`me/player/play?device_id=${currentDeviceId}`, { method: 'PUT' });
+                 }
+             } catch (error) {
+                 console.error("Toggle play/pause failed:", error);
+                 showToast(`Play/Pause failed: ${error.message}`, 'error');
+             }
         }
 
-        function seekTrack(event) {
-            if (!currentTrack || !audioElement.duration || !isFinite(audioElement.duration)) return;
+        async function playNext() {
+             if (!spotifyPlayer || !currentDeviceId) { showToast('Player not ready.', 'warning'); return; }
+            try {
+                 await spotifyApiFetch(`me/player/next?device_id=${currentDeviceId}`, { method: 'POST' });
+                 showToast('Skipping to next...', 'info');
+                 // State update will come from player_state_changed
+             } catch (error) {
+                 console.error("Next track failed:", error);
+                 showToast(`Next track failed: ${error.message}`, 'error');
+             }
+        }
+
+        async function playPrevious() {
+             if (!spotifyPlayer || !currentDeviceId) { showToast('Player not ready.', 'warning'); return; }
+            try {
+                 await spotifyApiFetch(`me/player/previous?device_id=${currentDeviceId}`, { method: 'POST' });
+                 showToast('Going to previous...', 'info');
+                 // State update will come from player_state_changed
+             } catch (error) {
+                 console.error("Previous track failed:", error);
+                 showToast(`Previous track failed: ${error.message}`, 'error');
+             }
+        }
+
+        async function seekTrack(event) {
+             if (!spotifyPlayer || !currentDeviceId || !currentDurationMs || currentDurationMs <= 0) return;
 
             const progressBarRect = progressBarContainer.getBoundingClientRect();
             const clickPositionX = event.clientX - progressBarRect.left;
             const progressBarWidth = progressBarRect.width;
-            const percentage = Math.max(0, Math.min(1, clickPositionX / progressBarWidth)); // Clamp between 0 and 1
+            const percentage = Math.max(0, Math.min(1, clickPositionX / progressBarWidth));
+            const positionMs = Math.round(percentage * currentDurationMs);
 
-            audioElement.currentTime = percentage * audioElement.duration;
+            try {
+                await spotifyApiFetch(`me/player/seek?position_ms=${positionMs}&device_id=${currentDeviceId}`, { method: 'PUT' });
+                // Update UI immediately for responsiveness, SDK state will confirm later
+                 currentProgressMs = positionMs;
+                 updateProgressBar();
+            } catch (error) {
+                console.error("Seek failed:", error);
+                showToast(`Seek failed: ${error.message}`, 'error');
+            }
         }
 
-        function changeVolume() {
+        async function changeVolume() {
+             if (!spotifyPlayer || !currentDeviceId) return; // Don't try if player not ready
+
             currentVolume = parseInt(volumeSlider.value, 10);
-             audioElement.volume = currentVolume / 100;
-             isMuted = currentVolume === 0;
-             if (!isMuted) {
-                 previousVolume = currentVolume; // Store last non-mute volume
+            isMuted = currentVolume === 0;
+             if (!isMuted) previousVolume = currentVolume;
+
+             try {
+                 // Update Spotify volume via API
+                await spotifyApiFetch(`me/player/volume?volume_percent=${currentVolume}&device_id=${currentDeviceId}`, { method: 'PUT' });
+                // Update UI icon immediately
+                 updateVolumeIcon();
+                 // SDK player_state_changed might update the slider value if it differs slightly
+             } catch (error) {
+                 console.error("Change volume failed:", error);
+                 showToast(`Volume change failed: ${error.message}`, 'error');
+                 // Revert UI? Or wait for state change? Let's wait.
              }
-             updateVolumeIcon();
         }
 
-        function toggleMute() {
-             if (isMuted) {
-                 // Unmute: Restore previous volume or default if previous was 0
-                 currentVolume = previousVolume > 0 ? previousVolume : 50; // Restore or set default 50
-                 isMuted = false;
-             } else {
-                 // Mute: Store current volume and set to 0
+        async function toggleMute() {
+            if (!spotifyPlayer || !currentDeviceId) return;
+
+            let targetVolume;
+             if (isMuted) { // Unmute
+                 targetVolume = previousVolume > 0 ? previousVolume : 50; // Restore or default
+             } else { // Mute
                  previousVolume = currentVolume; // Store before muting
-                 currentVolume = 0;
-                 isMuted = true;
-             }
-             volumeSlider.value = currentVolume; // Update slider position
-             audioElement.volume = currentVolume / 100; // Update audio element volume
-             updateVolumeIcon();
-         }
-
-        function updateVolumeIcon() {
-            let iconClass = 'fa-volume-up'; // Default high volume
-             if (currentVolume === 0 || isMuted) {
-                 iconClass = 'fa-volume-mute';
-             } else if (currentVolume <= 50) {
-                 iconClass = 'fa-volume-down';
-             }
-             volumeButton.innerHTML = `<i class="fas ${iconClass}"></i>`;
-             volumeButton.title = isMuted ? 'Unmute' : 'Mute';
-        }
-
-        function handleAudioError(e) {
-            console.error("Audio Element Error:", e);
-            let errorMessage = "An error occurred during playback.";
-            if (e.target.error) {
-                switch (e.target.error.code) {
-                    case e.target.error.MEDIA_ERR_ABORTED: errorMessage = 'Playback aborted.'; break;
-                    case e.target.error.MEDIA_ERR_NETWORK: errorMessage = 'Network error caused playback failure.'; break;
-                    case e.target.error.MEDIA_ERR_DECODE: errorMessage = 'Could not decode the audio file.'; break;
-                    case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED: errorMessage = 'Audio format not supported.'; break;
-                }
-            }
-            showToast(errorMessage, 'error');
-            isPlaying = false;
-            updatePlayPauseButton();
-            // Maybe try playing next?
-            // playNext();
-        }
-
-        // --- Audio Visualizer ---
-        function createVisualizerBars() {
-            audioVisualizer.innerHTML = ''; // Clear existing bars
-            for (let i = 0; i < 32; i++) { // More bars
-                const bar = document.createElement('div');
-                bar.className = 'visualizer-bar';
-                bar.style.height = '2px'; // Minimum height
-                audioVisualizer.appendChild(bar);
-            }
-        }
-
-        function setupAudioAnalyzer() {
-             // Only setup if we have an audio element and context doesn't exist or is closed
-             if (!audioElement || (audioContext && audioContext.state === 'closed')) {
-                 audioContext = null; // Reset context if closed
-                 sourceNode = null;
-                 analyser = null;
+                 targetVolume = 0;
              }
 
-            if (!audioContext && window.AudioContext || window.webkitAudioContext) {
-                 try {
-                     audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                     analyser = audioContext.createAnalyser();
-                     analyser.fftSize = 64; // Number of samples for FFT (power of 2)
-                     analyser.smoothingTimeConstant = 0.8; // Smoother transitions
-
-                     // Create source node only once per audio element
-                     if (!sourceNode || sourceNode.mediaElement !== audioElement) {
-                         sourceNode = audioContext.createMediaElementSource(audioElement);
-                     }
-
-                     sourceNode.connect(analyser);
-                     analyser.connect(audioContext.destination); // Connect analyser to output
-
-                     dataArray = new Uint8Array(analyser.frequencyBinCount); // Array to hold frequency data
-
-                     console.log("AudioContext and Analyzer set up.");
-
-                 } catch (e) {
-                     console.error("Error setting up AudioContext:", e);
-                     showToast("Audio visualizer disabled.", "warning");
-                     audioContext = null; // Prevent further attempts if setup failed
-                 }
-            }
-
-            // Ensure visualizer loop is running if context is ready
-            if (audioContext && !visualizerAnimationFrame) {
-                updateVisualizer();
-            }
-         }
-
-        function startVisualizer() {
-             if (!audioContext || !analyser || visualizerAnimationFrame) return; // Already running or not ready
-            if (audioContext.state === 'suspended') {
-                 audioContext.resume().then(() => {
-                     console.log("AudioContext resumed for visualizer.");
-                     updateVisualizer();
-                 }).catch(e => console.error("Failed to resume AudioContext", e));
-             } else {
-                 updateVisualizer();
+             try {
+                 await spotifyApiFetch(`me/player/volume?volume_percent=${targetVolume}&device_id=${currentDeviceId}`, { method: 'PUT' });
+                 // Update internal state and UI immediately
+                 currentVolume = targetVolume;
+                 isMuted = targetVolume === 0;
+                 volumeSlider.value = currentVolume;
+                 updateVolumeIcon();
+             } catch (error) {
+                  console.error("Mute/Unmute failed:", error);
+                 showToast(`Mute/Unmute failed: ${error.message}`, 'error');
              }
         }
 
-         function stopVisualizer() {
-            if (visualizerAnimationFrame) {
-                 cancelAnimationFrame(visualizerAnimationFrame);
-                 visualizerAnimationFrame = null;
-                 // Reset bars visually when stopped
-                 const bars = audioVisualizer.querySelectorAll('.visualizer-bar');
-                 bars.forEach(bar => {
-                     bar.style.height = '2px'; // Reset to minimum height
+        // Transfer playback to this web player
+         async function transferPlaybackHere() {
+             if (!currentDeviceId) {
+                 console.warn("Cannot transfer playback, no device ID.");
+                 showToast('Web player not active.', 'warning');
+                 return;
+             }
+             try {
+                 await spotifyApiFetch('me/player', {
+                     method: 'PUT',
+                     body: JSON.stringify({
+                         device_ids: [currentDeviceId],
+                         play: false // Optional: true to start playing immediately after transfer
+                     })
                  });
+                 console.log('Playback transferred to this device.');
+                 showToast('Playback transferred here.', 'success');
+                 // Fetch current state after transfer? SDK should update anyway.
+             } catch (error) {
+                 console.error('Failed to transfer playback:', error);
+                 showToast(`Could not transfer playback: ${error.message}`, 'error');
              }
          }
 
-        function updateVisualizer() {
-            if (!isPlaying || !analyser || !dataArray) {
-                stopVisualizer(); // Ensure it stops if state is wrong
+        // --- UI Updates (Driven by SDK State) ---
+        function updatePlayerUI(track) {
+            if (track) {
+                currentlyPlayingImg.src = track.album?.images?.[0]?.url || PLACEHOLDER_IMAGE;
+                currentlyPlayingTitle.textContent = track.name;
+                currentlyPlayingArtist.textContent = track.artists?.map(artist => artist.name).join(', ') || 'Unknown Artist';
+                playerContainer.style.display = 'flex'; // Use flex or block as appropriate
+                 enablePlayerControls(); // Enable controls when a track is loaded
+            } else {
+                currentlyPlayingImg.src = PLACEHOLDER_IMAGE;
+                currentlyPlayingTitle.textContent = 'No Track Playing';
+                currentlyPlayingArtist.textContent = ' ';
+                // Don't hide player, just show no track state maybe? Or disable controls.
+                // playerContainer.style.display = 'none';
+                disablePlayerControls(); // Disable controls when no track
+                 currentProgressMs = 0;
+                 currentDurationMs = 0;
+                 updateProgressBar(); // Reset progress bar
+            }
+        }
+
+        function updatePlayPauseButton() {
+             playPauseButton.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+             playPauseButton.title = isPlaying ? 'Pause' : 'Play';
+             playPauseButton.disabled = !currentTrack; // Disable if no track
+        }
+
+        function updateNextPrevButtons(disallows = {}) {
+             // Use disallows from the player state if available
+             prevButton.disabled = disallows.skipping_prev || !currentTrack;
+             nextButton.disabled = disallows.skipping_next || !currentTrack;
+         }
+
+        function updateProgressBar() {
+             // Stop previous interval if running
+             if (progressUpdateInterval) clearInterval(progressUpdateInterval);
+
+            if (!currentTrack || currentDurationMs <= 0) {
+                progressBar.style.width = '0%';
+                currentTimeDisplay.textContent = '0:00';
+                totalTimeDisplay.textContent = '--:--';
                 return;
             }
 
-            analyser.getByteFrequencyData(dataArray); // Get current frequency data
+            // Update immediately with the latest known state
+            const percentage = (currentProgressMs / currentDurationMs) * 100;
+            progressBar.style.width = `${percentage}%`;
+            currentTimeDisplay.textContent = formatTime(currentProgressMs / 1000);
+            totalTimeDisplay.textContent = formatTime(currentDurationMs / 1000);
 
-            const bars = audioVisualizer.querySelectorAll('.visualizer-bar');
-             const barCount = bars.length;
-
-            for (let i = 0; i < barCount; i++) {
-                // Map the analyser data array index to the bar index
-                const dataIndex = Math.floor((i / barCount) * (dataArray.length * 0.8)); // Use lower 80% of frequencies
-                const value = dataArray[dataIndex];
-                const maxHeight = 28; // Max height of a bar in px (adjust based on container height)
-                 // Scale value (0-255) to height (0-maxHeight). Add a base height.
-                const height = Math.max(2, Math.min(maxHeight, (value / 255) * maxHeight * 1.5)); // Make sensitive
-
-                if (bars[i]) {
-                     bars[i].style.height = `${height}px`;
-                 }
+            // If playing, start an interval to smoothly update the UI progress bar
+            if (isPlaying) {
+                const startTime = Date.now() - currentProgressMs; // Estimate when the track started playing (relative to now)
+                progressUpdateInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    const currentPercentage = (elapsed / currentDurationMs) * 100;
+                    if (currentPercentage <= 100) {
+                         progressBar.style.width = `${currentPercentage}%`;
+                         currentTimeDisplay.textContent = formatTime(elapsed / 1000);
+                    } else {
+                         // Stop interval when duration exceeded (should be handled by state change anyway)
+                         progressBar.style.width = '100%';
+                         currentTimeDisplay.textContent = formatTime(currentDurationMs / 1000);
+                         clearInterval(progressUpdateInterval);
+                         progressUpdateInterval = null;
+                    }
+                }, 250); // Update UI 4 times a second
             }
-
-            visualizerAnimationFrame = requestAnimationFrame(updateVisualizer); // Loop
         }
 
+        function updateVolumeIcon() { /* Unchanged */
+            let iconClass = 'fa-volume-up';
+            if (currentVolume === 0 || isMuted) iconClass = 'fa-volume-mute';
+            else if (currentVolume <= 50) iconClass = 'fa-volume-down';
+            volumeButton.innerHTML = `<i class="fas ${iconClass}"></i>`;
+            volumeButton.title = isMuted ? 'Unmute' : 'Mute';
+        }
+
+         function disablePlayerControls() {
+             playPauseButton.disabled = true;
+             prevButton.disabled = true;
+             nextButton.disabled = true;
+             volumeButton.disabled = true;
+             volumeSlider.disabled = true;
+             progressBarContainer.style.cursor = 'default'; // Indicate non-interactive
+             // Clear progress interval if it's running
+             if (progressUpdateInterval) clearInterval(progressUpdateInterval);
+             progressUpdateInterval = null;
+         }
+         function enablePlayerControls() {
+             // Enable based on current state/track availability
+             playPauseButton.disabled = !currentTrack;
+             volumeButton.disabled = false;
+             volumeSlider.disabled = false;
+             progressBarContainer.style.cursor = 'pointer';
+             // Next/Prev enabled based on state update
+         }
 
         // --- Utilities ---
-        function formatTime(seconds) {
-             if (isNaN(seconds) || seconds === Infinity) return '--:--';
-            const minutes = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
+        function formatTime(seconds) { /* Unchanged */
+            if (isNaN(seconds) || seconds === Infinity) return '--:--';
+            const totalSeconds = Math.floor(seconds);
+            const minutes = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
             return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
         }
+
+         function showLoginView() { /* Unchanged */
+            loginSection.classList.remove('d-none'); mainContent.classList.add('d-none'); detailsView.classList.add('d-none'); playerContainer.style.display = 'none'; userProfile.classList.add('d-none');
+         }
+         function showMainView() { /* Unchanged */
+            loginSection.classList.add('d-none'); mainContent.classList.remove('d-none'); detailsView.classList.add('d-none'); detailsContent.innerHTML = ''; currentView = 'main';
+         }
+         function showDetailsLoading() { /* Unchanged */
+             detailsContent.innerHTML = ''; loadingDetails.classList.remove('d-none');
+         }
+         function hideDetailsLoading() { /* Unchanged */
+             loadingDetails.classList.add('d-none');
+         }
 
         // --- Run ---
         window.addEventListener('DOMContentLoaded', init);
