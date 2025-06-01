@@ -515,9 +515,15 @@
             setLoading(true);
             
             try {
+                // Add additional configuration for better compatibility
+                googleProvider.setCustomParameters({
+                    prompt: 'select_account'
+                });
+                
                 const result = await signInWithPopup(auth, googleProvider);
                 showSuccess('Successfully signed in with Google!');
             } catch (error) {
+                console.error('Google Auth Error:', error);
                 if (error.code !== 'auth/popup-closed-by-user') {
                     showError(getErrorMessage(error));
                 }
@@ -551,6 +557,18 @@
                     return 'Network error. Please check your internet connection.';
                 case 'auth/too-many-requests':
                     return 'Too many failed attempts. Please try again later.';
+                case 'auth/popup-blocked':
+                    return 'Popup was blocked by your browser. Please allow popups and try again.';
+                case 'auth/popup-closed-by-user':
+                    return 'Sign-in was cancelled.';
+                case 'auth/unauthorized-domain':
+                    return 'This domain is not authorized for OAuth operations.';
+                case 'auth/operation-not-allowed':
+                    return 'Google sign-in is not enabled. Please contact support.';
+                case 'auth/invalid-api-key':
+                    return 'Invalid API key configuration.';
+                case 'auth/app-not-authorized':
+                    return 'App not authorized to use Firebase Authentication.';
                 default:
                     return error.message || 'An error occurred. Please try again.';
             }
