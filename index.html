@@ -1,181 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Party System with Firestore and Auth</title>
-<style>
-  body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 10px; }
-  h1 { text-align: center; }
-  input, textarea, button { width: 100%; padding: 8px; margin: 6px 0; box-sizing: border-box; }
-  .section { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 6px; }
-  .party-info { background: #f0f8ff; padding: 10px; border-radius: 6px; }
-  .error { color: red; }
-  .success { color: green; }
-  #userStatus { margin-bottom: 15px; }
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PartyFlix - A Real-time Watch Party App</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+    </style>
 </head>
-<body>
+<body class="bg-gray-900 text-white">
 
-<h1>Party System (Firestore + Auth)</h1>
+    <div id="app" class="container mx-auto p-4 md:p-8">
 
-<div id="userStatus">Checking authentication...</div>
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-red-600">PartyFlix</h1>
+            <p id="user-status" class="text-gray-400 mt-2">Connecting...</p>
+        </header>
 
-<div class="section" id="create-party-section" style="display:none;">
-  <h2>Create Party</h2>
-  <input type="text" id="partyName" placeholder="Party Name" />
-  <textarea id="partyDesc" placeholder="Party Description" rows="3"></textarea>
-  <button id="createPartyBtn">Create Party</button>
-  <p id="createResult"></p>
-</div>
+        <!-- Dynamic Content Views -->
+        <main id="main-content">
+            <!-- Loading Spinner -->
+            <div id="loading-spinner" class="text-center">
+                <i class="fas fa-spinner fa-spin fa-3x text-red-600"></i>
+            </div>
 
-<div class="section" id="join-party-section" style="display:none;">
-  <h2>Join Party</h2>
-  <input type="text" id="joinPartyKey" placeholder="Enter Party Key" />
-  <button id="joinPartyBtn">Join Party</button>
-  <p id="joinResult"></p>
-</div>
+            <!-- Set Username View -->
+            <div id="username-view" class="hidden max-w-lg mx-auto bg-gray-800 p-8 rounded-lg shadow-2xl">
+                <h2 class="text-2xl font-bold mb-4">Welcome! Choose a Display Name</h2>
+                <form id="username-form" class="space-y-4">
+                    <input type="text" id="username-input" placeholder="Your display name" class="w-full p-3 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-600" required>
+                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-md transition duration-300">Save Name</button>
+                </form>
+            </div>
+            
+            <!-- Lobby View (Create/Join) -->
+            <div id="lobby-view" class="hidden grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div class="bg-gray-800 p-8 rounded-lg shadow-2xl">
+                    <h2 class="text-2xl font-bold mb-6">Create a New Party</h2>
+                    <form id="create-party-form" class="space-y-4">
+                        <input type="text" id="partyName" placeholder="Party Name" class="w-full p-3 bg-gray-700 rounded-md border border-gray-600" required>
+                        <textarea id="partyDesc" placeholder="Party Description (optional)" rows="3" class="w-full p-3 bg-gray-700 rounded-md border border-gray-600"></textarea>
+                        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 font-bold py-3 rounded-md">Create Party</button>
+                    </form>
+                    <p id="createResult" class="mt-4 text-center"></p>
+                </div>
+                <div class="bg-gray-800 p-8 rounded-lg shadow-2xl">
+                    <h2 class="text-2xl font-bold mb-6">Join an Existing Party</h2>
+                    <form id="join-party-form" class="space-y-4">
+                        <input type="text" id="joinPartyKey" placeholder="Enter Party Code" class="w-full p-3 bg-gray-700 rounded-md border border-gray-600 text-center font-bold uppercase tracking-widest">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 font-bold py-3 rounded-md">Join Party</button>
+                    </form>
+                    <p id="joinResult" class="mt-4 text-center"></p>
+                </div>
+            </div>
 
-<div class="section" id="partyDetails" style="display:none;">
-  <h2>Party Details</h2>
-  <div class="party-info" id="partyInfo"></div>
-</div>
+            <!-- Active Party View -->
+            <div id="party-view" class="hidden max-w-5xl mx-auto bg-gray-800 p-8 rounded-lg shadow-2xl">
+                <!-- Party details will be injected here -->
+            </div>
 
-<script type="module">
-// Firebase imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        </main>
+    </div>
 
-// Your config
-const firebaseConfig = {
-  apiKey: "AIzaSyDp2V0ULE-32AcIJ92a_e3mhMe6f6yZ_H4",
-  authDomain: "sm4movies.firebaseapp.com",
-  projectId: "sm4movies",
-  storageBucket: "sm4movies.firebasestorage.app",
-  messagingSenderId: "277353836953",
-  appId: "1:277353836953:web:85e02783526c7cb58de308",
-  measurementId: "G-690RSNJ2Q2"
-};
+    <script type="module">
+        // Import Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, serverTimestamp, updateDoc, arrayUnion, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js";
 
-// Initialize
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+        // ========================
+        //  APP CONFIGURATION
+        // ========================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDp2V0ULE-32AcIJ92a_e3mhMe6f6yZ_H4",
+            authDomain: "sm4movies.firebaseapp.com",
+            projectId: "sm4movies",
+            storageBucket: "sm4movies.firebasestorage.app",
+            messagingSenderId: "277353836953",
+            appId: "1:277353836953:web:85e02783526c7cb58de308",
+            measurementId: "G-690RSNJ2Q2"
+        };
+        const MOVIE_LIST = { // A mock movie list for this example
+            "101": "The Matrix",
+            "102": "Inception",
+            "103": "Interstellar",
+            "104": "Parasite",
+            "105": "The Dark Knight"
+        };
 
-// UI Elements
-const userStatus = document.getElementById('userStatus');
-const createPartySection = document.getElementById('create-party-section');
-const joinPartySection = document.getElementById('join-party-section');
-const partyDetailsSection = document.getElementById('partyDetails');
+        const App = {
+            // ========================
+            //  STATE & DOM
+            // ========================
+            state: {
+                currentUser: null,
+                activeParty: {
+                    id: null,
+                    unsubscribe: null
+                }
+            },
+            dom: {},
 
-const partyNameInput = document.getElementById("partyName");
-const partyDescInput = document.getElementById("partyDesc");
-const createPartyBtn = document.getElementById("createPartyBtn");
-const createResult = document.getElementById("createResult");
+            // ========================
+            //  INITIALIZATION
+            // ========================
+            async init() {
+                if (firebaseConfig.apiKey.includes('YOUR_API_KEY')) {
+                    document.getElementById('main-content').innerHTML = `<div class="text-center p-8 bg-red-900 text-white rounded-lg"><h2 class="text-2xl font-bold">Configuration Error</h2><p>Please update the firebaseConfig object in the script with your project's credentials.</p></div>`;
+                    return;
+                }
+                this.firebase.init();
+                this.cacheDOMElements();
+                this.registerEventListeners();
+                this.auth.handleAuthState();
+            },
 
-const joinPartyKeyInput = document.getElementById("joinPartyKey");
-const joinPartyBtn = document.getElementById("joinPartyBtn");
-const joinResult = document.getElementById("joinResult");
+            cacheDOMElements() {
+                // Main Views
+                this.dom.userStatus = document.getElementById('user-status');
+                this.dom.loadingSpinner = document.getElementById('loading-spinner');
+                this.dom.usernameView = document.getElementById('username-view');
+                this.dom.lobbyView = document.getElementById('lobby-view');
+                this.dom.partyView = document.getElementById('party-view');
 
-const partyInfoDiv = document.getElementById("partyInfo");
+                // Username View
+                this.dom.usernameForm = document.getElementById('username-form');
 
-let currentUser = null;
+                // Create Party
+                this.dom.createPartyForm = document.getElementById('create-party-form');
+                this.dom.partyNameInput = document.getElementById("partyName");
+                this.dom.partyDescInput = document.getElementById("partyDesc");
+                this.dom.createResult = document.getElementById("createResult");
 
-// Simple party key generator (6 chars uppercase)
-function generatePartyKey() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
+                // Join Party
+                this.dom.joinPartyForm = document.getElementById('join-party-form');
+                this.dom.joinPartyKeyInput = document.getElementById("joinPartyKey");
+                this.dom.joinResult = document.getElementById("joinResult");
+            },
 
-// Auth state observer
-onAuthStateChanged(auth, user => {
-  if (user) {
-    currentUser = user;
-    userStatus.textContent = `Signed in as UID: ${user.uid}`;
-    createPartySection.style.display = "block";
-    joinPartySection.style.display = "block";
-  } else {
-    userStatus.textContent = "Signing in anonymously...";
-    // Sign in anonymously if no user
-    signInAnonymously(auth).catch(error => {
-      userStatus.textContent = `Auth error: ${error.message}`;
-    });
-  }
-});
+            registerEventListeners() {
+                this.dom.usernameForm.addEventListener('submit', e => this.auth.handleSetUsername(e));
+                this.dom.createPartyForm.addEventListener('submit', e => this.party.create(e));
+                this.dom.joinPartyForm.addEventListener('submit', e => this.party.join(e));
+            },
 
-// Create party
-createPartyBtn.addEventListener("click", async () => {
-  const name = partyNameInput.value.trim();
-  const desc = partyDescInput.value.trim();
+            // ========================
+            //  MODULES
+            // ========================
 
-  if (!name) {
-    createResult.textContent = "Party name is required.";
-    createResult.className = "error";
-    return;
-  }
+            firebase: {
+                _app: null,
+                init() {
+                    const app = initializeApp(firebaseConfig);
+                    this.auth = getAuth(app);
+                    this.db = getFirestore(app);
+                }
+            },
+            auth: {
+                handleAuthState() {
+                    onAuthStateChanged(App.firebase.auth, async user => {
+                        App.dom.loadingSpinner.classList.remove('hidden');
+                        App.ui.hideAllViews();
+                        
+                        if (user) {
+                            App.state.currentUser = user;
+                            const userDoc = await getDoc(doc(App.firebase.db, "users", user.uid));
+                            if (userDoc.exists()) {
+                                App.state.currentUser.displayName = userDoc.data().displayName;
+                                App.dom.userStatus.textContent = `Signed in as ${App.state.currentUser.displayName}`;
+                                App.ui.showView('lobby');
+                            } else {
+                                App.dom.userStatus.textContent = 'Please set your display name.';
+                                App.ui.showView('username');
+                            }
+                        } else {
+                            App.dom.userStatus.textContent = 'Signing in...';
+                            signInAnonymously(App.firebase.auth).catch(error => {
+                                App.dom.userStatus.textContent = `Anonymous Auth Error: ${error.message}`;
+                            });
+                        }
+                    });
+                },
 
-  const key = generatePartyKey();
+                async handleSetUsername(event) {
+                    event.preventDefault();
+                    const input = document.getElementById('username-input');
+                    const newName = input.value.trim();
+                    if (newName.length < 3) {
+                        alert("Name must be at least 3 characters long.");
+                        return;
+                    }
+                    try {
+                        await setDoc(doc(App.firebase.db, "users", App.state.currentUser.uid), {
+                            displayName: newName
+                        });
+                        App.state.currentUser.displayName = newName;
+                        App.dom.userStatus.textContent = `Signed in as ${newName}`;
+                        App.ui.showView('lobby');
+                    } catch (error) {
+                        alert("Error saving name: " + error.message);
+                    }
+                }
+            },
+            party: {
+                generateKey() { return Math.random().toString(36).substring(2, 8).toUpperCase(); },
 
-  try {
-    const partyRef = doc(db, "parties", key);
-    await setDoc(partyRef, {
-      name,
-      description: desc,
-      createdAt: Timestamp.now(),
-      createdBy: currentUser.uid
-    });
+                async create(event) {
+                    event.preventDefault();
+                    const name = App.dom.partyNameInput.value.trim();
+                    const desc = App.dom.partyDescInput.value.trim();
+                    if (!name) { App.ui.setResult('create', "Party name is required.", true); return; }
 
-    createResult.textContent = `Party created! Your party key is: ${key}`;
-    createResult.className = "success";
-    partyNameInput.value = "";
-    partyDescInput.value = "";
-  } catch (err) {
-    createResult.textContent = "Error creating party: " + err.message;
-    createResult.className = "error";
-  }
-});
+                    const key = this.generateKey();
+                    try {
+                        await setDoc(doc(App.firebase.db, "parties", key), {
+                            name,
+                            description: desc,
+                            createdAt: serverTimestamp(),
+                            host: { uid: App.state.currentUser.uid, name: App.state.currentUser.displayName },
+                            members: { [App.state.currentUser.uid]: App.state.currentUser.displayName },
+                            currentMovieId: null
+                        });
+                        App.ui.setResult('create', `Party created! Your code is: ${key}`, false);
+                        this.enter(key);
+                    } catch (err) { App.ui.setResult('create', `Error: ${err.message}`, true); }
+                },
 
-// Join party
-joinPartyBtn.addEventListener("click", async () => {
-  const key = joinPartyKeyInput.value.trim().toUpperCase();
+                async join(event) {
+                    event.preventDefault();
+                    const key = App.dom.joinPartyKeyInput.value.trim().toUpperCase();
+                    if (!key) { App.ui.setResult('join', "Please enter a party code.", true); return; }
 
-  if (!key) {
-    joinResult.textContent = "Please enter a party key.";
-    joinResult.className = "error";
-    partyDetailsSection.style.display = "none";
-    return;
-  }
+                    try {
+                        const partyRef = doc(App.firebase.db, "parties", key);
+                        const partySnap = await getDoc(partyRef);
+                        if (partySnap.exists()) {
+                            await updateDoc(partyRef, {
+                                [`members.${App.state.currentUser.uid}`]: App.state.currentUser.displayName
+                            });
+                            this.enter(key);
+                        } else { App.ui.setResult('join', "Party not found with that code.", true); }
+                    } catch (err) { App.ui.setResult('join', `Error: ${err.message}`, true); }
+                },
 
-  try {
-    const partyRef = doc(db, "parties", key);
-    const partySnap = await getDoc(partyRef);
+                enter(partyId) {
+                    if (App.state.activeParty.unsubscribe) { App.state.activeParty.unsubscribe(); } // Clean up old listener
+                    App.ui.showView('party');
+                    const partyRef = doc(App.firebase.db, "parties", partyId);
+                    const unsubscribe = onSnapshot(partyRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            App.ui.renderPartyDetails(partyId, docSnap.data());
+                        } else {
+                            alert("This party has been ended.");
+                            this.leave();
+                        }
+                    });
+                    App.state.activeParty = { id: partyId, unsubscribe };
+                },
 
-    if (partySnap.exists()) {
-      const partyData = partySnap.data();
-      joinResult.textContent = "Joined party successfully!";
-      joinResult.className = "success";
+                leave() {
+                    if (App.state.activeParty.unsubscribe) {
+                        App.state.activeParty.unsubscribe();
+                        App.state.activeParty = { id: null, unsubscribe: null };
+                    }
+                    App.ui.showView('lobby');
+                },
+                
+                async selectMovie(partyId, movieId) {
+                    const partyRef = doc(App.firebase.db, "parties", partyId);
+                    await updateDoc(partyRef, { currentMovieId: movieId });
+                },
 
-      partyInfoDiv.innerHTML = `
-        <strong>Name:</strong> ${partyData.name} <br/>
-        <strong>Description:</strong> ${partyData.description || "No description"} <br/>
-        <strong>Created:</strong> ${partyData.createdAt.toDate().toLocaleString()} <br/>
-        <strong>Created By UID:</strong> ${partyData.createdBy}
-      `;
+                async sendChatMessage(partyId, text) {
+                    if (!text) return;
+                    await addDoc(collection(App.firebase.db, "parties", partyId, "chat"), {
+                        senderName: App.state.currentUser.displayName,
+                        senderUID: App.state.currentUser.uid,
+                        message: text,
+                        timestamp: serverTimestamp()
+                    });
+                }
+            },
+            ui: {
+                hideAllViews() {
+                    App.dom.loadingSpinner.classList.add('hidden');
+                    App.dom.usernameView.classList.add('hidden');
+                    App.dom.lobbyView.classList.add('hidden');
+                    App.dom.partyView.classList.add('hidden');
+                },
 
-      partyDetailsSection.style.display = "block";
-      joinPartyKeyInput.value = "";
-    } else {
-      joinResult.textContent = "Party not found with that key.";
-      joinResult.className = "error";
-      partyDetailsSection.style.display = "none";
-    }
-  } catch (err) {
-    joinResult.textContent = "Error joining party: " + err.message;
-    joinResult.className = "error";
-    partyDetailsSection.style.display = "none";
-  }
-});
-</script>
+                showView(viewName) {
+                    this.hideAllViews();
+                    App.dom[`${viewName}View`].classList.remove('hidden');
+                },
+
+                setResult(type, message, isError) {
+                    const el = App.dom[`${type}Result`];
+                    el.textContent = message;
+                    el.className = isError ? 'mt-4 text-center text-red-500' : 'mt-4 text-center text-green-500';
+                },
+
+                renderPartyDetails(partyId, partyData) {
+                    const isHost = partyData.host.uid === App.state.currentUser.uid;
+                    const membersHTML = Object.values(partyData.members).map(name => `<li class="p-2 bg-gray-700 rounded-md">${name}</li>`).join('');
+
+                    const movieSelectorHTML = isHost ? `
+                        <label for="movie-select" class="block text-sm font-medium text-gray-400 mb-2">Select a Movie</label>
+                        <div class="flex gap-2">
+                            <select id="movie-select" class="flex-grow p-2 bg-gray-700 rounded-md">
+                                ${Object.entries(MOVIE_LIST).map(([id, title]) => `<option value="${id}" ${partyData.currentMovieId === id ? 'selected' : ''}>${title}</option>`).join('')}
+                            </select>
+                            <button id="set-movie-btn" class="bg-blue-600 px-4 rounded-md font-bold">Set</button>
+                        </div>
+                    ` : '';
+
+                    App.dom.partyView.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h2 class="text-3xl font-bold">${partyData.name}</h2>
+                                <p class="text-gray-400">${partyData.description}</p>
+                            </div>
+                            <button id="leave-party-btn" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-md">Leave Party</button>
+                        </div>
+                        
+                        <div class="mt-8 grid md:grid-cols-3 gap-8">
+                            <!-- Left Column -->
+                            <div class="md:col-span-2 space-y-6">
+                                <div class="bg-gray-700/50 p-6 rounded-lg">
+                                    <h3 class="text-xl font-bold mb-4">Now Watching</h3>
+                                    <div id="now-watching" class="text-2xl text-red-500 font-bold">${partyData.currentMovieId ? MOVIE_LIST[partyData.currentMovieId] : 'Host is choosing a movie...'}</div>
+                                    ${movieSelectorHTML}
+                                </div>
+                                <div class="bg-gray-700/50 p-6 rounded-lg">
+                                    <h3 class="text-xl font-bold mb-4">Party Chat</h3>
+                                    <div id="chat-box" class="h-64 overflow-y-auto mb-4 p-2 bg-gray-900 rounded-md space-y-2"></div>
+                                    <form id="chat-form" class="flex gap-2">
+                                        <input type="text" id="chat-input" placeholder="Say something..." class="flex-grow p-2 bg-gray-700 rounded-md">
+                                        <button type="submit" class="bg-red-600 px-4 rounded-md font-bold">Send</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="bg-gray-700/50 p-6 rounded-lg">
+                                <h3 class="text-xl font-bold mb-4">Party Members (${Object.keys(partyData.members).length})</h3>
+                                <ul id="member-list" class="space-y-2">${membersHTML}</ul>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Attach event listeners
+                    document.getElementById('leave-party-btn').onclick = () => App.party.leave();
+                    if(isHost) { document.getElementById('set-movie-btn').onclick = () => App.party.selectMovie(partyId, document.getElementById('movie-select').value); }
+                    document.getElementById('chat-form').onsubmit = (e) => { e.preventDefault(); App.party.sendChatMessage(partyId, document.getElementById('chat-input').value); document.getElementById('chat-input').value=''; };
+
+                    // Set up chat listener
+                    this.listenToChat(partyId);
+                },
+
+                listenToChat(partyId) {
+                    const q = query(collection(App.firebase.db, "parties", partyId, "chat"), orderBy("timestamp", "asc"));
+                    onSnapshot(q, (querySnapshot) => {
+                        const chatBox = document.getElementById('chat-box');
+                        if (!chatBox) return;
+                        chatBox.innerHTML = ''; // Clear previous messages
+                        querySnapshot.forEach((doc) => {
+                            const msg = doc.data();
+                            const msgEl = document.createElement('div');
+                            msgEl.innerHTML = `<strong>${msg.senderName}:</strong> ${msg.message}`;
+                            chatBox.appendChild(msgEl);
+                        });
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    });
+                }
+            }
+        };
+
+        App.init();
+
+    </script>
 
 </body>
 </html>
