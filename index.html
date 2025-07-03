@@ -1,1204 +1,533 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AppHub Pro - Professional App Store</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flix-Party: Watch Together</title>
+    <!-- We will use JS imports for Firebase, so no script tags needed here -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Netflix+Sans:wght@300;400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-color: #e50914; --dark-color: #141414; --darker-color: #0d0d0d; --bs-body-bg: var(--darker-color); --bs-body-color: #fff; }
+        body { font-family: 'Netflix Sans', sans-serif; background-color: var(--bs-body-bg); color: var(--bs-body-color); overflow: hidden; }
+        .view { display: none; min-height: 100vh; animation: fadeIn 0.5s; }
+        .view.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        /* --- AUTH VIEW --- */
+        #auth-view { flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle, rgba(20,20,20,1) 0%, rgba(13,13,13,1) 100%); }
+        .auth-container { background-color: rgba(0,0,0,0.75); padding: 60px; border-radius: 8px; max-width: 450px; width: 100%; }
+        .auth-container h1 { margin-bottom: 2rem; }
+        .form-control { background-color: #333; border: none; color: #fff; }
+        .form-control:focus { background-color: #454545; box-shadow: none; border-color: #fff; }
+        .btn-brand { background-color: var(--primary-color); font-weight: bold; }
+        .auth-toggle { cursor: pointer; color: #777; } .auth-toggle:hover { color: #fff; text-decoration: underline; }
 
-  <style>
-    :root {
-      /* Light Theme (Default) */
-      --bg-color: #f8f9fa; /* Light Gray */
-      --text-color: #212529; /* Dark Gray / Black */
-      --card-bg: #fff;
-      --card-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.075);
-      --card-hover-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.1);
-      --border-color: #dee2e6;
-      --primary-accent: #0D6EFD; /* Bootstrap Primary Blue */
-      --primary-accent-hover: #0b5ed7;
-      --secondary-text: #6c757d; /* Bootstrap Secondary Gray */
-      --navbar-bg: #fff;
-      --navbar-text: var(--primary-accent);
-      --sidebar-bg: #fff;
-      --sidebar-link-color: #495057;
-      --sidebar-link-active-bg: var(--primary-accent);
-      --sidebar-link-active-color: #fff;
-      --modal-header-bg: var(--primary-accent);
-      --modal-header-text: #fff;
-      --btn-primary-bg: var(--primary-accent);
-      --btn-primary-border: var(--primary-accent);
-      --btn-primary-hover-bg: var(--primary-accent-hover);
-      --btn-primary-hover-border: var(--primary-accent-hover);
-      --placeholder-gradient-start: var(--primary-accent);
-      --placeholder-gradient-end: #589bff;
-      --link-color: var(--primary-accent);
-      --footer-bg: #343a40;
-      --footer-text: #f8f9fa;
-    }
+        /* --- LOBBY VIEW --- */
+        #lobby-view { flex-direction: column; justify-content: center; align-items: center; }
+        .lobby-box { text-align: center; }
+        .lobby-box .btn { font-size: 1.5rem; padding: 1rem 2rem; }
+        #user-info { position: absolute; top: 2rem; right: 2rem; }
+        #user-info #sign-out-btn { color: #777; } #user-info #sign-out-btn:hover { color: #fff; }
 
-    body[data-theme="dark"] {
-      --bg-color: #1a1d24; /* Darker Gray */
-      --text-color: #e9ecef; /* Light Gray / White */
-      --card-bg: #2c303a;   /* Dark Card Background */
-      --card-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
-      --card-hover-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.25);
-      --border-color: #495057; /* Darker Border */
-      --primary-accent: #28a745; /* Forest Green */
-      --primary-accent-hover: #1e7e34; /* Darker Forest Green */
-      --secondary-text: #adb5bd; /* Lighter secondary text */
-      --navbar-bg: #212529; /* Dark Navbar */
-      --navbar-text: var(--primary-accent);
-      --sidebar-bg: #212529; /* Dark Sidebar */
-      --sidebar-link-color: #ced4da;
-      --sidebar-link-active-bg: var(--primary-accent);
-      --sidebar-link-active-color: #fff;
-      --modal-header-bg: var(--primary-accent);
-      --modal-header-text: #fff;
-      --btn-primary-bg: var(--primary-accent);
-      --btn-primary-border: var(--primary-accent);
-      --btn-primary-hover-bg: var(--primary-accent-hover);
-      --btn-primary-hover-border: var(--primary-accent-hover);
-      --placeholder-gradient-start: var(--primary-accent);
-      --placeholder-gradient-end: #38c172; /* Lighter green for gradient */
-      --link-color: var(--primary-accent);
-      --footer-bg: #111317;
-      --footer-text: #ced4da;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    .navbar {
-      background-color: var(--navbar-bg);
-      box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
-      transition: background-color 0.3s;
-    }
-
-    .navbar-brand {
-      font-weight: bold;
-      color: var(--navbar-text) !important;
-    }
-
-    #main-content {
-        padding-top: 1rem;
-        flex: 1;
-    }
-    
-    .sidebar {
-      background-color: var(--sidebar-bg);
-      padding: 1.5rem 1rem;
-      border-right: 1px solid var(--border-color);
-      height: calc(100vh - 56px); 
-      position: sticky;
-      top: 56px; 
-      overflow-y: auto;
-      transition: background-color 0.3s, border-color 0.3s;
-    }
-
-    .sidebar .nav-link {
-      color: var(--sidebar-link-color);
-      padding: 0.5rem 1rem;
-      border-radius: 0.375rem;
-      transition: background-color 0.2s, color 0.2s;
-    }
-    .sidebar .nav-link:hover, .sidebar .nav-link.active {
-      background-color: var(--sidebar-link-active-bg);
-      color: var(--sidebar-link-active-color);
-    }
-    .sidebar .nav-link .fas {
-      margin-right: 0.5rem;
-    }
-    .sidebar h5 {
-        color: var(--primary-accent);
-        margin-top: 1rem;
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        transition: color 0.3s;
-    }
-
-
-    .app-card {
-      transition: all 0.3s ease;
-      box-shadow: var(--card-shadow);
-      border: 1px solid var(--border-color);
-      background-color: var(--card-bg);
-      height: 100%; 
-    }
-
-    .app-card:hover {
-      transform: translateY(-5px);
-      box-shadow: var(--card-hover-shadow);
-    }
-
-    .app-card .card-img-top-placeholder {
-      width: 100%;
-      height: 180px; 
-      background: linear-gradient(45deg, var(--placeholder-gradient-start), var(--placeholder-gradient-end));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 3rem;
-      font-weight: bold;
-      border-top-left-radius: calc(0.375rem - 1px);
-      border-top-right-radius: calc(0.375rem - 1px);
-      transition: background 0.3s;
-    }
-    .app-card .card-title {
-      font-weight: 600;
-      color: var(--text-color);
-    }
-    .app-card .card-subtitle {
-      font-size: 0.9rem;
-      color: var(--secondary-text);
-    }
-    .app-card .app-rating .fas.fa-star {
-      color: #ffc107; 
-    }
-    .app-card .app-category-tag {
-        background-color: var(--bg-color); /* Use main bg for contrast */
-        color: var(--primary-accent);
-        padding: 0.25em 0.6em;
-        font-size: 0.75em;
-        border-radius: 10rem;
-        border: 1px solid var(--primary-accent);
-        transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-    }
-
-    .modal-content {
-        background-color: var(--card-bg); /* Use card-bg for modal consistency */
-        color: var(--text-color);
-        border: 1px solid var(--border-color);
-    }
-    .modal-header {
-        background-color: var(--modal-header-bg);
-        color: var(--modal-header-text);
-        border-bottom: 1px solid var(--border-color);
-    }
-    .modal-header .btn-close {
-        filter: invert(1) grayscale(100%) brightness(200%) var(--theme-filter, ''); /* Allow theme-specific filter */
-    }
-    body[data-theme="dark"] .modal-header .btn-close {
-        --theme-filter: brightness(100%); /* Adjust if needed for dark theme */
-    }
-
-    .form-control, .form-select {
-        background-color: var(--card-bg); /* Use card-bg for inputs */
-        color: var(--text-color);
-        border: 1px solid var(--border-color);
-    }
-    .form-control:focus, .form-select:focus {
-        background-color: var(--card-bg);
-        color: var(--text-color);
-        border-color: var(--primary-accent);
-        box-shadow: 0 0 0 0.25rem rgba(var(--primary-accent-rgb, 13, 110, 253), 0.25); /* Dynamically set RGB for shadow */
-    }
-    body[data-theme="dark"] .form-control:focus, 
-    body[data-theme="dark"] .form-select:focus {
-      --primary-accent-rgb: 40, 167, 69; /* RGB for forest green */
-    }
-
-
-    .upload-area {
-      border: 2px dashed var(--primary-accent);
-      border-radius: 0.375rem;
-      padding: 40px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      background-color: rgba(var(--primary-accent-rgb, 13, 110, 253), 0.02);
-    }
-    .upload-area:hover, .upload-area.dragover {
-      background-color: rgba(var(--primary-accent-rgb, 13, 110, 253), 0.05);
-    }
-    body[data-theme="dark"] .upload-area {
-      --primary-accent-rgb: 40, 167, 69; /* RGB for forest green */
-    }
-
-
-    .btn-primary {
-        background-color: var(--btn-primary-bg);
-        border-color: var(--btn-primary-border);
-        color: #fff; /* Ensure text is white on primary buttons */
-    }
-    .btn-primary:hover {
-        background-color: var(--btn-primary-hover-bg);
-        border-color: var(--btn-primary-hover-border);
-        color: #fff;
-    }
-    .btn-outline-primary {
-        color: var(--primary-accent);
-        border-color: var(--primary-accent);
-    }
-    .btn-outline-primary:hover {
-        color: #fff;
-        background-color: var(--primary-accent);
-        border-color: var(--primary-accent);
-    }
-     .btn-outline-secondary {
-        color: var(--secondary-text);
-        border-color: var(--secondary-text);
-    }
-    .btn-outline-secondary:hover {
-        color: var(--bg-color); /* Contrast with secondary button hover background */
-        background-color: var(--secondary-text);
-        border-color: var(--secondary-text);
-    }
-
-
-    .status-message {
-      font-weight: 500;
-    }
-
-    .content-area {
-      min-height: calc(100vh - 56px - 2rem); 
-    }
-    .footer {
-        background-color: var(--footer-bg);
-        color: var(--footer-text);
-        padding: 1rem 0;
-        text-align: center;
-        margin-top: auto; 
-        transition: background-color 0.3s, color 0.3s;
-    }
-
-    .stat-card {
-        background-color: var(--card-bg);
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        text-align: center;
-        box-shadow: var(--card-shadow);
-        margin-bottom: 1rem;
-        border: 1px solid var(--border-color);
-        transition: background-color 0.3s, border-color 0.3s;
-    }
-    .stat-card .stat-number {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: var(--primary-accent);
-        transition: color 0.3s;
-    }
-    .stat-card .stat-label {
-        font-size: 1rem;
-        color: var(--secondary-text);
-        transition: color 0.3s;
-    }
-
-    .apps-grid .col {
-        margin-bottom: 1.5rem;
-    }
-
-    /* Theme toggle button specific styles */
-    #themeToggle {
-        min-width: 40px; /* Ensure it has some width for the icon */
-    }
-    .dropdown-menu {
-        background-color: var(--card-bg);
-        border: 1px solid var(--border-color);
-    }
-    .dropdown-item {
-        color: var(--text-color);
-    }
-    .dropdown-item:hover, .dropdown-item:focus {
-        background-color: rgba(var(--primary-accent-rgb, 13, 110, 253), 0.1);
-        color: var(--primary-accent);
-    }
-    body[data-theme="dark"] .dropdown-item:hover,
-    body[data-theme="dark"] .dropdown-item:focus {
-         --primary-accent-rgb: 40, 167, 69;
-    }
-    .dropdown-divider {
-        border-top: 1px solid var(--border-color);
-    }
-    .border-bottom {
-        border-bottom: 1px solid var(--border-color) !important;
-    }
-
-
-  </style>
+        /* --- PARTY VIEW --- */
+        #party-view { width: 100%; height: 100vh; overflow: hidden; }
+        .main-content { flex-grow: 1; height: 100vh; overflow-y: auto; padding-top: 80px; /* Header height */ }
+        #party-sidebar { width: 350px; flex-shrink: 0; background-color: var(--dark-color); height: 100vh; display: flex; flex-direction: column; }
+        .party-header { padding: 1.5rem; border-bottom: 1px solid #333; text-align: center; }
+        .party-header #party-id { background-color: #000; padding: 5px 10px; border-radius: 5px; font-family: monospace; }
+        #member-list, #chat-messages { overflow-y: auto; scrollbar-width: thin; scrollbar-color: #555 #333; }
+        #member-list .member { padding: 0.5rem 1.5rem; }
+        #member-list .member .fa-crown { color: #ffc107; }
+        #chat-messages { flex-grow: 1; padding: 1rem; }
+        .chat-message { margin-bottom: 1rem; }
+        .chat-message strong { color: #b0b0b0; font-size: 0.9rem; }
+        .chat-message p { margin: 0; padding: 0.5rem 0.8rem; background-color: #2a2a2a; border-radius: 10px; }
+        .chat-input { background-color: #2a2a2a; border: 1px solid #444; color: #fff; }
+        
+        /* PLAYER OVERLAY */
+        #player-overlay { position: fixed; top: 0; left: 0; width: calc(100% - 350px); height: 100%; background: #000; z-index: 1050; animation: fadeIn 0.3s; }
+        #player-overlay .back-btn { position: absolute; top: 2rem; left: 2rem; z-index: 2; font-size: 1.8rem; }
+        #player-overlay iframe { width: 100%; height: 100%; border: none; }
+    </style>
 </head>
-<body data-theme="light"> <!-- Default theme -->
+<body>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg sticky-top">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#" onclick="navigateTo('discover', event)"><i class="fas fa-rocket"></i> AppHub Pro</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <!-- Future nav items -->
-        </ul>
-        <form class="d-flex me-3" role="search" id="searchForm">
-          <input class="form-control me-2" type="search" placeholder="Search apps..." aria-label="Search" id="searchInputGlobal">
-          <button class="btn btn-outline-primary" type="submit"><i class="fas fa-search"></i></button>
-        </form>
-        <button class="btn btn-outline-secondary me-2" id="themeToggle" title="Toggle Theme">
-            <i class="fas fa-moon"></i> <!-- Moon for dark, Sun for light -->
-        </button>
-        <div id="authSectionNav">
-          <!-- Populated by JS: Sign In button or User Dropdown -->
+    <!-- ======== VIEWS ======== -->
+
+    <!-- 1. Authentication View -->
+    <div id="auth-view" class="view active">
+        <div class="auth-container">
+            <h1 id="auth-title">Sign In</h1>
+            <div id="auth-error" class="alert alert-danger d-none"></div>
+            <form id="auth-form">
+                <input type="email" id="email" class="form-control mb-3" placeholder="Email" required>
+                <input type="password" id="password" class="form-control mb-4" placeholder="Password" required>
+                <button type="submit" id="auth-submit-btn" class="btn btn-brand w-100 py-2">Sign In</button>
+            </form>
+            <div class="mt-4">
+                <span id="auth-toggle-text" class="text-muted">New to Flix-Party?</span>
+                <span id="auth-toggle-btn" class="auth-toggle fw-bold">Sign up now.</span>
+            </div>
         </div>
-      </div>
     </div>
-  </nav>
 
-  <div class="container-fluid" id="main-content">
-    <div class="row">
-      <!-- Sidebar -->
-      <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-        <div class="position-sticky pt-3">
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link active" href="#" onclick="navigateTo('discover', event)">
-                <i class="fas fa-compass"></i> Discover
-              </a>
-            </li>
-            <li class="nav-item" id="myAppsSidebarLink" style="display: none;">
-              <a class="nav-link" href="#" onclick="navigateTo('myapps', event)">
-                <i class="fas fa-mobile-alt"></i> My Apps
-              </a>
-            </li>
-            <li class="nav-item" id="analyticsSidebarLink" style="display: none;">
-              <a class="nav-link" href="#" onclick="navigateTo('analytics', event)">
-                <i class="fas fa-chart-line"></i> Platform Stats
-              </a>
-            </li>
-            <li class="nav-item" id="uploadAppSidebarLink" style="display: none;">
-                <a class="nav-link" href="#" onclick="showUploadModal(); event.preventDefault();">
-                  <i class="fas fa-upload"></i> Upload App
-                </a>
-              </li>
-          </ul>
-
-          <h5 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1" id="categoriesHeader">
-            <span>Categories</span>
-          </h5>
-          <ul class="nav flex-column mb-2" id="categoryFilterList">
-            <li class="nav-item"><a class="nav-link filter-category active" href="#" data-category="">All Categories</a></li>
-            <li class="nav-item"><a class="nav-link filter-category" href="#" data-category="productivity">Productivity</a></li>
-            <li class="nav-item"><a class="nav-link filter-category" href="#" data-category="games">Games</a></li>
-            <li class="nav-item"><a class="nav-link filter-category" href="#" data-category="education">Education</a></li>
-            <li class="nav-item"><a class="nav-link filter-category" href="#" data-category="utilities">Utilities</a></li>
-            <li class="nav-item"><a class="nav-link filter-category" href="#" data-category="entertainment">Entertainment</a></li>
-            <li class="nav-item"><a class="nav-link filter-category" href="#" data-category="business">Business</a></li>
-          </ul>
+    <!-- 2. Lobby View (Create/Join Party) -->
+    <div id="lobby-view" class="view">
+        <div id="user-info">
+            <span id="user-display-name"></span>
+            <button id="sign-out-btn" class="btn btn-link"><i class="fas fa-sign-out-alt"></i></button>
         </div>
-      </nav>
-
-      <!-- Main content -->
-      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content-area">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-          <h1 class="h2" id="pageTitle">Discover Apps</h1>
-          <div class="btn-toolbar mb-2 mb-md-0" id="pageActions">
-            <select class="form-select form-select-sm me-2" id="sortFilter" style="width: auto;">
-              <option value="newest">Sort: Newest</option>
-              <option value="popular">Sort: Popular</option>
-              <option value="rating">Sort: Highest Rated</option>
-            </select>
-          </div>
+        <div class="lobby-box">
+            <h1>Welcome to Flix-Party!</h1>
+            <p class="lead">Watch movies and shows together, in real-time.</p>
+            <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                <button id="create-party-btn" class="btn btn-danger btn-lg">Create a Party</button>
+                <button id="join-party-btn" class="btn btn-outline-light btn-lg">Join a Party</button>
+            </div>
         </div>
-
-        <!-- Content sections, one active at a time -->
-        <div id="discoverContent" class="page-section">
-          <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-xl-4 g-4 apps-grid" id="appsGrid">
-            <!-- App cards will be injected here -->
-          </div>
-          <div id="noAppsMessage" class="text-center p-5" style="display:none;">
-            <h3><i class="fas fa-box-open fa-2x mb-3"></i></h3>
-            <h4>No apps found.</h4>
-            <p>Try adjusting your search or filters.</p>
-          </div>
-        </div>
-
-        <div id="myAppsContent" class="page-section" style="display: none;">
-          <div class="row mb-4">
-            <div class="col-lg-4 col-md-6 mb-3">
-                <div class="stat-card">
-                    <div class="stat-number" id="myTotalApps">0</div>
-                    <div class="stat-label">My Total Apps</div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 mb-3">
-                <div class="stat-card">
-                    <div class="stat-number" id="myTotalDownloads">0</div>
-                    <div class="stat-label">My App Downloads</div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-12 mb-3"> <!-- Make avg rating full width on md if only 3 stats -->
-                <div class="stat-card">
-                    <div class="stat-number" id="myAvgRating">0.0</div>
-                    <div class="stat-label">My Average Rating</div>
-                </div>
-            </div>
-          </div>
-          <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-xl-4 g-4 apps-grid" id="myAppsGrid">
-            <!-- My App cards -->
-          </div>
-           <div id="noMyAppsMessage" class="text-center p-5" style="display:none;">
-            <h3><i class="fas fa-folder-plus fa-2x mb-3"></i></h3>
-            <h4>You haven't uploaded any apps yet.</h4>
-            <button class="btn btn-primary mt-3" onclick="showUploadModal()"><i class="fas fa-upload"></i> Upload Your First App</button>
-          </div>
-        </div>
-
-        <div id="analyticsContent" class="page-section" style="display: none;">
-          <div class="row">
-             <div class="col-lg-4 col-md-6 mb-3">
-                <div class="stat-card">
-                    <div class="stat-number" id="platformApps">0</div>
-                    <div class="stat-label">Total Platform Apps</div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 mb-3">
-                <div class="stat-card">
-                    <div class="stat-number" id="activeUsers">0</div>
-                    <div class="stat-label">Active Developers</div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-12 mb-3">
-                <div class="stat-card">
-                    <div class="stat-number" id="platformDownloads">0</div>
-                    <div class="stat-label">Total Platform Downloads</div>
-                </div>
-            </div>
-          </div>
-        </div>
-
-      </main>
     </div>
-  </div>
-
-  <footer class="footer">
-      <div class="container">
-          <span>© 2024 AppHub Pro. Crafted with <i class="fas fa-heart text-danger"></i>.</span>
-      </div>
-  </footer>
-
-  <!-- Auth Modal -->
-  <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="authModalLabel">Sign In to AppHub Pro</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="form-floating mb-3">
-            <input type="email" class="form-control" id="authEmail" placeholder="name@example.com">
-            <label for="authEmail">Email address</label>
-          </div>
-          <div class="form-floating mb-3">
-            <input type="password" class="form-control" id="authPassword" placeholder="Password">
-            <label for="authPassword">Password</label>
-          </div>
-          <div id="authStatus" class="mb-3"></div>
-        </div>
-        <div class="modal-footer justify-content-between">
-            <button type="button" class="btn btn-link" onclick="promptSignUp()">New user? Create account</button>
-            <div>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="signIn()">Sign In</button>
-            </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Upload Modal -->
-  <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="uploadModalLabel">Upload New App</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="uploadForm">
-            <div class="mb-3">
-              <label for="appName" class="form-label">App Name *</label>
-              <input type="text" class="form-control" id="appName" required>
-            </div>
-            <div class="mb-3">
-              <label for="appDescription" class="form-label">Description *</label>
-              <textarea class="form-control" id="appDescription" rows="3" required></textarea>
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="appCategory" class="form-label">Category *</label>
-                    <select class="form-select" id="appCategory" required>
-                        <option value="">Select Category...</option>
-                        <option value="productivity">Productivity</option>
-                        <option value="games">Games</option>
-                        <option value="education">Education</option>
-                        <option value="utilities">Utilities</option>
-                        <option value="entertainment">Entertainment</option>
-                        <option value="business">Business</option>
-                    </select>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="appVersion" class="form-label">Version</label>
-                    <input type="text" class="form-control" id="appVersion" placeholder="e.g., 1.0.0">
-                </div>
-            </div>
-            <div class="mb-3">
-              <label for="appFile" class="form-label">App File * <small>(.zip, .apk, .ipa - Max 50MB)</small></label>
-              <div class="upload-area" id="uploadDropArea">
-                <p><i class="fas fa-cloud-upload-alt fa-3x"></i></p>
-                <p id="uploadAreaText">Click or drag & drop file here</p>
-              </div>
-              <input type="file" id="appFile" accept=".zip,.apk,.ipa" class="d-none">
-            </div>
-            <div id="uploadStatus" class="mb-3"></div>
-            <div class="d-flex justify-content-end">
-                <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Upload App</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-
-  <script>
-    // Firebase Configuration (REPLACE with your actual config)
-     const firebaseConfig = {
-      apiKey: "AIzaSyAIoQljzzHrBCx9s-Sm5VPc0sMeQ443OW0",
-      authDomain: "deutshlibrary.firebaseapp.com",
-      projectId: "deutshlibrary",
-      storageBucket: "deutshlibrary.appspot.com",
-      messagingSenderId: "70726183376",
-      appId: "1:70726183376:web:94daba35d5d68666dbb1d5",
-      measurementId: "G-DWSDR2Y63K"
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const storage = firebase.storage();
-    const db = firebase.firestore();
-
-    // Global variables
-    let currentUser = null;
-    let allApps = []; 
-    let currentCategoryFilter = ""; 
-    let currentSortFilter = "newest";
-    let currentSearchTerm = "";
-
-    // Bootstrap Modals
-    let authModalInstance, uploadModalInstance;
-
-    // --- Theme Management ---
-    const themeToggle = document.getElementById('themeToggle');
-    const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : 'light';
-
-    function applyTheme(theme) {
-        document.body.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        themeToggle.innerHTML = theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-         // Update RGB variables for focus outlines dynamically
-        if (theme === 'dark') {
-            document.documentElement.style.setProperty('--primary-accent-rgb', '40, 167, 69'); // Forest green RGB
-        } else {
-            document.documentElement.style.setProperty('--primary-accent-rgb', '13, 110, 253'); // Bootstrap blue RGB
-        }
-    }
-    applyTheme(currentTheme); // Apply stored theme on load
-
-    themeToggle.addEventListener('click', () => {
-        let theme = document.body.getAttribute('data-theme');
-        applyTheme(theme === 'dark' ? 'light' : 'dark');
-    });
-
-
-    // --- UI Navigation & State ---
-    function navigateTo(page, event) {
-        if(event) event.preventDefault();
-
-        document.querySelectorAll('.page-section').forEach(section => section.style.display = 'none');
-        document.querySelectorAll('#sidebarMenu .nav-link').forEach(link => link.classList.remove('active'));
-        
-        const pageTitle = document.getElementById('pageTitle');
-        const pageActions = document.getElementById('pageActions'); // Div containing sort filter
-        const categoriesHeader = document.getElementById('categoriesHeader');
-        const categoryFilterList = document.getElementById('categoryFilterList');
-
-        if (page === 'discover') {
-            pageActions.style.display = 'flex';
-            categoriesHeader.style.display = 'block';
-            categoryFilterList.style.display = 'block';
-        } else {
-            pageActions.style.display = 'none';
-            categoriesHeader.style.display = 'none';
-            categoryFilterList.style.display = 'none';
-        }
-
-        switch(page) {
-            case 'discover':
-                document.getElementById('discoverContent').style.display = 'block';
-                document.querySelector('#sidebarMenu .nav-link[onclick*="discover"]').classList.add('active');
-                pageTitle.textContent = 'Discover Apps';
-                loadApps();
-                break;
-            case 'myapps':
-                if (!currentUser) { showAuthModal(); return; }
-                document.getElementById('myAppsContent').style.display = 'block';
-                document.querySelector('#sidebarMenu .nav-link[onclick*="myapps"]').classList.add('active');
-                pageTitle.textContent = 'My Apps Dashboard';
-                loadMyApps();
-                break;
-            case 'analytics': // Renamed to Platform Stats in UI
-                if (!currentUser) { showAuthModal(); return; }
-                document.getElementById('analyticsContent').style.display = 'block';
-                document.querySelector('#sidebarMenu .nav-link[onclick*="analytics"]').classList.add('active');
-                pageTitle.textContent = 'Platform Statistics';
-                loadPlatformAnalytics();
-                break;
-        }
-    }
-
-
-    // --- Authentication ---
-    auth.onAuthStateChanged((user) => {
-      currentUser = user;
-      updateAuthUI();
-      if (user) {
-        // No need to auto-load myapps/analytics here, navigateTo handles it
-      } else {
-        if(document.getElementById('myAppsContent').style.display === 'block' || 
-           document.getElementById('analyticsContent').style.display === 'block') {
-            navigateTo('discover'); // If on a protected page, redirect
-        }
-      }
-    });
-
-    function updateAuthUI() {
-      const authSectionNav = document.getElementById('authSectionNav');
-      const myAppsSidebarLink = document.getElementById('myAppsSidebarLink');
-      const analyticsSidebarLink = document.getElementById('analyticsSidebarLink');
-      const uploadAppSidebarLink = document.getElementById('uploadAppSidebarLink');
-
-      if (currentUser) {
-        authSectionNav.innerHTML = `
-          <div class="dropdown">
-            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="fas fa-user-circle me-1"></i> ${currentUser.email.split('@')[0]}
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-              <li><a class="dropdown-item" href="#" onclick="navigateTo('myapps', event)"><i class="fas fa-mobile-alt fa-fw me-2"></i>My Apps</a></li>
-              <li><a class="dropdown-item" href="#" onclick="navigateTo('analytics', event)"><i class="fas fa-chart-line fa-fw me-2"></i>Platform Stats</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="#" onclick="showUploadModal()"><i class="fas fa-upload fa-fw me-2"></i>Upload App</a></li>
-              <li><a class="dropdown-item" href="#" onclick="signOut()"><i class="fas fa-sign-out-alt fa-fw me-2"></i>Sign Out</a></li>
-            </ul>
-          </div>
-        `;
-        myAppsSidebarLink.style.display = 'block';
-        analyticsSidebarLink.style.display = 'block';
-        uploadAppSidebarLink.style.display = 'block';
-
-      } else {
-        authSectionNav.innerHTML = `
-          <button class="btn btn-primary" onclick="showAuthModal()">
-            <i class="fas fa-sign-in-alt me-1"></i> Sign In
-          </button>
-        `;
-        myAppsSidebarLink.style.display = 'none';
-        analyticsSidebarLink.style.display = 'none';
-        uploadAppSidebarLink.style.display = 'none';
-      }
-    }
-
-    function showAuthModal() {
-      authModalInstance.show();
-    }
     
-    function promptSignUp() {
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPassword').value;
-        if (!email || !password) {
-            showStatus('authStatus', 'Please enter email and password to create an account.', 'warning', 'authModal');
-            return;
-        }
-        if (password.length < 6) {
-            showStatus('authStatus', 'Password should be at least 6 characters.', 'warning', 'authModal');
-            return;
-        }
-        signUp(email, password);
-    }
-
-    async function signIn() {
-      const email = document.getElementById('authEmail').value;
-      const password = document.getElementById('authPassword').value;
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-        authModalInstance.hide();
-        showGlobalToast('Signed in successfully!', 'success');
-      } catch (error) {
-        showStatus('authStatus', error.message, 'danger', 'authModal');
-      }
-    }
-
-    async function signUp(email, password) { 
-      try {
-        await auth.createUserWithEmailAndPassword(email, password);
-        authModalInstance.hide();
-        showGlobalToast('Account created! You are now signed in.', 'success');
-      } catch (error) {
-        showStatus('authStatus', error.message, 'danger', 'authModal');
-      }
-    }
-
-    function signOut() {
-      auth.signOut().then(() => {
-        showGlobalToast('Signed out successfully.', 'info');
-      });
-    }
-
-    // --- App Upload ---
-    function showUploadModal() {
-      if (!currentUser) {
-        showAuthModal();
-        return;
-      }
-      document.getElementById('uploadForm').reset();
-      document.getElementById('uploadAreaText').textContent = 'Click or drag & drop file here';
-      document.getElementById('uploadStatus').innerHTML = '';
-      uploadModalInstance.show();
-    }
-    
-    const uploadDropArea = document.getElementById('uploadDropArea');
-    const appFileInput = document.getElementById('appFile');
-    const uploadAreaText = document.getElementById('uploadAreaText');
-
-    uploadDropArea.addEventListener('click', () => appFileInput.click());
-    appFileInput.addEventListener('change', (e) => handleFileSelect(e.target.files));
-
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      uploadDropArea.addEventListener(eventName, preventDefaults, false);
-    });
-    function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
-    ['dragenter', 'dragover'].forEach(eventName => {
-      uploadDropArea.addEventListener(eventName, () => uploadDropArea.classList.add('dragover'), false);
-    });
-    ['dragleave', 'drop'].forEach(eventName => {
-      uploadDropArea.addEventListener(eventName, () => uploadDropArea.classList.remove('dragover'), false);
-    });
-    uploadDropArea.addEventListener('drop', (e) => handleFileSelect(e.dataTransfer.files), false);
-
-    function handleFileSelect(files) {
-        if (files.length > 0) {
-            appFileInput.files = files; 
-            uploadAreaText.textContent = `Selected: ${files[0].name}`;
-        }
-    }
-
-    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!currentUser) {
-        showStatus('uploadStatus', 'You must be signed in.', 'danger', 'uploadModal');
-        return;
-      }
-
-      const name = document.getElementById('appName').value;
-      const description = document.getElementById('appDescription').value;
-      const category = document.getElementById('appCategory').value;
-      const version = document.getElementById('appVersion').value || '1.0.0';
-      const file = appFileInput.files[0];
-
-      if (!file || !name || !description || !category) {
-        showStatus('uploadStatus', 'Please fill all required fields and select an app file.', 'warning', 'uploadModal');
-        return;
-      }
-      if (file.size > 50 * 1024 * 1024) { // 50MB
-        showStatus('uploadStatus', 'File size exceeds 50MB limit.', 'warning', 'uploadModal');
-        return;
-      }
-
-      showStatus('uploadStatus', `<div class="progress" style="height: 20px;"><div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 10%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100">Uploading...</div></div>`, 'info', 'uploadModal', false);
-      const progressBar = document.querySelector('#uploadStatus .progress-bar');
-
-      try {
-        const fileRef = storage.ref().child(`apps/${currentUser.uid}/${Date.now()}_${file.name}`);
-        const uploadTask = fileRef.put(file);
-
-        uploadTask.on('state_changed',
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            if(progressBar) progressBar.style.width = progress + '%';
-          },
-          (error) => {
-            console.error('Upload error:', error);
-            showStatus('uploadStatus', `Upload failed: ${error.message}`, 'danger', 'uploadModal');
-          },
-          async () => {
-            const downloadURL = await fileRef.getDownloadURL();
-            await db.collection('apps').add({
-              name, description, category, version, downloadURL,
-              fileName: file.name, fileSize: file.size,
-              developerEmail: currentUser.email, developerId: currentUser.uid,
-              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-              updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-              downloads: 0, ratingSum: 0, ratingCount: 0, 
-              ratingAverage: 0, // Initialize average rating
-              status: 'active' 
-            });
-            showStatus('uploadStatus', 'App uploaded successfully!', 'success', 'uploadModal');
-            document.getElementById('uploadForm').reset();
-            uploadAreaText.textContent = 'Click or drag & drop file here';
-            setTimeout(() => {
-                uploadModalInstance.hide();
-                if (document.getElementById('discoverContent').style.display === 'block') loadApps();
-                if (document.getElementById('myAppsContent').style.display === 'block') loadMyApps();
-            }, 1500);
-          }
-        );
-      } catch (error) {
-        console.error('Upload error:', error);
-        showStatus('uploadStatus', `Upload failed: ${error.message}`, 'danger', 'uploadModal');
-      }
-    });
-
-    // --- App Loading & Display ---
-    async function loadApps() {
-      try {
-        let query = db.collection('apps').where('status', '==', 'active');
-        
-        if (currentCategoryFilter) {
-            query = query.where('category', '==', currentCategoryFilter);
-        }
-        
-        // Sorting
-        if (currentSortFilter === 'popular') query = query.orderBy('downloads', 'desc');
-        else if (currentSortFilter === 'rating') query = query.orderBy('ratingAverage', 'desc'); 
-        else query = query.orderBy('createdAt', 'desc'); // newest
-
-        const snapshot = await query.limit(24).get(); // Increased limit slightly
-
-        allApps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        let appsToDisplay = allApps;
-        if (currentSearchTerm) {
-            appsToDisplay = allApps.filter(app => 
-                (app.name && app.name.toLowerCase().includes(currentSearchTerm)) ||
-                (app.description && app.description.toLowerCase().includes(currentSearchTerm)) ||
-                (app.developerEmail && app.developerEmail.toLowerCase().includes(currentSearchTerm))
-            );
-        }
-        displayApps(appsToDisplay, 'appsGrid', 'noAppsMessage');
-
-      } catch (error) {
-        console.error('Error loading apps:', error);
-        showGlobalToast(`Error loading apps: ${error.message}`, 'danger');
-      }
-    }
-
-    function displayApps(apps, gridId, noAppsMessageId) {
-      const grid = document.getElementById(gridId);
-      const noAppsMsg = document.getElementById(noAppsMessageId);
-      grid.innerHTML = '';
-
-      if (apps.length === 0) {
-        if(noAppsMsg) noAppsMsg.style.display = 'block';
-        return;
-      }
-      if(noAppsMsg) noAppsMsg.style.display = 'none';
-
-      apps.forEach(app => {
-        const appCard = createAppCard(app, gridId === 'myAppsGrid');
-        const col = document.createElement('div');
-        col.className = 'col'; 
-        col.appendChild(appCard);
-        grid.appendChild(col);
-      });
-    }
-
-    function createAppCard(app, isMyAppsCard = false) {
-      const card = document.createElement('div');
-      card.className = 'card app-card';
-      
-      const avgRating = app.ratingAverage || 0; // Use pre-calculated average
-      let starsHTML = '';
-      for (let i = 1; i <= 5; i++) {
-        if (avgRating >= i) starsHTML += `<i class="fas fa-star"></i>`;
-        else if (avgRating >= i - 0.5) starsHTML += `<i class="fas fa-star-half-alt"></i>`;
-        else starsHTML += `<i class="far fa-star"></i>`; // Empty star
-      }
-      if (app.ratingCount === 0) {
-          starsHTML = '<small class="text-muted">No ratings yet</small>';
-      } else {
-          starsHTML += ` <small class="text-muted">(${app.ratingCount || 0})</small>`;
-      }
-
-      const iconLetter = app.name ? app.name.charAt(0).toUpperCase() : 'A';
-      const descriptionShort = (app.description || 'No description.').substring(0, 70) + 
-                                ((app.description && app.description.length > 70) ? '...' : '');
-
-      card.innerHTML = `
-        <div class="card-img-top-placeholder d-flex align-items-center justify-content-center"><span>${iconLetter}</span></div>
-        <div class="card-body d-flex flex-column">
-          <h5 class="card-title text-truncate" title="${app.name || 'Untitled App'}">${app.name || 'Untitled App'}</h5>
-          <h6 class="card-subtitle mb-2 text-muted text-truncate" title="${app.developerEmail || 'Unknown'}">${app.developerEmail || 'Unknown Developer'}</h6>
-          <p class="app-rating mb-1 small">${starsHTML}</p>
-          <p class="card-text small flex-grow-1">${descriptionShort}</p>
-          <div class="mt-auto"> <!-- Push content below to bottom of card -->
-            <span class="app-category-tag mb-2 d-inline-block">${app.category || 'N/A'}</span>
-            <div class="d-flex justify-content-between align-items-center">
-              <button class="btn btn-sm btn-primary" onclick="downloadApp(event, '${app.id}', '${app.downloadURL}', '${app.fileName}')">
-                  <i class="fas fa-download"></i> Download
-              </button>
-              <small class="text-muted">${app.downloads || 0} <i class="fas fa-cloud-download-alt"></i></small>
+    <!-- 3. Main Party View (Movie Browser + Sidebar) -->
+    <div id="party-view" class="view">
+        <main class="main-content">
+            <!-- Movie browser content will be injected here -->
+        </main>
+        <aside id="party-sidebar">
+            <div class="party-header">
+                <h5>Party ID</h5>
+                <p id="party-id" class="fw-bold">------ <button id="copy-id-btn" class="btn btn-sm btn-dark ms-2"><i class="far fa-copy"></i></button></p>
             </div>
-            ${isMyAppsCard ? `
-              <hr class="my-2">
-              <div class="d-flex justify-content-start gap-1 flex-wrap">
-                  <button class="btn btn-sm btn-outline-secondary" onclick="editApp(event, '${app.id}')"><i class="fas fa-edit"></i></button>
-                  <button class="btn btn-sm btn-outline-${app.status === 'active' ? 'warning' : 'success'}" onclick="toggleAppStatus(event, '${app.id}', '${app.status}')">
-                      <i class="fas ${app.status === 'active' ? 'fa-pause-circle' : 'fa-play-circle'}"></i> 
-                  </button>
-              </div>
-              <small class="d-block mt-1 text-muted">Status: <span class="fw-bold text-${app.status === 'active' ? 'success' : 'danger'}">${app.status}</span></small>
-            ` : ''}
-          </div>
-        </div>
-      `;
-      return card;
-    }
+            <h6 class="text-muted px-4 mt-3 mb-2">IN THE PARTY (<span id="member-count">0</span>)</h6>
+            <div id="member-list">
+                <!-- Members injected here -->
+            </div>
+            <div id="chat-messages">
+                <!-- Chat messages injected here -->
+            </div>
+            <div class="p-3 border-top border-secondary-subtle">
+                <form id="chat-form">
+                    <input type="text" id="chat-input" class="form-control chat-input" placeholder="Say something..." autocomplete="off">
+                </form>
+            </div>
+        </aside>
 
-    async function downloadApp(event, appId, downloadURL, fileName) {
-      event.stopPropagation();
-      try {
-        const appRef = db.collection('apps').doc(appId);
-        await appRef.update({
-          downloads: firebase.firestore.FieldValue.increment(1)
-        });
-        const link = document.createElement('a');
-        link.href = downloadURL;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Optimistically update UI or full reload
-        const appCard = event.target.closest('.app-card');
-        if (appCard) {
-            const downloadsElement = appCard.querySelector('.text-muted i.fa-cloud-download-alt');
-            if (downloadsElement && downloadsElement.previousSibling) {
-                const currentDownloads = parseInt(downloadsElement.previousSibling.textContent.trim()) || 0;
-                downloadsElement.previousSibling.textContent = `${currentDownloads + 1} `;
-            }
-        } else { // Fallback to reload if card not found
-            if (document.getElementById('discoverContent').style.display === 'block') loadApps();
-            if (document.getElementById('myAppsContent').style.display === 'block') loadMyApps();
-        }
+        <!-- Player overlay will be injected here -->
+    </div>
 
+    <!-- Global App-level spinner -->
+    <div id="global-spinner" class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background: rgba(0,0,0,0.7); z-index: 9999;">
+        <div class="spinner-border text-danger" style="width: 4rem; height: 4rem;"></div>
+    </div>
 
-      } catch (error) {
-        console.error('Download error:', error);
-        showGlobalToast(`Download failed: ${error.message}`, 'danger');
-      }
-    }
+    <!-- ======================= -->
+    
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, onValue, push, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // --- My Apps Specific ---
-    async function loadMyApps() {
-        if (!currentUser) return;
-        try {
-            const snapshot = await db.collection('apps')
-                .where('developerId', '==', currentUser.uid)
-                .orderBy('createdAt', 'desc')
-                .get();
+        const App = {
+            // ========================
+            //  CONFIGURATION
+            // ========================
+            firebaseConfig: {
+                apiKey: "AIzaSyDp2V0ULE-32AcIJ92a_e3mhMe6f6yZ_H4",
+                authDomain: "sm4movies.firebaseapp.com",
+                databaseURL: "https://sm4movies-default-rtdb.firebaseio.com",
+                projectId: "sm4movies",
+                storageBucket: "sm4movies.firebasestorage.app",
+                messagingSenderId: "277353836953",
+                appId: "1:277353836953:web:85e02783526c7cb58de308",
+                measurementId: "G-690RSNJ2Q2"
+            },
+            tmdb: {
+                API_KEY: '431fb541e27bceeb9db2f4cab69b54e1', // A public TMDB key
+                API_BASE_URL: 'https://api.themoviedb.org/3',
+                IMAGE_BASE_URL: 'https://image.tmdb.org/t/p/w500',
+                BACKDROP_BASE_URL: 'https://image.tmdb.org/t/p/w1280',
+                ROW_CONFIG: [ { title: 'Trending Now', endpoint: '/trending/all/week' }, { title: 'Top Rated Movies', endpoint: '/movie/top_rated' }, { title: 'Action & Adventure', endpoint: '/discover/movie?with_genres=28' } ]
+            },
 
-            let myAppsList = [];
-            let totalMyDownloads = 0;
-            let sumMyAvgRatings = 0; // Sum of pre-calculated average ratings
-            let myAppsWithRatings = 0;
-
-            snapshot.forEach(doc => {
-                const app = { id: doc.id, ...doc.data() };
-                myAppsList.push(app);
-                totalMyDownloads += app.downloads || 0;
-                if (app.ratingCount > 0 && typeof app.ratingAverage === 'number') {
-                    sumMyAvgRatings += app.ratingAverage;
-                    myAppsWithRatings++;
-                }
-            });
-            displayApps(myAppsList, 'myAppsGrid', 'noMyAppsMessage');
+            // ========================
+            //  STATE & DOM
+            // ========================
+            state: {
+                isSigningUp: false,
+                currentUser: null,
+                currentPartyId: null,
+                currentPartyData: null,
+                partyListeners: []
+            },
+            dom: {},
             
-            document.getElementById('myTotalApps').textContent = myAppsList.length;
-            document.getElementById('myTotalDownloads').textContent = totalMyDownloads;
-            document.getElementById('myAvgRating').textContent = myAppsWithRatings > 0 ? (sumMyAvgRatings / myAppsWithRatings).toFixed(1) : '0.0';
+            // ========================
+            //  INITIALIZATION
+            // ========================
+            init() {
+                if(this.firebaseConfig.apiKey === 'YOUR_API_KEY_HERE') {
+                    document.body.innerHTML = '<div class="d-flex align-items-center justify-content-center vh-100"><h1 class="text-center text-danger p-5">FATAL ERROR: Firebase config is missing. Please add your project configuration to the script.</h1></div>';
+                    return;
+                }
 
-        } catch (error) {
-            console.error('Error loading my apps:', error);
-            showGlobalToast(`Error loading your apps: ${error.message}`, 'danger');
-        }
-    }
+                // Initialize Firebase
+                this.firebase = {
+                    app: initializeApp(this.firebaseConfig),
+                    auth: getAuth(),
+                    db: getDatabase()
+                };
 
-    function editApp(event, appId) {
-        event.stopPropagation();
-        showGlobalToast(`Edit app (ID: ${appId}) - Feature not fully implemented.`, 'info');
-    }
+                this.cacheDOMElements();
+                this.registerEventListeners();
+                this.handleAuthState();
+            },
+            
+            cacheDOMElements() {
+                // Auth View
+                this.dom.authView = document.getElementById('auth-view');
+                this.dom.authTitle = document.getElementById('auth-title');
+                this.dom.authError = document.getElementById('auth-error');
+                this.dom.authForm = document.getElementById('auth-form');
+                this.dom.authSubmitBtn = document.getElementById('auth-submit-btn');
+                this.dom.authToggleText = document.getElementById('auth-toggle-text');
+                this.dom.authToggleBtn = document.getElementById('auth-toggle-btn');
+                
+                // Lobby View
+                this.dom.lobbyView = document.getElementById('lobby-view');
+                this.dom.userDisplayName = document.getElementById('user-display-name');
+                this.dom.createPartyBtn = document.getElementById('create-party-btn');
+                this.dom.joinPartyBtn = document.getElementById('join-party-btn');
+                this.dom.signOutBtn = document.getElementById('sign-out-btn');
 
-    async function toggleAppStatus(event, appId, currentStatus) {
-        event.stopPropagation();
-        const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
-        try {
-            await db.collection('apps').doc(appId).update({
-                status: newStatus,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            showGlobalToast(`App status changed to ${newStatus}.`, 'success');
-            loadMyApps();
-            if (document.getElementById('discoverContent').style.display === 'block') loadApps();
-        } catch (error) {
-            console.error('Error updating app status:', error);
-            showGlobalToast(`Error updating status: ${error.message}`, 'danger');
-        }
-    }
+                // Party View
+                this.dom.partyView = document.getElementById('party-view');
+                this.dom.mainContent = this.dom.partyView.querySelector('.main-content');
+                this.dom.partyIdDisplay = document.getElementById('party-id');
+                this.dom.copyIdBtn = document.getElementById('copy-id-btn');
+                this.dom.memberCount = document.getElementById('member-count');
+                this.dom.memberList = document.getElementById('member-list');
+                this.dom.chatMessages = document.getElementById('chat-messages');
+                this.dom.chatForm = document.getElementById('chat-form');
+                this.dom.chatInput = document.getElementById('chat-input');
+                this.dom.globalSpinner = document.getElementById('global-spinner');
+            },
+
+            registerEventListeners() {
+                // Auth listeners
+                this.dom.authToggleBtn.addEventListener('click', () => this.toggleAuthMode());
+                this.dom.authForm.addEventListener('submit', (e) => this.handleAuthSubmit(e));
+
+                // Lobby listeners
+                this.dom.signOutBtn.addEventListener('click', () => signOut(this.firebase.auth));
+                this.dom.createPartyBtn.addEventListener('click', () => this.createParty());
+                this.dom.joinPartyBtn.addEventListener('click', () => this.joinParty());
+
+                // Party listeners
+                this.dom.copyIdBtn.addEventListener('click', () => this.copyPartyId());
+                this.dom.chatForm.addEventListener('submit', (e) => this.handleChatSubmit(e));
+
+                // Global router
+                window.addEventListener('hashchange', () => this.syncFromHash());
+            },
+
+            // ========================
+            //  AUTHENTICATION & ROUTING
+            // ========================
+            handleAuthState() {
+                onAuthStateChanged(this.firebase.auth, (user) => {
+                    if (user) {
+                        this.state.currentUser = { uid: user.uid, email: user.email, displayName: user.email.split('@')[0] };
+                        this.syncFromHash();
+                    } else {
+                        this.state.currentUser = null;
+                        this.cleanupParty();
+                        this.showView('auth');
+                        window.location.hash = '';
+                    }
+                });
+            },
+
+            syncFromHash() {
+                const partyId = window.location.hash.split('/')[2];
+                if (this.state.currentUser) {
+                    if(partyId) {
+                        this.enterParty(partyId);
+                    } else {
+                        this.cleanupParty();
+                        this.dom.userDisplayName.textContent = `Hi, ${this.state.currentUser.displayName}`;
+                        this.showView('lobby');
+                    }
+                } else {
+                    this.showView('auth');
+                }
+            },
+            
+            toggleAuthMode() {
+                this.state.isSigningUp = !this.state.isSigningUp;
+                this.dom.authTitle.textContent = this.state.isSigningUp ? 'Sign Up' : 'Sign In';
+                this.dom.authSubmitBtn.textContent = this.state.isSigningUp ? 'Sign Up' : 'Sign In';
+                this.dom.authToggleText.textContent = this.state.isSigningUp ? 'Already have an account?' : 'New to Flix-Party?';
+                this.dom.authToggleBtn.textContent = this.state.isSigningUp ? 'Sign in.' : 'Sign up now.';
+                this.dom.authError.classList.add('d-none');
+            },
+
+            async handleAuthSubmit(e) {
+                e.preventDefault();
+                this.showSpinner(true);
+                const email = this.dom.authForm.email.value;
+                const password = this.dom.authForm.password.value;
+                try {
+                    if (this.state.isSigningUp) {
+                        await createUserWithEmailAndPassword(this.firebase.auth, email, password);
+                    } else {
+                        await signInWithEmailAndPassword(this.firebase.auth, email, password);
+                    }
+                    this.dom.authError.classList.add('d-none');
+                } catch (error) {
+                    this.dom.authError.textContent = error.message;
+                    this.dom.authError.classList.remove('d-none');
+                } finally {
+                    this.showSpinner(false);
+                }
+            },
+            
+            // ========================
+            //  LOBBY & PARTY MANAGEMENT
+            // ========================
+            async createParty() {
+                this.showSpinner(true);
+                const partyId = this.generateId();
+                const partyRef = ref(this.firebase.db, `parties/${partyId}`);
+                const partyData = {
+                    info: {
+                        hostId: this.state.currentUser.uid,
+                        createdAt: Date.now(),
+                    },
+                    playerState: { isPlaying: false, currentTime: 0, lastUpdated: 0 },
+                    members: {},
+                    chat: {}
+                };
+                await set(partyRef, partyData);
+                this.showSpinner(false);
+                window.location.hash = `#/party/${partyId}`;
+            },
+
+            async joinParty() {
+                const partyId = prompt("Please enter the Party ID:");
+                if(!partyId) return;
+
+                this.showSpinner(true);
+                const partyRef = ref(this.firebase.db, `parties/${partyId}`);
+                const snapshot = await get(partyRef);
+                if (snapshot.exists()) {
+                    window.location.hash = `#/party/${partyId}`;
+                } else {
+                    alert("Party not found. Please check the ID.");
+                }
+                this.showSpinner(false);
+            },
+            
+            async enterParty(partyId) {
+                this.cleanupParty(); // Cleanup previous party listeners
+                this.state.currentPartyId = partyId;
+                const partyRef = ref(this.firebase.db, `parties/${partyId}`);
+
+                const snapshot = await get(partyRef);
+                if (!snapshot.exists()) {
+                    alert('This party does not exist or has ended.');
+                    window.location.hash = '';
+                    return;
+                }
+                
+                this.showView('party');
+                this.dom.partyIdDisplay.firstChild.textContent = partyId + ' ';
+                this.setupPartyPresence(partyId);
+                this.setupPartyListeners(partyId);
+                this.ui.renderMovieBrowser();
+            },
+            
+            cleanupParty() {
+                this.state.partyListeners.forEach(off => off()); // Unsubscribe from all listeners
+                this.state.partyListeners = [];
+                this.state.currentPartyId = null;
+                this.state.currentPartyData = null;
+                if(this.dom.mainContent) this.dom.mainContent.innerHTML = '';
+            },
+
+            setupPartyPresence(partyId) {
+                const userRef = ref(this.firebase.db, `parties/${partyId}/members/${this.state.currentUser.uid}`);
+                set(userRef, this.state.currentUser.displayName);
+                onDisconnect(userRef).remove();
+            },
+
+            setupPartyListeners(partyId) {
+                const infoRef = ref(this.firebase.db, `parties/${partyId}/info`);
+                const membersRef = ref(this.firebase.db, `parties/${partyId}/members`);
+                const chatRef = ref(this.firebase.db, `parties/${partyId}/chat`);
+                
+                const offInfo = onValue(infoRef, (snapshot) => {
+                    this.state.currentPartyData = snapshot.val();
+                    this.ui.updatePlayerFromState();
+                });
+                const offMembers = onValue(membersRef, (snapshot) => this.ui.updateMemberList(snapshot.val()));
+                const offChat = onValue(chatRef, (snapshot) => this.ui.updateChat(snapshot.val()));
+
+                this.state.partyListeners.push(offInfo, offMembers, offChat);
+            },
+
+            // ========================
+            //  PARTY ACTIONS (Play, Chat, etc)
+            // ========================
+            selectMedia(media) {
+                if (this.state.currentUser.uid !== this.state.currentPartyData.hostId) {
+                    alert('Only the host can change the movie!');
+                    return;
+                }
+                const mediaRef = ref(this.firebase.db, `parties/${this.state.currentPartyId}/info/currentMedia`);
+                const playerStateRef = ref(this.firebase.db, `parties/${this.state.currentPartyId}/playerState`);
+                set(mediaRef, {
+                    id: media.id,
+                    type: media.title ? 'movie' : 'tv',
+                    title: media.title || media.name
+                });
+                // Reset player when new media is selected
+                set(playerStateRef, { isPlaying: false, currentTime: 0 });
+            },
+
+            handleChatSubmit(e) {
+                e.preventDefault();
+                const text = this.dom.chatInput.value.trim();
+                if(!text) return;
+                
+                const chatRef = ref(this.firebase.db, `parties/${this.state.currentPartyId}/chat`);
+                push(chatRef, {
+                    uid: this.state.currentUser.uid,
+                    displayName: this.state.currentUser.displayName,
+                    text: text,
+                    timestamp: Date.now()
+                });
+                this.dom.chatInput.value = '';
+            },
+            
+            // ========================
+            //  UI RENDERING & HELPERS
+            // ========================
+            ui: {
+                _app: null, init(app) { this._app = app; },
+                showView(viewName) {
+                    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                    document.getElementById(`${viewName}-view`).classList.add('active');
+                },
+
+                showSpinner(show) { this.dom.globalSpinner.classList.toggle('d-none', !show); },
+                
+                async renderMovieBrowser() {
+                    this.dom.mainContent.innerHTML = `<div class="p-5 text-center"><div class="spinner-border text-danger"></div></div>`;
+                    let contentHtml = '<div id="player-container"></div>'; // Placeholder for player
+                    const docFragment = document.createDocumentFragment();
+                    for(const config of this._app.tmdb.ROW_CONFIG) {
+                        const data = await this._app.api.fetchTMDB(config.endpoint);
+                        if (data?.results) docFragment.appendChild(this.createMovieRow(config, data.results));
+                    }
+                    contentHtml += docFragment;
+                    this.dom.mainContent.innerHTML = contentHtml;
+
+                    this.dom.mainContent.querySelectorAll('.backdrop-card').forEach(card => {
+                        card.addEventListener('click', () => {
+                            const media = {id: card.dataset.id, type: card.dataset.mediaType, title: card.dataset.title};
+                            this._app.selectMedia(media);
+                        });
+                    });
+
+                    this.updatePlayerFromState();
+                },
+                
+                createMovieRow(config, items) { /* ... Similar to previous versions, builds HTML for a row ... */ return document.createElement('div'); },
+                createBackdropCard(item, mediaType) { /* ... Builds HTML for a card ... */ return document.createElement('div'); },
+
+                updatePlayerFromState() {
+                    const media = this._app.state.currentPartyData?.currentMedia;
+                    const playerContainer = this.dom.mainContent.querySelector('#player-container');
+                    if(!playerContainer) return;
+                    
+                    if (media?.id) {
+                        playerContainer.innerHTML = `<div id="player-overlay"><button class="btn btn-link text-white back-btn"><i class="fas fa-arrow-left"></i></button><iframe src="${this._app.config.STREAMING_BASE_URL}${media.type}/${media.id}"></iframe></div>`;
+                        playerContainer.querySelector('.back-btn').onclick = () => {
+                            set(ref(this._app.firebase.db, `parties/${this._app.state.currentPartyId}/info/currentMedia`), null);
+                        };
+                    } else {
+                        playerContainer.innerHTML = `<div class="p-5 text-center bg-dark rounded m-4"><h2>Welcome to the Party!</h2><p>The host can select a movie or show to begin.</p></div>`;
+                    }
+                },
+                
+                updateMemberList(members) {
+                    if (!members) { this.dom.memberList.innerHTML = ''; this.dom.memberCount.textContent = 0; return; }
+                    const hostId = this._app.state.currentPartyData?.hostId;
+                    const memberKeys = Object.keys(members);
+                    this.dom.memberCount.textContent = memberKeys.length;
+                    this.dom.memberList.innerHTML = memberKeys.map(uid => `
+                        <div class="member d-flex align-items-center">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <span class="flex-grow-1">${members[uid]}</span>
+                            ${uid === hostId ? '<i class="fas fa-crown"></i>' : ''}
+                        </div>
+                    `).join('');
+                },
+
+                updateChat(messages) {
+                    if (!messages) { this.dom.chatMessages.innerHTML = ''; return; }
+                    const sortedMessages = Object.values(messages).sort((a,b) => a.timestamp - b.timestamp);
+                    this.dom.chatMessages.innerHTML = sortedMessages.map(msg => `
+                        <div class="chat-message">
+                            <strong>${msg.displayName}</strong>
+                            <p>${msg.text}</p>
+                        </div>
+                    `).join('');
+                    this.dom.chatMessages.scrollTop = this.dom.chatMessages.scrollHeight;
+                },
+
+                copyPartyId() { navigator.clipboard.writeText(this.state.currentPartyId).then(() => alert('Party ID copied to clipboard!')); }
+            },
+            
+            // ========================
+            //  API & HELPERS
+            // ========================
+            api: {
+                async fetchTMDB(endpoint) {
+                    const url = `${App.tmdb.API_BASE_URL}${endpoint}?api_key=${App.tmdb.API_KEY}`;
+                    try {
+                        const res = await fetch(url);
+                        if (!res.ok) throw new Error('TMDB API Error');
+                        return res.json();
+                    } catch (err) {
+                        console.error("fetchTMDB failed", err);
+                        return null;
+                    }
+                }
+            },
+            generateId(length = 6) {
+                const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
+                let result = '';
+                for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+                return result;
+            },
+        };
+
+        // --- Bootstraping UI helper methods that were too long to fit inline
+        App.ui.createMovieRow = (config, items) => { const row = document.createElement('div'); row.className = "movie-row-wrapper"; let cardsHTML = ''; items.forEach(item => { if (item.backdrop_path || item.poster_path) { cardsHTML += App.ui.createBackdropCard(item, item.media_type || (item.title ? 'movie' : 'tv')).outerHTML; } }); row.innerHTML = `<h4 class="row-title">${config.title}</h4><div class="posters-container">${cardsHTML}</div>`; return row; };
+        App.ui.createBackdropCard = (item, mediaType) => { const card = document.createElement('div'); const usePoster = !item.backdrop_path; card.className = `backdrop-card ${usePoster ? 'poster-card' : ''}`; card.dataset.id = item.id; card.dataset.mediaType = mediaType; card.dataset.title = item.title || item.name; const imagePath = usePoster ? item.poster_path : item.backdrop_path; card.innerHTML = `<img class="backdrop-img" src="${App.tmdb.IMAGE_BASE_URL}${imagePath}" alt="${item.title || item.name}" loading="lazy">`; return card; };
 
 
-    // --- Platform Analytics ---
-    async function loadPlatformAnalytics() {
-      try {
-        const appsSnapshot = await db.collection('apps').get(); // Could be large, consider aggregation for prod
-        let totalPlatformDownloads = 0;
-        const developerIds = new Set();
-        
-        appsSnapshot.forEach(doc => {
-          const app = doc.data();
-          totalPlatformDownloads += app.downloads || 0;
-          if (app.developerId) developerIds.add(app.developerId);
-        });
+        // Finally, initialize the entire app.
+        App.ui.init(App);
+        App.init();
 
-        document.getElementById('platformApps').textContent = appsSnapshot.size;
-        document.getElementById('activeUsers').textContent = developerIds.size;
-        document.getElementById('platformDownloads').textContent = totalPlatformDownloads;
-      } catch (error) {
-        console.error('Error loading platform analytics:', error);
-      }
-    }
-
-    // --- Filtering & Sorting Event Listeners ---
-    document.getElementById('searchForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        currentSearchTerm = document.getElementById('searchInputGlobal').value.trim().toLowerCase();
-        if(document.getElementById('discoverContent').style.display === 'block') {
-            loadApps(); // Search applies to discover page
-        } else {
-            // Optionally, switch to discover page on search
-            // navigateTo('discover');
-            // setTimeout(() => loadApps(), 50); // Small delay to allow navigation
-        }
-    });
-    // Live search (optional, can be performance intensive without backend search)
-    /*
-    document.getElementById('searchInputGlobal').addEventListener('input', (e) => {
-        currentSearchTerm = e.target.value.trim().toLowerCase();
-        if(document.getElementById('discoverContent').style.display === 'block') {
-            loadApps();
-        }
-    });
-    */
-    
-    document.getElementById('sortFilter').addEventListener('change', (e) => {
-        currentSortFilter = e.target.value;
-        if(document.getElementById('discoverContent').style.display === 'block') loadApps();
-    });
-
-    document.querySelectorAll('.filter-category').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.querySelectorAll('.filter-category').forEach(el => el.classList.remove('active'));
-            e.target.classList.add('active');
-            currentCategoryFilter = e.target.dataset.category;
-            if(document.getElementById('discoverContent').style.display === 'block') {
-                 loadApps(); // Category filter applies to discover page
-            } else {
-                navigateTo('discover'); // If on another page, switch to discover and apply
-                // setTimeout(() => loadApps(), 50); // Allow navigation to complete
-            }
-        });
-    });
-
-
-    // --- Utilities ---
-    function showStatus(elementId, message, type, modalId, autoClear = true) {
-      const statusElement = document.getElementById(elementId);
-      if (!statusElement) return;
-      statusElement.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                                  ${message}
-                                  ${ modalId ? '' : '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>'}
-                               </div>`;
-      if (autoClear && (type === 'success' || type === 'info')) {
-        setTimeout(() => {
-          if (statusElement.firstChild) {
-            const alertInstance = bootstrap.Alert.getInstance(statusElement.firstChild);
-            if(alertInstance) alertInstance.close();
-            else statusElement.innerHTML = '';
-          }
-        }, 3000);
-      }
-    }
-
-    function showGlobalToast(message, type = 'info') {
-        const toastContainer = document.createElement('div');
-        toastContainer.style.position = 'fixed';
-        toastContainer.style.top = '70px';
-        toastContainer.style.right = '20px';
-        toastContainer.style.zIndex = '1090';
-
-        const toastId = `toast-${Date.now()}`;
-        const toastHTML = `
-            <div id="${toastId}" class="toast align-items-center text-bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-              <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-              </div>
-            </div>
-        `;
-        toastContainer.innerHTML = toastHTML;
-        document.body.appendChild(toastContainer);
-        
-        const toastElement = document.getElementById(toastId);
-        const toast = new bootstrap.Toast(toastElement, { delay: 3500 });
-        toast.show();
-        toastElement.addEventListener('hidden.bs.toast', () => toastContainer.remove());
-    }
-
-    // --- Initial Load ---
-    document.addEventListener('DOMContentLoaded', () => {
-      authModalInstance = new bootstrap.Modal(document.getElementById('authModal'));
-      uploadModalInstance = new bootstrap.Modal(document.getElementById('uploadModal'));
-      
-      navigateTo('discover'); 
-      updateAuthUI(); 
-    });
-
-  </script>
+        // For convenience in browser console
+        window.FlixPartyApp = App;
+    </script>
 </body>
 </html>
