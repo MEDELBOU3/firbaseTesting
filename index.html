@@ -3,47 +3,25 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Party System with Firebase</title>
+<title>Party System with Firestore and Auth</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    max-width: 500px;
-    margin: 40px auto;
-    padding: 10px;
-  }
-  h1 {
-    text-align: center;
-  }
-  input, button {
-    padding: 8px;
-    margin: 6px 0;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .section {
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 6px;
-  }
-  .party-info {
-    background: #f0f8ff;
-    padding: 10px;
-    border-radius: 6px;
-  }
-  .error {
-    color: red;
-  }
-  .success {
-    color: green;
-  }
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 10px; }
+  h1 { text-align: center; }
+  input, textarea, button { width: 100%; padding: 8px; margin: 6px 0; box-sizing: border-box; }
+  .section { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 6px; }
+  .party-info { background: #f0f8ff; padding: 10px; border-radius: 6px; }
+  .error { color: red; }
+  .success { color: green; }
+  #userStatus { margin-bottom: 15px; }
 </style>
 </head>
 <body>
 
-<h1>Party System</h1>
+<h1>Party System (Firestore + Auth)</h1>
 
-<div class="section" id="create-party-section">
+<div id="userStatus">Checking authentication...</div>
+
+<div class="section" id="create-party-section" style="display:none;">
   <h2>Create Party</h2>
   <input type="text" id="partyName" placeholder="Party Name" />
   <textarea id="partyDesc" placeholder="Party Description" rows="3"></textarea>
@@ -51,7 +29,7 @@
   <p id="createResult"></p>
 </div>
 
-<div class="section" id="join-party-section">
+<div class="section" id="join-party-section" style="display:none;">
   <h2>Join Party</h2>
   <input type="text" id="joinPartyKey" placeholder="Enter Party Key" />
   <button id="joinPartyBtn">Join Party</button>
@@ -64,14 +42,15 @@
 </div>
 
 <script type="module">
-// Firebase imports & init
+// Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import { getDatabase, ref, set, get, child, push } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
+// Your config
 const firebaseConfig = {
   apiKey: "AIzaSyDp2V0ULE-32AcIJ92a_e3mhMe6f6yZ_H4",
   authDomain: "sm4movies.firebaseapp.com",
-  databaseURL: "https://sm4movies-default-rtdb.firebaseio.com",
   projectId: "sm4movies",
   storageBucket: "sm4movies.firebasestorage.app",
   messagingSenderId: "277353836953",
@@ -79,11 +58,17 @@ const firebaseConfig = {
   measurementId: "G-690RSNJ2Q2"
 };
 
-// Initialize Firebase app and DB
+// Initialize
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // UI Elements
+const userStatus = document.getElementById('userStatus');
+const createPartySection = document.getElementById('create-party-section');
+const joinPartySection = document.getElementById('join-party-section');
+const partyDetailsSection = document.getElementById('partyDetails');
+
 const partyNameInput = document.getElementById("partyName");
 const partyDescInput = document.getElementById("partyDesc");
 const createPartyBtn = document.getElementById("createPartyBtn");
@@ -93,15 +78,32 @@ const joinPartyKeyInput = document.getElementById("joinPartyKey");
 const joinPartyBtn = document.getElementById("joinPartyBtn");
 const joinResult = document.getElementById("joinResult");
 
-const partyDetailsSection = document.getElementById("partyDetails");
 const partyInfoDiv = document.getElementById("partyInfo");
 
-// Generate a random key for party (short)
+let currentUser = null;
+
+// Simple party key generator (6 chars uppercase)
 function generatePartyKey() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase(); // e.g. 'AB12CD'
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-// Create party handler
+// Auth state observer
+onAuthStateChanged(auth, user => {
+  if (user) {
+    currentUser = user;
+    userStatus.textContent = `Signed in as UID: ${user.uid}`;
+    createPartySection.style.display = "block";
+    joinPartySection.style.display = "block";
+  } else {
+    userStatus.textContent = "Signing in anonymously...";
+    // Sign in anonymously if no user
+    signInAnonymously(auth).catch(error => {
+      userStatus.textContent = `Auth error: ${error.message}`;
+    });
+  }
+});
+
+// Create party
 createPartyBtn.addEventListener("click", async () => {
   const name = partyNameInput.value.trim();
   const desc = partyDescInput.value.trim();
@@ -112,21 +114,19 @@ createPartyBtn.addEventListener("click", async () => {
     return;
   }
 
-  // Generate key
   const key = generatePartyKey();
 
-  // Save party in Firebase
   try {
-    await set(ref(db, "parties/" + key), {
+    const partyRef = doc(db, "parties", key);
+    await setDoc(partyRef, {
       name,
       description: desc,
-      createdAt: Date.now()
+      createdAt: Timestamp.now(),
+      createdBy: currentUser.uid
     });
 
     createResult.textContent = `Party created! Your party key is: ${key}`;
     createResult.className = "success";
-
-    // Clear inputs
     partyNameInput.value = "";
     partyDescInput.value = "";
   } catch (err) {
@@ -135,34 +135,35 @@ createPartyBtn.addEventListener("click", async () => {
   }
 });
 
-// Join party handler
+// Join party
 joinPartyBtn.addEventListener("click", async () => {
   const key = joinPartyKeyInput.value.trim().toUpperCase();
 
   if (!key) {
     joinResult.textContent = "Please enter a party key.";
     joinResult.className = "error";
+    partyDetailsSection.style.display = "none";
     return;
   }
 
   try {
-    const partySnapshot = await get(ref(db, "parties/" + key));
-    if (partySnapshot.exists()) {
-      const partyData = partySnapshot.val();
+    const partyRef = doc(db, "parties", key);
+    const partySnap = await getDoc(partyRef);
+
+    if (partySnap.exists()) {
+      const partyData = partySnap.data();
       joinResult.textContent = "Joined party successfully!";
       joinResult.className = "success";
 
-      // Show party details
       partyInfoDiv.innerHTML = `
         <strong>Name:</strong> ${partyData.name} <br/>
         <strong>Description:</strong> ${partyData.description || "No description"} <br/>
-        <strong>Created:</strong> ${new Date(partyData.createdAt).toLocaleString()}
+        <strong>Created:</strong> ${partyData.createdAt.toDate().toLocaleString()} <br/>
+        <strong>Created By UID:</strong> ${partyData.createdBy}
       `;
+
       partyDetailsSection.style.display = "block";
-
-      // Clear join input
       joinPartyKeyInput.value = "";
-
     } else {
       joinResult.textContent = "Party not found with that key.";
       joinResult.className = "error";
