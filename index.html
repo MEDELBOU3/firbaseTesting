@@ -6,15 +6,14 @@
     <title>PartyFlix - A Real-time Watch Party App</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
     </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -72,12 +71,13 @@
         </main>
     </div>
 
-    <script type="module">
-        // Import Firebase functions
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, serverTimestamp, updateDoc, arrayUnion, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js";
+    <!-- Firebase SDK Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
         // ========================
         //  APP CONFIGURATION
         // ========================
@@ -89,7 +89,9 @@
             messagingSenderId: "277353836953",
             appId: "1:277353836953:web:85e02783526c7cb58de308",
             measurementId: "G-690RSNJ2Q2"
+
         };
+        
         const MOVIE_LIST = { // A mock movie list for this example
             "101": "The Matrix",
             "102": "Inception",
@@ -99,21 +101,16 @@
         };
 
         const App = {
-            // ========================
-            //  STATE & DOM
-            // ========================
             state: {
                 currentUser: null,
                 activeParty: {
                     id: null,
-                    unsubscribe: null
+                    unsubscribe: null,
+                    unsubscribeChat: null
                 }
             },
             dom: {},
 
-            // ========================
-            //  INITIALIZATION
-            // ========================
             async init() {
                 if (firebaseConfig.apiKey.includes('YOUR_API_KEY')) {
                     document.getElementById('main-content').innerHTML = `<div class="text-center p-8 bg-red-900 text-white rounded-lg"><h2 class="text-2xl font-bold">Configuration Error</h2><p>Please update the firebaseConfig object in the script with your project's credentials.</p></div>`;
@@ -124,7 +121,7 @@
                 this.registerEventListeners();
                 this.auth.handleAuthState();
             },
-
+            
             cacheDOMElements() {
                 // Main Views
                 this.dom.userStatus = document.getElementById('user-status');
@@ -154,67 +151,59 @@
                 this.dom.joinPartyForm.addEventListener('submit', e => this.party.join(e));
             },
 
-            // ========================
-            //  MODULES
-            // ========================
-
+            // --- MODULES ---
             firebase: {
-                _app: null,
                 init() {
-                    const app = initializeApp(firebaseConfig);
-                    this.auth = getAuth(app);
-                    this.db = getFirestore(app);
+                    firebase.initializeApp(firebaseConfig);
+                    this.auth = firebase.auth();
+                    this.db = firebase.firestore();
                 }
             },
+
             auth: {
                 handleAuthState() {
-                    onAuthStateChanged(App.firebase.auth, async user => {
+                    firebase.auth().onAuthStateChanged(async user => {
                         App.dom.loadingSpinner.classList.remove('hidden');
                         App.ui.hideAllViews();
                         
                         if (user) {
                             App.state.currentUser = user;
-                            const userDoc = await getDoc(doc(App.firebase.db, "users", user.uid));
+                            const userDoc = await App.firebase.db.collection("users").doc(user.uid).get();
                             if (userDoc.exists()) {
                                 App.state.currentUser.displayName = userDoc.data().displayName;
                                 App.dom.userStatus.textContent = `Signed in as ${App.state.currentUser.displayName}`;
                                 App.ui.showView('lobby');
                             } else {
-                                App.dom.userStatus.textContent = 'Please set your display name.';
+                                App.dom.userStatus.textContent = 'Welcome! Please set your display name.';
                                 App.ui.showView('username');
                             }
                         } else {
                             App.dom.userStatus.textContent = 'Signing in...';
-                            signInAnonymously(App.firebase.auth).catch(error => {
+                            firebase.auth().signInAnonymously().catch(error => {
                                 App.dom.userStatus.textContent = `Anonymous Auth Error: ${error.message}`;
                             });
                         }
                     });
                 },
-
                 async handleSetUsername(event) {
                     event.preventDefault();
                     const input = document.getElementById('username-input');
                     const newName = input.value.trim();
-                    if (newName.length < 3) {
-                        alert("Name must be at least 3 characters long.");
-                        return;
-                    }
+                    if (newName.length < 3) { alert("Name must be at least 3 characters."); return; }
                     try {
-                        await setDoc(doc(App.firebase.db, "users", App.state.currentUser.uid), {
+                        await App.firebase.db.collection("users").doc(App.state.currentUser.uid).set({
                             displayName: newName
                         });
                         App.state.currentUser.displayName = newName;
                         App.dom.userStatus.textContent = `Signed in as ${newName}`;
                         App.ui.showView('lobby');
-                    } catch (error) {
-                        alert("Error saving name: " + error.message);
-                    }
+                    } catch (error) { alert("Error saving name: " + error.message); }
                 }
             },
+
             party: {
                 generateKey() { return Math.random().toString(36).substring(2, 8).toUpperCase(); },
-
+                
                 async create(event) {
                     event.preventDefault();
                     const name = App.dom.partyNameInput.value.trim();
@@ -223,10 +212,10 @@
 
                     const key = this.generateKey();
                     try {
-                        await setDoc(doc(App.firebase.db, "parties", key), {
+                        await App.firebase.db.collection("parties").doc(key).set({
                             name,
                             description: desc,
-                            createdAt: serverTimestamp(),
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                             host: { uid: App.state.currentUser.uid, name: App.state.currentUser.displayName },
                             members: { [App.state.currentUser.uid]: App.state.currentUser.displayName },
                             currentMovieId: null
@@ -242,10 +231,10 @@
                     if (!key) { App.ui.setResult('join', "Please enter a party code.", true); return; }
 
                     try {
-                        const partyRef = doc(App.firebase.db, "parties", key);
-                        const partySnap = await getDoc(partyRef);
+                        const partyRef = App.firebase.db.collection("parties").doc(key);
+                        const partySnap = await partyRef.get();
                         if (partySnap.exists()) {
-                            await updateDoc(partyRef, {
+                            await partyRef.update({
                                 [`members.${App.state.currentUser.uid}`]: App.state.currentUser.displayName
                             });
                             this.enter(key);
@@ -254,10 +243,10 @@
                 },
 
                 enter(partyId) {
-                    if (App.state.activeParty.unsubscribe) { App.state.activeParty.unsubscribe(); } // Clean up old listener
+                    if (App.state.activeParty.unsubscribe) { App.state.activeParty.unsubscribe(); }
                     App.ui.showView('party');
-                    const partyRef = doc(App.firebase.db, "parties", partyId);
-                    const unsubscribe = onSnapshot(partyRef, (docSnap) => {
+                    const partyRef = App.firebase.db.collection("parties").doc(partyId);
+                    const unsubscribe = partyRef.onSnapshot(docSnap => {
                         if (docSnap.exists()) {
                             App.ui.renderPartyDetails(partyId, docSnap.data());
                         } else {
@@ -269,126 +258,81 @@
                 },
 
                 leave() {
-                    if (App.state.activeParty.unsubscribe) {
-                        App.state.activeParty.unsubscribe();
-                        App.state.activeParty = { id: null, unsubscribe: null };
-                    }
+                    if (App.state.activeParty.unsubscribe) { App.state.activeParty.unsubscribe(); }
+                    if (App.state.activeParty.unsubscribeChat) { App.state.activeParty.unsubscribeChat(); }
+                    App.state.activeParty = { id: null, unsubscribe: null, unsubscribeChat: null };
                     App.ui.showView('lobby');
                 },
                 
                 async selectMovie(partyId, movieId) {
-                    const partyRef = doc(App.firebase.db, "parties", partyId);
-                    await updateDoc(partyRef, { currentMovieId: movieId });
+                    const partyRef = App.firebase.db.collection("parties").doc(partyId);
+                    await partyRef.update({ currentMovieId: movieId });
                 },
 
                 async sendChatMessage(partyId, text) {
                     if (!text) return;
-                    await addDoc(collection(App.firebase.db, "parties", partyId, "chat"), {
+                    await App.firebase.db.collection("parties").doc(partyId).collection("chat").add({
                         senderName: App.state.currentUser.displayName,
                         senderUID: App.state.currentUser.uid,
                         message: text,
-                        timestamp: serverTimestamp()
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }
             },
+            
             ui: {
                 hideAllViews() {
-                    App.dom.loadingSpinner.classList.add('hidden');
-                    App.dom.usernameView.classList.add('hidden');
-                    App.dom.lobbyView.classList.add('hidden');
-                    App.dom.partyView.classList.add('hidden');
+                    App.dom.loadingSpinner.classList.add('hidden'); App.dom.usernameView.classList.add('hidden');
+                    App.dom.lobbyView.classList.add('hidden'); App.dom.partyView.classList.add('hidden');
                 },
-
-                showView(viewName) {
-                    this.hideAllViews();
-                    App.dom[`${viewName}View`].classList.remove('hidden');
-                },
-
+                showView(viewName) { this.hideAllViews(); App.dom[`${viewName}View`].classList.remove('hidden'); },
                 setResult(type, message, isError) {
-                    const el = App.dom[`${type}Result`];
-                    el.textContent = message;
+                    const el = App.dom[`${type}Result`]; el.textContent = message;
                     el.className = isError ? 'mt-4 text-center text-red-500' : 'mt-4 text-center text-green-500';
                 },
-
                 renderPartyDetails(partyId, partyData) {
                     const isHost = partyData.host.uid === App.state.currentUser.uid;
-                    const membersHTML = Object.values(partyData.members).map(name => `<li class="p-2 bg-gray-700 rounded-md">${name}</li>`).join('');
-
-                    const movieSelectorHTML = isHost ? `
-                        <label for="movie-select" class="block text-sm font-medium text-gray-400 mb-2">Select a Movie</label>
-                        <div class="flex gap-2">
-                            <select id="movie-select" class="flex-grow p-2 bg-gray-700 rounded-md">
-                                ${Object.entries(MOVIE_LIST).map(([id, title]) => `<option value="${id}" ${partyData.currentMovieId === id ? 'selected' : ''}>${title}</option>`).join('')}
-                            </select>
-                            <button id="set-movie-btn" class="bg-blue-600 px-4 rounded-md font-bold">Set</button>
-                        </div>
-                    ` : '';
+                    const membersHTML = Object.values(partyData.members).map(name => `<li class="p-2 bg-gray-700 rounded-md text-sm">${name}</li>`).join('');
+                    const movieSelectorHTML = isHost ? `<label for="movie-select" class="block text-sm font-medium text-gray-400 mb-2">Select a Movie</label><div class="flex gap-2"><select id="movie-select" class="flex-grow p-2 bg-gray-700 rounded-md">${Object.entries(MOVIE_LIST).map(([id,title])=>`<option value="${id}" ${partyData.currentMovieId===id?'selected':''}>${title}</option>`).join('')}</select><button id="set-movie-btn" class="bg-blue-600 px-4 rounded-md font-bold">Set</button></div>`: '';
 
                     App.dom.partyView.innerHTML = `
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h2 class="text-3xl font-bold">${partyData.name}</h2>
-                                <p class="text-gray-400">${partyData.description}</p>
-                            </div>
-                            <button id="leave-party-btn" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-md">Leave Party</button>
-                        </div>
-                        
-                        <div class="mt-8 grid md:grid-cols-3 gap-8">
-                            <!-- Left Column -->
+                        <div class="flex justify-between items-start mb-6"><h2 class="text-3xl font-bold">${partyData.name}</h2><button id="leave-party-btn" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-md">Leave Party</button></div>
+                        <p class="text-gray-400 mb-8">${partyData.description}</p>
+                        <div class="grid md:grid-cols-3 gap-8">
                             <div class="md:col-span-2 space-y-6">
-                                <div class="bg-gray-700/50 p-6 rounded-lg">
-                                    <h3 class="text-xl font-bold mb-4">Now Watching</h3>
-                                    <div id="now-watching" class="text-2xl text-red-500 font-bold">${partyData.currentMovieId ? MOVIE_LIST[partyData.currentMovieId] : 'Host is choosing a movie...'}</div>
-                                    ${movieSelectorHTML}
-                                </div>
-                                <div class="bg-gray-700/50 p-6 rounded-lg">
-                                    <h3 class="text-xl font-bold mb-4">Party Chat</h3>
-                                    <div id="chat-box" class="h-64 overflow-y-auto mb-4 p-2 bg-gray-900 rounded-md space-y-2"></div>
-                                    <form id="chat-form" class="flex gap-2">
-                                        <input type="text" id="chat-input" placeholder="Say something..." class="flex-grow p-2 bg-gray-700 rounded-md">
-                                        <button type="submit" class="bg-red-600 px-4 rounded-md font-bold">Send</button>
-                                    </form>
-                                </div>
+                                <div class="bg-gray-700/50 p-6 rounded-lg"><h3 class="text-xl font-bold mb-4">Now Watching</h3><div id="now-watching" class="text-2xl text-red-500 font-bold">${partyData.currentMovieId ? MOVIE_LIST[partyData.currentMovieId] : 'Host is choosing a movie...'}</div>${movieSelectorHTML}</div>
+                                <div class="bg-gray-700/50 p-6 rounded-lg"><h3 class="text-xl font-bold mb-4">Party Chat</h3><div id="chat-box" class="h-64 overflow-y-auto mb-4 p-2 bg-gray-900 rounded-md space-y-3"></div><form id="chat-form" class="flex gap-2"><input type="text" id="chat-input" placeholder="Say something..." class="flex-grow p-2 bg-gray-700 rounded-md"><button type="submit" class="bg-red-600 px-4 rounded-md font-bold">Send</button></form></div>
                             </div>
-
-                            <!-- Right Column -->
-                            <div class="bg-gray-700/50 p-6 rounded-lg">
-                                <h3 class="text-xl font-bold mb-4">Party Members (${Object.keys(partyData.members).length})</h3>
-                                <ul id="member-list" class="space-y-2">${membersHTML}</ul>
-                            </div>
-                        </div>
-                    `;
+                            <div class="bg-gray-700/50 p-6 rounded-lg"><h3 class="text-xl font-bold mb-4">Members (${Object.keys(partyData.members).length})</h3><ul id="member-list" class="space-y-2">${membersHTML}</ul></div>
+                        </div>`;
                     
-                    // Attach event listeners
                     document.getElementById('leave-party-btn').onclick = () => App.party.leave();
                     if(isHost) { document.getElementById('set-movie-btn').onclick = () => App.party.selectMovie(partyId, document.getElementById('movie-select').value); }
-                    document.getElementById('chat-form').onsubmit = (e) => { e.preventDefault(); App.party.sendChatMessage(partyId, document.getElementById('chat-input').value); document.getElementById('chat-input').value=''; };
-
-                    // Set up chat listener
+                    document.getElementById('chat-form').onsubmit = (e) => { e.preventDefault(); const input=document.getElementById('chat-input'); App.party.sendChatMessage(partyId, input.value); input.value=''; };
                     this.listenToChat(partyId);
                 },
-
                 listenToChat(partyId) {
-                    const q = query(collection(App.firebase.db, "parties", partyId, "chat"), orderBy("timestamp", "asc"));
-                    onSnapshot(q, (querySnapshot) => {
+                    if (App.state.activeParty.unsubscribeChat) App.state.activeParty.unsubscribeChat();
+                    const q = App.firebase.db.collection("parties").doc(partyId).collection("chat").orderBy("timestamp", "asc");
+                    const unsubscribeChat = q.onSnapshot(querySnapshot => {
                         const chatBox = document.getElementById('chat-box');
-                        if (!chatBox) return;
-                        chatBox.innerHTML = ''; // Clear previous messages
-                        querySnapshot.forEach((doc) => {
+                        if (!chatBox) return; chatBox.innerHTML = '';
+                        querySnapshot.forEach(doc => {
                             const msg = doc.data();
                             const msgEl = document.createElement('div');
-                            msgEl.innerHTML = `<strong>${msg.senderName}:</strong> ${msg.message}`;
+                            msgEl.innerHTML = `<strong class="text-red-400">${msg.senderName}:</strong> ${msg.message}`;
                             chatBox.appendChild(msgEl);
                         });
                         chatBox.scrollTop = chatBox.scrollHeight;
                     });
+                    App.state.activeParty.unsubscribeChat = unsubscribeChat;
                 }
             }
         };
 
         App.init();
 
+    });
     </script>
-
 </body>
 </html>
