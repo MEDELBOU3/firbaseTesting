@@ -73,6 +73,10 @@
             box-sizing: border-box;
         }
 
+        html, body {
+            height: 100%; /* Ensure html and body take full height */
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--background-color);
@@ -290,6 +294,9 @@
 
         .sidebar-header i {
             color: var(--primary-color);
+        }
+        .sidebar-header .btn-close {
+            filter: invert(var(--bs-btn-close-color-invert-ratio));
         }
 
         .search-box {
@@ -1428,15 +1435,14 @@
 
                     <input type="file" id="imageInput" accept="image/*" class="d-none">
                     <input type="file" id="fileInput" class="d-none">
-                    <input type="file" id="audioUploadInput" accept="audio/*" class="d-none"> <!-- Separate input for direct audio file upload -->
-
-                    <button class="input-action-btn" id="attachFileBtn" title="Attach File/Course Material (as URL)">
-                        <i class="fas fa-link"></i> <!-- Changed to link icon to reflect URL sharing -->
+                    
+                    <button class="input-action-btn" id="attachFileBtn" title="Attach File/Course Material">
+                        <i class="fas fa-paperclip"></i>
                     </button>
-                    <button class="input-action-btn" id="attachImageBtn" title="Attach Image (max 500KB)">
+                    <button class="input-action-btn" id="attachImageBtn" title="Attach Image">
                         <i class="fas fa-image"></i>
                     </button>
-                    <button class="input-action-btn" id="recordAudioBtn" title="Record Audio (max 500KB)">
+                    <button class="input-action-btn" id="recordAudioBtn" title="Record Audio">
                         <i class="fas fa-microphone"></i>
                     </button>
                     <button class="input-action-btn recording-btn d-none" id="stopRecordingBtn" title="Stop Recording">
@@ -1531,20 +1537,21 @@
     </div>
 
     <!-- Firebase SDK -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-app-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-auth-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.0/firebase-firestore-compat.min.js"></script>
-    <!-- NOTE: Firebase Storage SDK is NOT included per your requirement. -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script> <!-- Re-enabled Storage -->
     <!-- Bootstrap JS Bundle (includes Popper) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
     <script>
+    document.addEventListener('DOMContentLoaded', () => {
         // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyB8zBPJkyeKfmdFaW9PJzqkoyZsBYO9kzo",
             authDomain: "sm-music-ca8a9.firebaseapp.com",
             projectId: "sm-music-ca8a9",
-            // storageBucket: "sm-music-ca8a9.firebasestorage.app", // Storage NOT used
+            storageBucket: "sm-music-ca8a9.firebasestorage.app", // Storage NOW used
             messagingSenderId: "273821857220",
             appId: "1:273821857220:web:aa039e6d70149b15df2091",
             measurementId: "G-EZBJ9T6CMB"
@@ -1554,10 +1561,10 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        // const storage = firebase.storage(); // Storage NOT initialized
+        const storage = firebase.storage(); // Storage NOW initialized
 
         // --- Constants ---
-        const MAX_FILE_SIZE_KB = 500; // Max size for Base64 image/audio (adjust carefully, 1MB Firestore doc limit)
+        const MAX_FILE_SIZE_MB = 5; // Max size for general file uploads to Storage (adjust as needed)
 
         // DOM Elements - Auth Pages
         const loginPage = document.getElementById('loginPage');
@@ -1587,8 +1594,8 @@
         const googleSignupBtnText = document.getElementById('googleSignupBtnText');
 
         // DOM Elements - App UI
-        const logoutBtnTop = document.getElementById('logoutBtn'); // Existing logout button in navbar
-        const logoutBtnBottom = document.getElementById('logoutBtnBottom'); // New logout button in user menu
+        const logoutNavbarBtn = document.getElementById('logoutNavbarBtn');
+        const logoutBtnBottom = document.getElementById('logoutBtnBottom');
         const chatListContainer = document.getElementById('chatList');
         const userAvatarContainer = document.getElementById('userAvatarContainer');
         const currentUserNameSpan = document.getElementById('currentUserName');
@@ -1606,7 +1613,7 @@
         const openMobileSidebarBtn = document.getElementById('openMobileSidebarBtn');
         const sidebar = document.querySelector('.sidebar');
         const closeSidebarBtn = document.getElementById('closeSidebarBtn');
-        const themeSwitcher = document.getElementById('sidebarThemeSwitcher'); // Corrected ID
+        const themeSwitcher = document.getElementById('sidebarThemeSwitcher');
 
         // File/Media Upload & Preview
         const attachFileBtn = document.getElementById('attachFileBtn');
@@ -1615,17 +1622,15 @@
         const stopRecordingBtn = document.getElementById('stopRecordingBtn');
         const imageInput = document.getElementById('imageInput');
         const fileInput = document.getElementById('fileInput');
-        // const audioUploadInput = document.getElementById('audioUploadInput'); // Not needed for recording
         const filePreviewContainer = document.getElementById('filePreviewContainer');
         const previewIcon = document.getElementById('previewIcon');
         const previewImage = document.getElementById('previewImage');
         const previewFilename = document.getElementById('previewFilename');
         const previewFilesize = document.getElementById('previewFilesize');
         const removePreviewBtn = document.getElementById('removePreviewBtn');
-        let currentFileToSend = null; // Stores the file selected for upload
-        let currentFileType = null; // Stores 'image_base64', 'audio_base64', or 'file_link'
+        let currentFileToSend = null; // Stores the file selected for upload (actual File object)
+        let currentFileType = null; // Stores 'image', 'audio', or 'file'
         let currentFileMimeType = null; // Stores the MIME type of the file
-        let currentFileSource = null; // 'input' or 'recorded'
 
         // Audio Recording
         let mediaRecorder;
@@ -1726,8 +1731,8 @@
             const initials = getInitials(displayName);
             const bgColor = getDeterministicColor(userData.uid);
 
-            if (userData.profileAvatarBase64) { // Using Base64 string for avatars
-                return `<img src="${userData.profileAvatarBase64}" alt="${displayName}" style="width:${size}; height:${size}; border-radius:50%; object-fit:cover;">`;
+            if (userData.profilePicUrl) { // Using Storage URL for avatars
+                return `<img src="${userData.profilePicUrl}" alt="${displayName}" style="width:${size}; height:${size}; border-radius:50%; object-fit:cover;">`;
             } else {
                 return `<div class="avatar-placeholder-initials" style="background-color:${bgColor}; width:${size}; height:${size}; font-size:${fontSize}; line-height:${size};">
                             ${initials}
@@ -1774,7 +1779,7 @@
                         uid: user.uid,
                         email: user.email,
                         displayName: user.displayName || user.email.split('@')[0],
-                        profileAvatarBase64: null, // No profile pic initially, use Base64 now
+                        profilePicUrl: user.photoURL || null, // Google photoURL
                         online: true,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         lastSeen: firebase.firestore.FieldValue.serverTimestamp()
@@ -1786,6 +1791,10 @@
                 showApp();
                 loadChatsAndUsers(); // Load both chats and online users
                 
+                // Show/hide relevant buttons on login
+                // logoutNavbarBtn.classList.remove('d-none'); // Removed this element from HTML
+                openProfileModalBtn.classList.remove('d-none');
+
                 // Set up offline presence when user closes tab/browser
                 window.onbeforeunload = async () => {
                     if (auth.currentUser) {
@@ -1799,6 +1808,11 @@
             } else {
                 currentUserData = null;
                 showLogin();
+                
+                // Hide relevant buttons on logout
+                // logoutNavbarBtn.classList.add('d-none'); // Removed this element from HTML
+                openProfileModalBtn.classList.add('d-none');
+
                 // Clear chat and user lists on logout
                 chatListContainer.innerHTML = `<div class="text-center text-muted p-3">Loading chats...</div>`;
                 messagesContainer.innerHTML = `<div class="text-center text-muted py-5"><i class="fas fa-comments fa-3x mb-3 opacity-50"></i><h5>Welcome to StudentHub</h5><p>Select a chat to start messaging</p></div>`;
@@ -1845,7 +1859,7 @@
                     uid: userCredential.user.uid,
                     email: signupEmail.value,
                     displayName: signupName.value,
-                    profileAvatarBase64: null, // No profile pic initially
+                    profilePicUrl: null, // No profile pic initially
                     online: true,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastSeen: firebase.firestore.FieldValue.serverTimestamp()
@@ -1876,14 +1890,14 @@
                         uid: user.uid,
                         email: user.email,
                         displayName: user.displayName || user.email.split('@')[0],
-                        profileAvatarBase64: user.photoURL || null, // Google photoURL, stored as Base64 if it's a valid data URI, otherwise as link
+                        profilePicUrl: user.photoURL || null, // Google photoURL
                         online: true,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         lastSeen: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 } else { // Update existing user's photo if they had none and Google provides one
-                    if (!userDoc.data().profileAvatarBase64 && user.photoURL) {
-                         await db.collection('users').doc(user.uid).update({ profileAvatarBase64: user.photoURL });
+                    if (!userDoc.data().profilePicUrl && user.photoURL) {
+                         await db.collection('users').doc(user.uid).update({ profilePicUrl: user.photoURL });
                     }
                 }
             } catch (error) {
@@ -1897,7 +1911,7 @@
         googleSignupBtn.addEventListener('click', () => handleGoogleAuth('signupAlert'));
 
         // Logout
-        logoutBtnTop.addEventListener('click', async () => { if (confirm('Are you sure you want to logout?')) await auth.signOut(); });
+        // logoutNavbarBtn.addEventListener('click', async () => { if (confirm('Are you sure you want to logout?')) await auth.signOut(); }); // Removed this element from HTML
         logoutBtnBottom.addEventListener('click', async () => { if (confirm('Are you sure you want to logout?')) await auth.signOut(); });
 
         // --- App UI & Chat Logic ---
@@ -1907,14 +1921,13 @@
             if (!currentUserData) return;
             currentUserNameSpan.textContent = currentUserData.displayName || currentUserData.email.split('@')[0];
             currentUserStatusSpan.textContent = currentUserData.online ? 'Online' : 'Offline';
+            currentUserStatusSpan.className = `user-status text-${currentUserData.online ? 'success' : 'muted'}`; // Update color
             userAvatarContainer.innerHTML = createAvatarHtml(currentUserData, '45px', '16px');
         }
 
-        // Load Chats and Online Users
+        // Load Chats and Online Users (Initial load and listeners)
         async function loadChatsAndUsers() {
-            chatListContainer.innerHTML = `<div class="text-center text-muted p-3"><i class="fas fa-spinner fa-spin me-2"></i>Loading...</div>`;
-            
-            // First, load all user data into cache (for display in chats/online users)
+            // Cache all user data first
             db.collection('users').onSnapshot(async (snapshot) => {
                 allUsersData = {};
                 snapshot.forEach(doc => {
@@ -1925,7 +1938,7 @@
                     }
                 });
                 
-                // Then, load chats based on the active tab
+                // Then, display content based on the active tab
                 const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
                 if (activeTab === 'chats') {
                     displayUserChats();
@@ -1950,15 +1963,21 @@
                 if (snapshot.empty) {
                     chatListContainer.innerHTML = `<div class="alert alert-info text-center mt-3">No chats yet. Create a group!</div>`;
                 } else {
+                    let firstChatDoc = null;
                     for (const doc of snapshot.docs) {
                         const chat = { id: doc.id, ...doc.data() };
+                        if (!firstChatDoc) firstChatDoc = chat;
                         const chatItem = await createChatItemElement(chat, 'chat');
                         chatListContainer.appendChild(chatItem);
                     }
-                }
-                // Automatically select the first chat if none is selected
-                if (!currentChatId && !snapshot.empty) {
-                    selectChat({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
+                    // Automatically select the first chat if none is selected
+                    if (!currentChatId && firstChatDoc) {
+                        selectChat(firstChatDoc);
+                    } else if (currentChatId) {
+                        // Re-select current chat after refresh to ensure it's highlighted
+                        const existingActiveItem = document.querySelector(`.chat-item[data-id="${currentChatId}"]`);
+                        if (existingActiveItem) existingActiveItem.classList.add('active');
+                    }
                 }
             }, error => {
                 console.error("Error loading chats:", error);
@@ -1998,9 +2017,8 @@
                 avatarHtml = createAvatarHtml(data, '45px', '16px');
                 preview = data.lastMessage || 'No messages yet...';
                 time = data.lastMessageTime ? new Date(data.lastMessageTime.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                // For groups, display members count or 'group'
                 name = data.name;
-                isOnline = true; // Assume chat is "active" if it exists
+                isOnline = true; // For chats, assume "active" if listed
             } else if (type === 'user') { // For online user list tab
                 avatarHtml = createAvatarHtml(data, '45px', '16px');
                 name = data.displayName || data.email.split('@')[0];
@@ -2010,7 +2028,7 @@
             }
 
             div.innerHTML = `
-                <div class="chat-avatar">${avatarHtml}${isOnline && type === 'user' ? '<div class="online-indicator"></div>' : ''}</div>
+                <div class="chat-avatar">${avatarHtml}${isOnline && type === 'user' && data.uid !== auth.currentUser.uid ? '<div class="online-indicator"></div>' : ''}</div>
                 <div class="chat-info">
                     <div class="chat-name">${name}</div>
                     <div class="chat-preview">${preview}</div>
@@ -2025,7 +2043,6 @@
                 if (type === 'chat') {
                     selectChat(data);
                 } else if (type === 'user') {
-                    // For direct messaging, if implementing that later
                     alert(`Opening direct chat with ${name} (Feature Coming Soon!)`);
                 }
             });
@@ -2049,7 +2066,7 @@
             
             // Update right sidebar
             rightSidebarChatName.textContent = chat.name;
-            rightSidebarChatMembers.textContent = chat.type === 'group' ? `${chat.participants.length} members` : 'Direct Message';
+            rightSidebarChatMembers.textContent = chat.type === 'group' ? `${chat.participants.length} members` : '1 member'; // Placeholder for direct message
             rightSidebarChatAvatarContainer.innerHTML = createAvatarHtml(chat, '80px', '32px');
             rightSidebarMembersCount.textContent = chat.participants.length;
 
@@ -2075,11 +2092,13 @@
                 if (userData) {
                     const memberItem = document.createElement('div');
                     memberItem.classList.add('member-item');
+                    const onlineStatus = userData.online ? 'Online' : 'Offline';
+                    const onlineClass = userData.online ? 'text-success' : 'text-muted';
                     memberItem.innerHTML = `
                         <div class="member-avatar">${createAvatarHtml(userData, '35px', '12px')}</div>
                         <div class="flex-grow-1">
                             <div class="chat-name">${userData.displayName || userData.email.split('@')[0]}${uid === auth.currentUser.uid ? ' (You)' : ''}</div>
-                            <small class="text-muted ${userData.online ? 'text-success' : ''}">${userData.online ? 'Online' : 'Offline'}</small>
+                            <small class="${onlineClass}">${onlineStatus}</small>
                         </div>
                     `;
                     rightSidebarMemberList.appendChild(memberItem);
@@ -2138,16 +2157,16 @@
             
             const time = message.timestamp ? new Date(message.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now';
             
-            const senderData = allUsersData[message.senderId] || { uid: message.senderId, displayName: message.senderName, email: message.senderEmail, profileAvatarBase64: null };
+            const senderData = allUsersData[message.senderId] || { uid: message.senderId, displayName: message.senderName, email: message.senderEmail, profilePicUrl: null };
 
             let messageContentHTML = `<div class="message-text">${message.text || ''}</div>`;
-            if (message.type === 'image_base64' && message.contentBase64) {
-                messageContentHTML = `<div class="message-text"><img src="${message.contentBase64}" alt="${message.text || 'Image'}">${message.text ? `<p class="mt-2 mb-0">${message.text}</p>` : ''}</div>`;
-            } else if (message.type === 'audio_base64' && message.contentBase64) {
-                messageContentHTML = `<div class="message-text"><audio controls src="${message.contentBase64}" class="w-100"></audio>${message.text ? `<p class="mt-2 mb-0">${message.text}</p>` : ''}</div>`;
-            } else if (message.type === 'file_link' && message.fileLinkUrl) {
+            if (message.type === 'image' && message.url) {
+                messageContentHTML = `<div class="message-text"><img src="${message.url}" alt="${message.text || 'Image'}">${message.text ? `<p class="mt-2 mb-0">${message.text}</p>` : ''}</div>`;
+            } else if (message.type === 'audio' && message.url) {
+                messageContentHTML = `<div class="message-text"><audio controls src="${message.url}" class="w-100"></audio>${message.text ? `<p class="mt-2 mb-0">${message.text}</p>` : ''}</div>`;
+            } else if (message.type === 'file' && message.url) {
                 const iconClass = getFileIconClass(message.fileMimeType || '');
-                messageContentHTML = `<div class="message-text"><a href="${message.fileLinkUrl}" target="_blank" class="file-link"><i class="fas ${iconClass} me-2"></i> ${message.fileName || 'Download File'}</a>${message.text ? `<p class="mt-2 mb-0">${message.text}</p>` : ''}</div>`;
+                messageContentHTML = `<div class="message-text"><a href="${message.url}" target="_blank" class="file-link"><i class="fas ${iconClass} me-2"></i> ${message.fileName || 'Download File'}</a>${message.text ? `<p class="mt-2 mb-0">${message.text}</p>` : ''}</div>`;
             }
 
             div.innerHTML = `
@@ -2167,7 +2186,11 @@
         // Send Message (Text or with File)
         sendMessageBtn.addEventListener('click', async () => {
             const text = messageInput.value.trim();
-            if ((text === '' && !currentFileToSend) || !currentChatId || !auth.currentUser) return;
+            if (!currentChatId) {
+                showAlert('loginAlert', 'Please select a chat to send messages.', 'warning');
+                return;
+            }
+            if ((text === '' && !currentFileToSend) || !auth.currentUser) return;
 
             toggleLoader(sendMessageSpinner, sendMessageBtnText, true, '<i class="fas fa-paper-plane"></i>');
 
@@ -2183,21 +2206,23 @@
                 };
 
                 if (currentFileToSend) {
-                    const file = currentFileToSend;
-                    const type = currentFileType; // 'image_base64', 'audio_base64', or 'file_link'
+                    const file = currentFileToSend; // This is the actual File object
+                    const type = currentFileType; // 'image', 'audio', or 'file'
                     const mimeType = currentFileMimeType;
+                    const fileName = previewFilename.textContent;
 
-                    if (type === 'file_link') {
-                        messageData.type = type;
-                        messageData.fileLinkUrl = file; // 'file' is actually a URL string here
-                        messageData.fileName = text || 'Shared Link'; // Use text as filename
-                        messageData.fileMimeType = 'text/uri-list'; // Generic MIME for URL
-                    } else { // image_base64 or audio_base64
-                         messageData.type = type;
-                         messageData.contentBase64 = file; // 'file' is actually the Base64 string here
-                         messageData.fileName = `file_${Date.now()}.${mimeType.split('/').pop()}`;
-                         messageData.fileMimeType = mimeType;
-                    }
+                    // Upload file to Firebase Storage
+                    const filePath = `${auth.currentUser.uid}/${type}s/${Date.now()}_${file.name}`;
+                    const storageRef = storage.ref(filePath);
+                    const uploadTask = storageRef.put(file);
+
+                    await uploadTask; 
+                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+
+                    messageData.type = type;
+                    messageData.url = downloadURL;
+                    messageData.fileName = fileName;
+                    messageData.fileMimeType = mimeType;
                     
                 } else {
                     messageData.type = 'text';
@@ -2207,7 +2232,7 @@
 
                 // Update last message in chat
                 await db.collection('chats').doc(currentChatId).update({
-                    lastMessage: text || `[${currentFileType.replace('_base64', '').replace('_link', '')}]`,
+                    lastMessage: text || `[${currentFileType}]`,
                     lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
                     lastMessageSender: auth.currentUser.uid
                 });
@@ -2215,10 +2240,6 @@
                 messageInput.value = ''; 
                 updateMessageInputHeight();
                 clearFilePreview(); 
-                currentFileToSend = null;
-                currentFileType = null;
-                currentFileMimeType = null;
-                currentFileSource = null;
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
             } catch (error) {
@@ -2236,7 +2257,7 @@
             }
         });
 
-        // --- File/Media Upload & Preview Logic (Firestore-only) ---
+        // --- File/Media Upload & Preview Logic (Firebase Storage) ---
 
         function formatBytes(bytes, decimals = 2) {
             if (bytes === 0) return '0 Bytes';
@@ -2252,28 +2273,16 @@
             if (mimeType.startsWith('audio/')) return 'fa-file-audio';
             if (mimeType.startsWith('video/')) return 'fa-file-video';
             if (mimeType === 'application/pdf') return 'fa-file-pdf';
-            if (mimeType.includes('word')) return 'fa-file-word';
-            if (mimeType.includes('excel')) return 'fa-file-excel';
-            if (mimeType.includes('powerpoint')) return 'fa-file-powerpoint';
+            if (mimeType.includes('word') || mimeType.includes('officedocument.word')) return 'fa-file-word';
+            if (mimeType.includes('excel') || mimeType.includes('officedocument.spreadsheet')) return 'fa-file-excel';
+            if (mimeType.includes('powerpoint') || mimeType.includes('officedocument.presentation')) return 'fa-file-powerpoint';
             if (mimeType.startsWith('text/')) return 'fa-file-alt';
-            if (mimeType.includes('zip') || mimeType.includes('rar')) return 'fa-file-archive';
+            if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('archive')) return 'fa-file-archive';
             return 'fa-file'; 
         }
         
-        // Base64 encoding utility
-        function fileToBase64(file, callback) {
-            if (file.size > MAX_FILE_SIZE_KB * 1024) {
-                callback(new Error(`File size exceeds ${MAX_FILE_SIZE_KB}KB limit for direct embedding.`));
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = () => callback(null, reader.result);
-            reader.onerror = (error) => callback(error);
-            reader.readAsDataURL(file);
-        }
-
-        const setupFilePreview = (fileData, type, source = 'input', fileName = 'file', fileSize = 0, mimeType = '') => {
-            currentFileToSend = fileData; // This could be the File object or a Base64 string or a URL
+        const setupFilePreview = (file, type, fileName = file.name, fileSize = file.size, mimeType = file.type) => {
+            currentFileToSend = file; // Store the actual File object
             currentFileType = type; 
             currentFileMimeType = mimeType;
 
@@ -2283,14 +2292,15 @@
             previewImage.classList.add('d-none');
             previewIcon.classList.add('d-none');
 
-            if (type === 'image_base64') {
-                previewImage.src = fileData; // fileData is already base64 string
-                previewImage.classList.remove('d-none');
-            } else if (type === 'audio_base64') {
-                previewIcon.className = 'fas fa-file-audio'; // Audio file preview
-                previewIcon.classList.remove('d-none');
-            } else if (type === 'file_link') {
-                previewIcon.className = 'fas fa-link'; // Link icon for external files
+            if (type === 'image') {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    previewImage.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            } else { // For audio and general files
+                previewIcon.className = `fas ${getFileIconClass(mimeType)}`;
                 previewIcon.classList.remove('d-none');
             }
             filePreviewContainer.classList.remove('d-none');
@@ -2307,43 +2317,43 @@
             currentFileToSend = null;
             currentFileType = null;
             currentFileMimeType = null;
-            currentFileSource = null;
             messageInput.value = ''; 
             updateMessageInputHeight();
         };
 
         removePreviewBtn.addEventListener('click', clearFilePreview);
 
-        // Attach File (General) - now sends a URL
-        attachFileBtn.addEventListener('click', () => {
-            const fileUrl = prompt('Enter the URL of your shared file (e.g., Google Drive link, PDF URL):');
-            if (fileUrl) {
-                if (!fileUrl.startsWith('http://') && !fileUrl.startsWith('https://')) {
-                    showAlert('loginAlert', 'Please enter a valid URL (must start with http:// or https://).', 'danger');
+        // Attach File (General)
+        attachFileBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                    showAlert('loginAlert', `File "${file.name}" is too large. Max size: ${MAX_FILE_SIZE_MB}MB.`, 'danger');
+                    fileInput.value = '';
                     return;
                 }
-                const fileName = prompt('Enter a display name for this file/link (e.g., "CompSci Syllabus.pdf"):') || 'Shared File Link';
-                setupFilePreview(fileUrl, 'file_link', 'input', fileName, 0, 'text/uri-list');
+                setupFilePreview(file, 'file');
+                fileInput.value = ''; 
             }
         });
 
-        // Attach Image (Base64)
+        // Attach Image
         attachImageBtn.addEventListener('click', () => imageInput.click());
         imageInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                fileToBase64(file, (error, base64String) => {
-                    if (error) {
-                        showAlert('loginAlert', `Image error: ${error.message}`, 'danger');
-                        return;
-                    }
-                    setupFilePreview(base64String, 'image_base64', 'input', file.name, file.size, file.type);
-                    imageInput.value = ''; 
-                });
+                if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                    showAlert('loginAlert', `Image "${file.name}" is too large. Max size: ${MAX_FILE_SIZE_MB}MB.`, 'danger');
+                    imageInput.value = '';
+                    return;
+                }
+                setupFilePreview(file, 'image');
+                imageInput.value = ''; 
             }
         });
 
-        // Record Audio (Base64)
+        // Record Audio
         recordAudioBtn.addEventListener('click', async () => {
             if (!auth.currentUser) { showAlert('loginAlert', 'Please log in to record audio.', 'warning'); return; }
 
@@ -2356,13 +2366,20 @@
 
                 mediaRecorder.onstop = async () => {
                     const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
-                    fileToBase64(audioBlob, (error, base64String) => {
-                        if (error) {
-                            showAlert('loginAlert', `Audio recording error: ${error.message}`, 'danger');
-                            return;
-                        }
-                        setupFilePreview(base64String, 'audio_base64', 'recorded', `audio_${Date.now()}.webm`, audioBlob.size, audioBlob.type);
-                    });
+                    if (audioBlob.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                        showAlert('loginAlert', `Recorded audio is too large. Max size: ${MAX_FILE_SIZE_MB}MB.`, 'danger');
+                        // Clean up even if too large
+                        clearInterval(recordingTimerInterval);
+                        audioRecordingIndicator.classList.add('d-none');
+                        recordAudioBtn.classList.remove('d-none');
+                        stopRecordingBtn.classList.add('d-none');
+                        audioStream.getTracks().forEach(track => track.stop()); 
+                        recordingDuration = 0;
+                        recordingTimerDisplay.textContent = '00:00';
+                        return;
+                    }
+                    const audioFile = new File([audioBlob], `audio_${Date.now()}.webm`, { type: audioBlob.type });
+                    setupFilePreview(audioFile, 'audio');
 
                     clearInterval(recordingTimerInterval);
                     audioRecordingIndicator.classList.add('d-none');
@@ -2420,28 +2437,35 @@
             profileError.classList.add('d-none');
             toggleLoader(saveProfileSpinner, saveProfileBtnText, true, 'Uploading...');
 
-            fileToBase64(file, async (error, base64String) => {
-                if (error) {
-                    showAlert('profileError', `Avatar error: ${error.message}`, 'danger');
-                    toggleLoader(saveProfileSpinner, saveProfileBtnText, false, 'Save Changes');
-                    return;
-                }
-                try {
-                    await db.collection('users').doc(auth.currentUser.uid).update({ profileAvatarBase64: base64String });
-                    
-                    currentUserData.profileAvatarBase64 = base64String; // Update local data
-                    modalUserAvatarContainer.innerHTML = createAvatarHtml(currentUserData, '80px', '32px');
-                    updateUserProfileUI(); // Refresh main UI avatar
-                    showAlert('loginAlert', 'Profile picture updated successfully!', 'success'); // General app alert
-                    
-                } catch (error) {
-                    console.error('Error uploading profile picture:', error);
-                    showAlert('profileError', `Failed to upload profile picture: ${error.message}`, 'danger');
-                } finally {
-                    toggleLoader(saveProfileSpinner, saveProfileBtnText, false, 'Save Changes');
-                    profilePicInput.value = ''; 
-                }
-            });
+            if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                showAlert('profileError', `Profile picture is too large. Max size: ${MAX_FILE_SIZE_MB}MB.`, 'danger');
+                toggleLoader(saveProfileSpinner, saveProfileBtnText, false, 'Save Changes');
+                profilePicInput.value = '';
+                return;
+            }
+
+            try {
+                const filePath = `${auth.currentUser.uid}/profile_pics/avatar_${Date.now()}.jpg`; // Unique filename
+                const storageRef = storage.ref(filePath);
+                const uploadTask = storageRef.put(file);
+
+                await uploadTask;
+                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+
+                await db.collection('users').doc(auth.currentUser.uid).update({ profilePicUrl: downloadURL });
+                
+                currentUserData.profilePicUrl = downloadURL; // Update local data
+                modalUserAvatarContainer.innerHTML = createAvatarHtml(currentUserData, '80px', '32px');
+                updateUserProfileUI(); // Refresh main UI avatar
+                showAlert('loginAlert', 'Profile picture updated successfully!', 'success'); 
+                
+            } catch (error) {
+                console.error('Error uploading profile picture:', error);
+                showAlert('profileError', `Failed to upload profile picture: ${error.message}`, 'danger');
+            } finally {
+                toggleLoader(saveProfileSpinner, saveProfileBtnText, false, 'Save Changes');
+                profilePicInput.value = ''; 
+            }
         });
 
         saveProfileChangesBtn.addEventListener('click', async () => {
@@ -2513,7 +2537,7 @@
                     const newChatRef = await db.collection('chats').add({
                         name: groupName,
                         type: 'group',
-                        participants: [auth.currentUser.uid],
+                        participants: [auth.currentUser.uid], // Creator is first participant
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         lastMessage: 'Group created!',
                         lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
@@ -2521,7 +2545,7 @@
                     });
                     showAlert('loginAlert', `Group "${groupName}" created successfully!`, 'success');
                     // Automatically select the new group
-                    selectChat({ id: newChatRef.id, name: groupName, type: 'group', participants: [auth.currentUser.uid] });
+                    selectChat({ id: newChatRef.id, name: groupName, type: 'group', participants: [auth.currentUser.uid], profilePicUrl: null });
                 } catch (error) {
                     console.error('Error creating group:', error);
                     showAlert('loginAlert', `Failed to create group: ${error.message}`, 'danger');
@@ -2573,6 +2597,7 @@
             document.documentElement.style.setProperty('--primary-color-rgb', hexToRgb(primaryColorHex));
         };
         updatePrimaryColorRGB(); // Call on initial load
+    }); // End DOMContentLoaded
     </script>
 </body>
 </html>
