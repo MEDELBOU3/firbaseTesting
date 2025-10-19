@@ -1238,6 +1238,28 @@
 
         .video-modal .modal-dialog {
             max-width: 1200px;
+            height: 95%;
+        }
+
+        .video-modal .modal-content {
+            /* Make the content container fill the entire dialog height */
+            height: 100%;
+            /* Use flexbox to control the direct children (header, body) */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-modal .modal-body {
+            /* This is the key: tells the body to grow and fill remaining space */
+            flex-grow: 1;
+            /* This prevents content from overflowing on small screens */
+            overflow: hidden;
+        }
+
+        /* Ensure the iframe itself also respects the container height */
+        .video-modal .video-container iframe {
+            height: 100%;
+            width: 100%;
         }
 
         .document-modal .modal-dialog {
@@ -2182,43 +2204,253 @@
         }
 
         /* ============================
-   PLAYLIST QUEUE STYLING
+   HISTORY PANEL STYLING (THEME-AWARE)
    ============================ */
-        #playlistQueue {
-            max-height: 450px;
-            /* Adjust as needed */
-            overflow-y: auto;
+        #playlistPanel .card {
+            /* Use a slightly different background to distinguish the panel from the modal body */
+            background-color: var(--soft);
+            /* Add a subtle border to separate it from the video player */
+            border-left: 1px solid var(--border);
+            /* Remove the card's default border and shadow as it's inside the modal */
+            border-top: none;
+            border-right: none;
+            border-bottom: none;
+            box-shadow: none;
         }
 
-        .playlist-item {
+        #historyQueue {
+            overflow-y: auto;
+            /* Enable scrolling for long history */
+        }
+
+        /* Custom scrollbar for the history queue to make it more subtle */
+        #historyQueue::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #historyQueue::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        #historyQueue::-webkit-scrollbar-thumb:hover {
+            background: var(--muted);
+        }
+
+        .history-item {
             display: flex;
+            align-items: center;
             gap: 0.75rem;
             padding: 0.5rem;
             border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: background-color var(--transition-fast);
-            border: none;
+            transition: all var(--transition-fast);
+            border: 1px solid transparent;
+            border-bottom: 1px solid var(--border);
             background-color: transparent;
+            width: 100%;
+            text-align: left;
         }
 
-        .playlist-item:hover {
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-item:hover {
+            /* On hover, use the main surface color and the theme's accent color for the border */
+            background-color: var(--surface);
+            border-color: var(--accent);
+            transform: translateX(2px);
+        }
+
+        .history-item.active {
+            /* The active item uses the theme's primary brand colors */
+            background-color: var(--brand);
+            color: #fff;
+            /* A safe default for brand text color */
+            border-color: var(--brand);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .history-item.active .history-title {
+            color: #fff !important;
+        }
+
+        /* Visual indicator for the currently playing item */
+        .history-item.active::before {
+            content: "\f4f4";
+            /* Bootstrap Icon: play-circle-fill */
+            font-family: "bootstrap-icons";
+            font-size: 1.2rem;
+            color: #fff;
+            /* White icon on the brand background */
+            margin-right: 0.5rem;
+            animation: pulse-icon 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-icon {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .history-item img {
+            width: 80px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
+        }
+
+        .history-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text);
+            /* Theme-aware text color */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+
+        /* ============================
+   PROFESSIONAL NOTIFICATIONS
+   ============================ */
+        #notifListContainer {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border: none !important;
+            border-bottom: 1px solid var(--border) !important;
+            background-color: transparent;
+            transition: background-color var(--transition-fast);
+        }
+
+        .notification-item:hover {
             background-color: var(--soft);
         }
 
-        .playlist-item.active {
-            background-color: var(--brand);
-            color: #fff;
+        .notification-item.unread {
+            background-color: rgba(var(--brand-rgb), 0.05);
+            /* Subtle highlight */
         }
 
-        .playlist-item.active .text-muted {
-            color: rgba(255, 255, 255, 0.7) !important;
+        [data-theme="dark"] .notification-item.unread {
+            background-color: rgba(var(--brand-rgb), 0.1);
         }
 
-        .playlist-item img {
-            width: 100px;
-            height: 56px;
-            object-fit: cover;
+        .notification-item .icon {
+            font-size: 1.5rem;
+            min-width: 2rem;
+            text-align: center;
+        }
+
+        .notification-item .content {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .notification-item .timestamp {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        /* ============================
+   QUILL CONTENT STYLING FIX
+   ============================ */
+        /* Target the read-only containers for discussion content */
+        #threadContent .ql-editor,
+        #repliesContainer .ql-editor {
+            /* Use your theme's surface color for the background */
+            background-color: var(--surface);
+            /* Use your theme's text color */
+            color: var(--text);
+            /* Remove padding, as the card-body already has it */
+            padding: 4px 8px;
+            font-size: 1rem;
+            border-radius: 8px;
+            /* Prevent the container from collapsing */
+            min-height: 1rem;
+        }
+
+        /* Override styles for list items within Quill content */
+        .ql-editor ol li,
+        .ql-editor ul li {
+            background: transparent !important;
+            /* Force transparent background */
+            color: var(--text) !important;
+            /* Force theme text color */
+        }
+
+        /* Override styles for code blocks, which often have a dark default */
+        .ql-editor pre.ql-syntax {
+            background-color: var(--soft) !important;
+            /* Use your soft background */
+            color: var(--text) !important;
             border-radius: var(--radius-sm);
+            padding: 1rem;
+        }
+
+        /* ============================
+   PERFECT TOAST NOTIFICATIONS
+   ============================ */
+        #toastContainer {
+            z-index: 1100;
+            /* Ensure it's on top of modals */
+        }
+
+        .custom-toast {
+            /* Use theme variables for background and text color */
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 0.75rem 1.25rem;
+        }
+
+        /* Specific theme colors */
+        .custom-toast.alert-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.85), rgba(5, 150, 105, 0.85));
+        }
+
+        .custom-toast.alert-danger {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.85), rgba(220, 38, 38, 0.85));
+        }
+
+        .custom-toast.alert-warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.85), rgba(217, 119, 6, 0.85));
+        }
+
+        .custom-toast.alert-info {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.85), rgba(37, 99, 235, 0.85));
+        }
+
+        .custom-toast .btn-close {
+            /* Custom styling for the close button */
+            background: rgba(255, 255, 255, 0.2) url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/0.7em auto no-repeat;
+            border-radius: var(--radius-sm);
+            opacity: 0.8;
+            transition: all var(--transition-fast);
+        }
+
+        .custom-toast .btn-close:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            opacity: 1;
+            transform: scale(1.1);
         }
     </style>
 </head>
@@ -2258,21 +2490,29 @@
 
                 <!-- Notifications -->
                 <div class="dropdown">
-                    <button class="btn btn-link position-relative" id="notifBtn" data-bs-toggle="dropdown">
+                    <button class="btn btn-link position-relative" id="notifBtn" data-bs-toggle="dropdown"
+                        aria-expanded="false">
                         <i class="bi bi-bell fs-5"></i>
-                        <span class="notification-badge">3</span>
+                        <!-- Unread count badge (will be managed by JS) -->
+                        <span class="notification-badge d-none" id="notifCount">0</span>
                     </button>
-                    <div class="dropdown-menu dropdown-menu-end shadow-sm border-0 p-2" style="width:320px">
-                        <h6 class="dropdown-header">Notifications</h6>
-                        <div class="dropdown-item">
-                            <small class="text-muted">Nouveau matériau de cours téléchargé</small>
+                    <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2" id="notifDropdown"
+                        style="width:350px;">
+                        <div class="px-3 py-2 d-flex justify-content-between align-items-center">
+                            <h6 class="dropdown-header p-0">Notifications</h6>
+                            <button class="btn btn-sm btn-link" id="markAllAsReadBtn">Tout marquer comme lu</button>
                         </div>
-                        <div class="dropdown-item">
-                            <small class="text-muted">Devoir dû demain</small>
+                        <div id="notifListContainer" class="list-group list-group-flush">
+                            <!-- Notifications will be loaded here -->
+                            <div class="text-center text-muted p-4">Chargement...</div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <a class="dropdown-item text-center" href="#" data-view="notifications">
+                                Voir toutes les notifications
+                            </a>
                         </div>
                     </div>
                 </div>
-
                 <!-- Profile Dropdown -->
                 <div class="dropdown" id="profileDropdown" style="display: none;">
                     <a href="#" class="d-flex align-items-center gap-2 text-decoration-none dropdown-toggle"
@@ -2338,6 +2578,10 @@
         <a class="sidebar-item" data-view="discussions">
             <i class="bi bi-chat-square-dots"></i>
             <span>Discussions</span>
+        </a>
+        <a class="sidebar-item" data-view="notifications">
+            <i class="bi bi-bell"></i>
+            <span>Notifications</span>
         </a>
         <div class="p-3 mt-3">
             <h6 class="text-muted text-uppercase" style="font-size:11px; letter-spacing:1px">Outils</h6>
@@ -2546,19 +2790,37 @@
         <!-- Contenu contribué View -->
         <div id="contributedView" class="view-content d-none">
             <h2 class="mb-4" style="color:var(--brand); font-weight:700">Contenu contribué</h2>
-            <form id="addContentForm" class="mb-4">
-                <div class="mb-3">
-                    <input id="contentUrl" class="form-control" placeholder="URL YouTube (vidéo ou playlist)" required>
+            <!-- In #contributedView -->
+            <form id="addContentForm" class="card card-modern mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Partager une ressource</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="contentUrl" class="form-label">URL de la ressource</label>
+                            <input id="contentUrl" class="form-control" placeholder="Collez l'URL ici..." required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="contentType" class="form-label">Type de contenu</label>
+                            <select id="contentType" class="form-select" required>
+                                <option value="youtube" selected>Vidéo / Playlist YouTube</option>
+                                <option value="gdrive_video">Vidéo Google Drive</option>
+                                <option value="gdrive_doc">Document Google Drive (PDF, Livre)</option>
+                                <option value="link">Lien Web / Article</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="contentTitle" class="form-label">Titre (optionnel)</label>
+                            <input id="contentTitle" class="form-control" placeholder="Titre personnalisé...">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="contentCourse" class="form-label">Associer à un cours (optionnel)</label>
+                            <select id="contentCourse" class="form-select">
+                                <option value="">Aucun cours spécifique</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary mt-3" type="submit">Ajouter le contenu</button>
                 </div>
-                <div class="mb-3">
-                    <input id="contentTitle" class="form-control" placeholder="Titre (optionnel)">
-                </div>
-                <div class="mb-3">
-                    <select id="contentCourse" class="form-select">
-                        <option value="">Associé à aucun cours</option>
-                    </select>
-                </div>
-                <button class="btn btn-primary" type="submit">Ajouter contenu</button>
             </form>
             <div class="row g-4" id="contributedGrid"></div>
         </div>
@@ -2637,6 +2899,32 @@
                                 <label for="eventTitle" class="form-label">Titre de l'événement</label>
                                 <input type="text" class="form-control" id="eventTitle" required>
                             </div>
+                            <!-- START: NEW ALARM SECTION -->
+                            <div class="border-top pt-3">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="eventAlarm" class="form-label"><i
+                                                class="bi bi-alarm me-2"></i>Rappel / Alarme</label>
+                                        <select id="eventAlarm" class="form-select">
+                                            <option value="none" selected>Aucun</option>
+                                            <option value="5">5 minutes avant</option>
+                                            <option value="15">15 minutes avant</option>
+                                            <option value="30">30 minutes avant</option>
+                                            <option value="60">1 heure avant</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="eventSound" class="form-label"><i
+                                                class="bi bi-music-note-beamed me-2"></i>Son de l'alarme</label>
+                                        <select id="eventSound" class="form-select">
+                                            <option value="chime" selected>Carillon</option>
+                                            <option value="notification">Notification</option>
+                                            <option value="digital">Digital</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- END: NEW ALARM SECTION -->
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="eventStart" class="form-label">Début</label>
@@ -2722,6 +3010,20 @@
                             <div id="replyEditor" style="min-height: 150px;"></div>
                             <button type="submit" class="btn btn-primary mt-3">Publier la réponse</button>
                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications View (Full Page) -->
+        <div id="notificationsView" class="view-content d-none">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 style="color:var(--brand); font-weight:700">Toutes les notifications</h2>
+            </div>
+            <div class="card card-modern">
+                <div class="card-body">
+                    <div id="fullNotifList" class="list-group list-group-flush">
+                        <!-- Full notification history will be loaded here -->
                     </div>
                 </div>
             </div>
@@ -2939,29 +3241,36 @@
 
     <!-- Vidéo Modal (Upgraded for Playlists) -->
     <div class="modal fade video-modal" id="videoModal" tabindex="-1">
-        <!-- Use modal-xl for more space -->
-        <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-dialog modal-fullscreen-lg-down modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="videoTitle">Tutoriel vidéo</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-2">
-                    <div class="row g-2">
-                        <!-- Main Video Player Column -->
-                        <div class="col-lg-8">
+                    <div class="row g-2 h-100">
+                        <!-- Main Video Player Column (80%) -->
+                        <div class="col-lg-9 h-100">
                             <div class="video-container" id="videoContainer"
-                                style="padding-bottom: 56.25%; min-height: 0;">
+                                style="padding-bottom: 0; min-height: 0; height: 100%;">
                                 <!-- Iframe will be inserted here -->
                             </div>
                         </div>
-                        <!-- Playlist Queue Column (hidden by default) -->
-                        <div class="col-lg-4 d-none" id="playlistPanel">
+                        <!-- History Panel Column (20%) -->
+                        <div class="col-lg-3 h-100 d-none flex-column" id="playlistPanel">
                             <div class="card h-100">
-                                <div class="card-body">
-                                    <h6 class="card-title">Contenu de la playlist</h6>
-                                    <div id="playlistQueue" class="list-group list-group-flush">
-                                        <!-- Playlist items will be loaded here -->
+                                <div class="card-body d-flex flex-column p-2">
+                                    <!-- START: NEW HEADER -->
+                                    <div class="d-flex justify-content-between align-items-center px-2 pt-1 mb-2">
+                                        <h6 class="card-title mb-0">Historique</h6>
+                                        <button class="btn btn-sm btn-outline-danger" id="clearHistoryBtn"
+                                            title="Effacer l'historique">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                    <!-- END: NEW HEADER -->
+                                    <div id="historyQueue" class="list-group list-group-flush flex-grow-1">
+                                        <!-- History items will be loaded here -->
                                     </div>
                                 </div>
                             </div>
@@ -3058,12 +3367,13 @@
         </div>
     </div>
 
+
     <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1100"></div>
 
     <script type="module">
         const DRIVE_API_KEY = 'AIzaSyAcOuFc10xwtujaClC_TZckrGkKx3h0iNI';
         const DRIVE_FOLDER_ID = '1rWQnAn8e2fLPpGa-8_GXYHmb0NeTLNH2';
-        const YOUTUBE_API_KEY = 'AIzaSyA8gx66XUFZ-abihuxnF3mvLed5qgOnvdY'; // Remplacer par une clé valide
+        const YOUTUBE_API_KEY = 'AIzaSyBAdEcJt_IirVmn-NigdC4O4wMbrkvmR7k'; // Remplacer par une clé valide
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
         import {
@@ -3079,21 +3389,43 @@
             deleteUser
         } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
         // THIS IS THE NEW, CORRECTED IMPORT. USE THIS ONE.
+        /*
         import {
             getFirestore,
             collection,
             addDoc,
-            getDocs, // Already here from before
+            getDocs,
             query,
             where,
-            // --- New functions for the calendar ---
             doc,
             setDoc,
             updateDoc,
             deleteDoc,
-            Timestamp
+            Timestamp,
+            onSnapshot,
+            orderBy,
+            limit,
+            writeBatch // <<< ADD THIS LINE
         } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+         */
 
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            getDocs,
+            query,
+            where,
+            doc,
+            setDoc,
+            updateDoc,
+            deleteDoc,
+            Timestamp,
+            onSnapshot,
+            orderBy,
+            limit,
+            writeBatch // For "Mark All as Read"
+        } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
         const firebaseConfig = {
             apiKey: "AIzaSyAgl557z1SyRSljc3UpIUELUpr2SM0SkBs",
             authDomain: "informatique-et-ia-fpn.firebaseapp.com",
@@ -3123,6 +3455,7 @@
         let newDiscussionQuill, replyQuill; // To hold Quill instances
         let currentDiscussionId = null;
         let progressDonutChart, progressByCourseChart, activityLineChart;
+        let unsubscribeNotifications = null; // To manage the real-time listener
         const newDiscussionModal = new bootstrap.Modal(document.getElementById('newDiscussionModal'));
         // Éléments DOM
         const btnLogin = document.getElementById('btnLogin');
@@ -3142,28 +3475,6 @@
         const playlistQueue = document.getElementById('playlistQueue');
 
 
-        // 2. ENTIRELY REPLACE your old `window.playYoutube` function with this new version
-        window.playYoutube = async function (type, id, title) {
-            document.getElementById('videoTitle').innerText = title;
-            const container = document.getElementById('videoContainer');
-
-            // Reset from previous state
-            container.innerHTML = '';
-            playlistQueue.innerHTML = '';
-
-            if (type === 'playlist') {
-                playlistPanel.classList.remove('d-none');
-                // Fetch playlist items and load the first video
-                await fetchAndRenderPlaylist(id);
-            } else {
-                // It's a single video, hide the playlist panel
-                playlistPanel.classList.add('d-none');
-                // Load the single video
-                container.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-            }
-
-            videoModal.show();
-        };
 
         // Initialisation
         document.querySelectorAll('.sidebar-item, .dropdown-item[data-view]').forEach(item => {
@@ -3264,6 +3575,13 @@
                 loadUserProgress();
                 fetchDriveFolder(currentFolderId);
                 loadContributedContent();
+                listenForNotifications(user.uid); // START the listener on login
+                listenForInboxMessages(user.uid);
+                setInterval(checkAlarms, 60000);
+                // Request permission for notifications on login
+                if (Notification.permission === 'default') {
+                    Notification.requestPermission();
+                }
             } else {
                 profileDropdown.style.display = 'none';
                 btnLogin.classList.remove('d-none');
@@ -3271,6 +3589,9 @@
 
                 googleAccessToken = null;
                 document.getElementById('coursesGrid').innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-lock fs-1"></i><p class="mt-2">Veuillez vous connecter avec Google pour accéder aux cours.</p></div>';
+                if (unsubscribeNotifications) unsubscribeNotifications();
+                if (unsubscribeInbox) unsubscribeInbox(); // <<< ADD THIS LINE to stop the inbox checker
+                updateNotificationUI([]);
             }
 
             loadTheme();
@@ -3293,8 +3614,12 @@
             e.target.reset();
         });
 
+        function extractGoogleDriveId(url) {
+            const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            return match ? match[1] : null;
+        }
         // Formulaire ajouter contenu
-        document.getElementById('addContentForm')?.addEventListener('submit', async (e) => {
+        /*document.getElementById('addContentForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const url = document.getElementById('contentUrl').value;
             const title = document.getElementById('contentTitle').value || '';
@@ -3321,54 +3646,138 @@
             } else {
                 showToast('URL YouTube invalide', 'warning');
             }
+        });*/
+
+
+        document.getElementById('addContentForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) {
+                showToast("Veuillez vous connecter pour contribuer.", "warning");
+                return;
+            }
+
+            // ... (your existing code for getting form data and validating it)
+            const url = document.getElementById('contentUrl').value;
+            const type = document.getElementById('contentType').value;
+            const title = document.getElementById('contentTitle').value;
+            const courseId = document.getElementById('contentCourse').value;
+
+            let contentData = {
+                title: title,
+                url: url,
+                courseId: courseId,
+                type: type,
+                userId: user.uid,
+                userName: user.displayName || 'Anonyme',
+                createdAt: new Date()
+            };
+
+            try {
+                // --- DATA VALIDATION (your existing code) ---
+                if (type === 'youtube') {
+                    const isPlaylist = url.includes('list=');
+                    const id = isPlaylist ? extractPlaylistId(url) : extractVideoId(url);
+                    if (!id) throw new Error("URL YouTube invalide.");
+                    contentData.youtubeType = isPlaylist ? 'playlist' : 'video';
+                    contentData.youtubeId = id;
+                } else if (type === 'gdrive_doc' || type === 'gdrive_video') {
+                    const id = extractGoogleDriveId(url);
+                    if (!id) throw new Error("URL Google Drive invalide.");
+                    contentData.gdriveId = id;
+                }
+
+                // --- Step 1: Add the content document (your existing code) ---
+                await addDoc(collection(db, 'contributed'), contentData);
+                showToast('Contenu ajouté avec succès !', 'success');
+                e.target.reset();
+                loadContributedContent();
+
+                // --- Step 2: NEW - Send broadcast notification to all users ---
+                const notificationPayload = {
+                    message: `Une nouvelle ressource a été ajoutée : <strong>${title || "Nouveau contenu"}</strong>`,
+                    type: "new_content",
+                    link: "/contributed"
+                };
+
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                usersSnapshot.forEach(userDoc => {
+                    const targetUserId = userDoc.id;
+                    // Don't notify the user who added the content
+                    if (targetUserId !== user.uid) {
+                        createNotification(targetUserId, notificationPayload);
+                    }
+                });
+
+            } catch (err) {
+                showToast('Erreur : ' + err.message, 'danger');
+            }
         });
 
-         async function fetchAndRenderPlaylist(playlistId) {
-            playlistQueue.innerHTML = '<div class="p-3 text-center"><div class="loader-sm"></div> Chargement...</div>';
+        /*async function fetchAndRenderPlaylist(playlistId) {
+            playlistQueue.innerHTML = '<div class="p-3 text-center text-muted">Chargement de la playlist...</div>';
 
             try {
                 const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${YOUTUBE_API_KEY}`;
                 const res = await fetch(url);
                 const data = await res.json();
 
-                if (data.error || !data.items) {
-                    throw new Error(data.error?.message || "Impossible de charger la playlist.");
+                // --- ESSENTIAL DEBUGGING ---
+                console.log("YouTube API Response for Playlist:", data);
+
+                // More robust error checking
+                if (data.error || !data.items || data.items.length === 0) {
+                    throw new Error(data.error?.message || "Playlist vide ou introuvable. Vérifiez votre clé API YouTube et l'ID de la playlist.");
                 }
 
                 playlistQueue.innerHTML = ''; // Clear loader
 
-                data.items.forEach((item, index) => {
+                let firstVideoPlayed = false;
+
+                data.items.forEach((item) => {
                     const snippet = item.snippet;
+
+                    // --- THE CRITICAL FIX ---
+                    // This checks if the video is valid (not deleted or private).
+                    // If it's not valid, we just skip it instead of crashing.
+                    if (!snippet.resourceId || !snippet.thumbnails?.default) {
+                        console.warn("Skipping an invalid item in the playlist:", snippet);
+                        return; // Skips this iteration and continues the loop
+                    }
+
                     const videoId = snippet.resourceId.videoId;
                     const title = snippet.title;
                     const thumbnailUrl = snippet.thumbnails.default.url;
 
-                    const itemEl = document.createElement('a');
-                    itemEl.href = "#";
+                    const itemEl = document.createElement('button');
                     itemEl.className = 'list-group-item playlist-item';
-                    itemEl.onclick = (e) => {
-                        e.preventDefault();
-                        playVideoFromQueue(videoId, itemEl);
-                    };
                     itemEl.innerHTML = `
                 <img src="${thumbnailUrl}" alt="">
                 <div class="flex-grow-1">
-                    <small class="fw-bold d-block">${escapeHtml(title)}</small>
+                    <span class="playlist-title">${escapeHtml(title)}</span>
                 </div>
             `;
+
+                    itemEl.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        playVideoFromQueue(videoId, itemEl);
+                    });
+
                     playlistQueue.appendChild(itemEl);
 
-                    // Play the first video automatically
-                    if (index === 0) {
+                    // Play the *first valid* video automatically
+                    if (!firstVideoPlayed) {
                         playVideoFromQueue(videoId, itemEl);
+                        firstVideoPlayed = true;
                     }
                 });
 
             } catch (err) {
-                playlistQueue.innerHTML = `<div class="p-3 text-center text-danger">Erreur: ${err.message}</div>`;
+                playlistQueue.innerHTML = `<div class="p-3 text-center text-danger"><strong>Erreur:</strong> ${err.message}</div>`;
                 console.error(err);
             }
         }
+
 
         window.playVideoFromQueue = function (videoId, clickedElement) {
             const container = document.getElementById('videoContainer');
@@ -3378,8 +3787,10 @@
             document.querySelectorAll('.playlist-item.active').forEach(el => el.classList.remove('active'));
             if (clickedElement) {
                 clickedElement.classList.add('active');
+                // Scroll the active item into view if needed
+                clickedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-        }
+        }*/
 
 
         // --- FIX: Stop video/document from playing when modal is closed ---
@@ -3387,15 +3798,15 @@
             const videoContainer = document.getElementById('videoContainer');
             const iframe = videoContainer.querySelector('iframe');
             if (iframe) {
-                // Setting the src to empty effectively stops and unloads the video
                 iframe.src = '';
             }
-
-            playlistQueue.innerHTML = '';
+            historyQueue.innerHTML = ''; // This line is correct
             playlistPanel.classList.add('d-none');
+            playlistPanel.classList.remove('d-flex');
         });
 
-    
+
+
 
         documentModalEl.addEventListener('hidden.bs.modal', () => {
             const documentContainer = document.getElementById('documentContainer');
@@ -3496,6 +3907,7 @@
             if (view === 'assignments') renderAssignments();
             if (view === 'calendar') renderCalendar();
             if (view === 'discussions') showDiscussionsList();
+            if (view === 'notifications') renderFullNotificationPage();
             if (view === 'notes') renderNotes();
             if (view === 'progress') renderProgress();
             if (view === 'settings') renderSettings();
@@ -3708,10 +4120,10 @@
 
             if (!filtered.length) {
                 grid.innerHTML = `
-      <div class="col-12 text-center text-muted py-5">
-        <i class="bi bi-camera-video-off fs-2 d-block mb-2"></i>
-        Aucun tutoriel contribué
-      </div>`;
+                    <div class="col-12 text-center text-muted py-5">
+                       <i class="bi bi-camera-video-off fs-2 d-block mb-2"></i>
+                       Aucun tutoriel contribué
+                    </div>`;
                 return;
             }
 
@@ -3725,22 +4137,22 @@
                     : `https://img.youtube.com/vi/${content.id}/mqdefault.jpg`;
 
                 col.innerHTML = `
-    <div class="video-card fade-in ${isPlaylist ? 'playlist' : ''}" 
-         onclick="playYoutube('${content.type}', '${content.id}', '${escapeHtml(content.title)}')">
-        <div class="video-thumb">
-            ${isPlaylist ? `<span class="playlist-title">${escapeHtml(content.title || 'Playlist')}</span>` : `<img src="${thumbnailUrl}" alt="${escapeHtml(content.title)}" class="video-thumb-img">`}
-            <div class="video-overlay">
-                <i class="bi bi-play-fill play-icon"></i>
-            </div>
-            <span class="video-badge">${content.type.charAt(0).toUpperCase() + content.type.slice(1)}</span>
-        </div>
-        <div class="video-body">
-            <h6 class="video-title">${escapeHtml(content.title || 'Sans titre')}</h6>
-            <p class="video-author">
-                <i class="bi bi-person-circle me-1"></i>${escapeHtml(content.userName || 'Inconnu')}
-            </p>
-        </div>
-    </div>`;
+                    <div class="video-card fade-in ${isPlaylist ? 'playlist' : ''}" 
+                        onclick="playYoutube('${content.type}', '${content.id}', '${escapeHtml(content.title)}')">
+                        <div class="video-thumb">
+                            ${isPlaylist ? `<span class="playlist-title">${escapeHtml(content.title || 'Playlist')}</span>` : `<img src="${thumbnailUrl}" alt="${escapeHtml(content.title)}" class="video-thumb-img">`}
+                            <div class="video-overlay">
+                               <i class="bi bi-play-fill play-icon"></i>
+                            </div>
+                            <span class="video-badge">${content.type.charAt(0).toUpperCase() + content.type.slice(1)}</span>
+                        </div>
+                        <div class="video-body">
+                            <h6 class="video-title">${escapeHtml(content.title || 'Sans titre')}</h6>
+                            <p class="video-author">
+                                <i class="bi bi-person-circle me-1"></i>${escapeHtml(content.userName || 'Inconnu')}
+                            </p>
+                        </div>
+                    </div>`;
 
                 grid.appendChild(col);
             });
@@ -3809,6 +4221,91 @@
             });
         }
 
+
+        // 1. Add/update these variables at the top of your script
+        const historyQueue = document.getElementById('historyQueue');
+        let videoHistory = JSON.parse(localStorage.getItem('videoHistory')) || [];
+
+
+        // 2. Add this NEW function. It's the brain of the history feature.
+        function addVideoToHistory(videoData) {
+            // videoData should be an object: { videoId, title, thumbnailUrl }
+
+            // Remove any existing instance of this video to avoid duplicates
+            videoHistory = videoHistory.filter(v => v.videoId !== videoData.videoId);
+
+            // Add the new video to the beginning of the array
+            videoHistory.unshift(videoData);
+
+            // Limit the history to the last 30 videos
+            if (videoHistory.length > 30) {
+                videoHistory = videoHistory.slice(0, 30);
+            }
+
+            // Save to localStorage
+            localStorage.setItem('videoHistory', JSON.stringify(videoHistory));
+
+            // Refresh the visible history panel
+            renderVideoHistory();
+        }
+
+
+        // 3. Add this NEW function to render the history panel
+        function renderVideoHistory() {
+            historyQueue.innerHTML = '';
+            if (videoHistory.length === 0) {
+                historyQueue.innerHTML = '<div class="p-3 text-center text-muted small">Votre historique de lecture est vide.</div>';
+                return;
+            }
+
+            videoHistory.forEach(video => {
+                const itemEl = document.createElement('button');
+                itemEl.className = 'list-group-item history-item';
+                itemEl.innerHTML = `
+            <img src="${video.thumbnailUrl}" alt="">
+            <div class="flex-grow-1">
+                <span class="history-title">${escapeHtml(video.title)}</span>
+            </div>
+        `;
+                itemEl.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    playVideoFromHistory(video, itemEl);
+                });
+                historyQueue.appendChild(itemEl);
+            });
+        }
+
+
+        // 4. Add the event listener for the "Clear History" button
+        document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+            if (confirm("Êtes-vous sûr de vouloir effacer tout votre historique de lecture ?")) {
+                videoHistory = [];
+                localStorage.removeItem('videoHistory');
+                renderVideoHistory();
+                showToast("L'historique a été effacé.", 'info');
+            }
+        });
+
+
+        // 5. RENAME `playVideoFromQueue` to `playVideoFromHistory` and update it
+        window.playVideoFromHistory = function (videoData, clickedElement) {
+            const container = document.getElementById('videoContainer');
+            container.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoData.videoId}?autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+
+            // Update the active state in the queue
+            document.querySelectorAll('.history-item.active').forEach(el => el.classList.remove('active'));
+            if (clickedElement) {
+                clickedElement.classList.add('active');
+                clickedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            // Add to history again to move it to the top
+            addVideoToHistory(videoData);
+            document.getElementById('videoTitle').innerText = videoData.title;
+        }
+
+
+
         function formatDate(timestamp) {
             if (!timestamp) return 'date inconnue';
             return new Date(timestamp.seconds * 1000).toLocaleString('fr-FR', {
@@ -3835,7 +4332,7 @@
                 }
 
                 threadsContainer.innerHTML = '';
-                querySnapshot.forEach(doc => {
+                /*querySnapshot.forEach(doc => {
                     const thread = doc.data();
                     const threadCard = document.createElement('div');
                     threadCard.className = 'card card-modern hover-lift';
@@ -3856,7 +4353,42 @@
                 </div>
             `;
                     threadsContainer.appendChild(threadCard);
+                });*/
+                querySnapshot.forEach(doc => {
+                    const thread = doc.data();
+                    const isAuthor = auth.currentUser && thread.authorId === auth.currentUser.uid;
+
+                    const threadCard = document.createElement('div');
+                    threadCard.className = 'card card-modern hover-lift';
+                    threadCard.style.cursor = 'pointer';
+                    threadCard.onclick = () => showDiscussionDetail(doc.id);
+
+                    threadCard.innerHTML = `
+    <div class="card-body d-flex align-items-center justify-content-between">
+      <div class="flex-grow-1">
+        <h5 class="card-title mb-1">${escapeHtml(thread.title)}</h5>
+        <small class="text-muted">
+          Par ${escapeHtml(thread.authorName)} - ${formatDate(thread.createdAt)}
+        </small>
+      </div>
+      <div class="text-center ms-3" style="min-width: 80px;">
+        <span class="fs-4 fw-bold">${thread.replyCount || 0}</span><br>
+        <small class="text-muted">Réponses</small>
+      </div>
+      ${isAuthor ? `
+        <div class="ms-3">
+          <button class="btn btn-sm btn-outline-primary edit-thread" data-id="${doc.id}">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger delete-thread" data-id="${doc.id}">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>` : ''}
+    </div>
+  `;
+                    threadsContainer.appendChild(threadCard);
                 });
+
             } catch (error) {
                 threadsContainer.innerHTML = '<div class="text-center text-danger p-5">Erreur de chargement des discussions.</div>';
                 console.error("Error fetching discussions: ", error);
@@ -3891,7 +4423,7 @@
                     repliesContainer.innerHTML = '<p class="text-muted">Aucune réponse pour le moment.</p>';
                 } else {
                     repliesContainer.innerHTML = '';
-                    repliesSnapshot.forEach(replyDoc => {
+                    /*repliesSnapshot.forEach(replyDoc => {
                         const replyData = replyDoc.data();
                         const replyCard = document.createElement('div');
                         replyCard.className = 'card';
@@ -3904,14 +4436,46 @@
                     </div>
                 `;
                         repliesContainer.appendChild(replyCard);
+                    });*/
+
+                    repliesSnapshot.forEach(replyDoc => {
+                        const replyData = replyDoc.data();
+                        const isAuthor = auth.currentUser && replyData.authorId === auth.currentUser.uid;
+
+                        const replyCard = document.createElement('div');
+                        replyCard.className = 'card mb-2';
+                        replyCard.innerHTML = `
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start">
+        <p class="text-muted border-bottom pb-2 mb-2 flex-grow-1">
+          Par <strong>${escapeHtml(replyData.authorName)}</strong> le ${formatDate(replyData.createdAt)}
+        </p>
+        ${isAuthor ? `
+          <div>
+            <button class="btn btn-sm btn-outline-primary edit-reply" data-id="${replyDoc.id}">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger delete-reply" data-id="${replyDoc.id}">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        ` : ''}
+      </div>
+      <div class="ql-snow">
+        <div class="ql-editor reply-content">${replyData.content}</div>
+      </div>
+    </div>
+  `;
+                        repliesContainer.appendChild(replyCard);
                     });
+
                 }
 
             } catch (error) {
                 console.error("Error fetching thread detail:", error);
             }
         }
-       
+
         // 4. Add all these event listeners to your script
         document.addEventListener('DOMContentLoaded', () => {
             // Initialize Quill editors when the modals are shown to ensure the containers are visible
@@ -3956,6 +4520,85 @@
             }
         });
 
+        // ============================
+        // EDIT & DELETE HANDLERS
+        // ============================
+
+        // Delete Thread
+        document.addEventListener('click', async (e) => {
+            if (e.target.closest('.delete-thread')) {
+                e.stopPropagation();
+                const id = e.target.closest('.delete-thread').dataset.id;
+                if (confirm('Supprimer cette discussion ?')) {
+                    await deleteDoc(doc(db, 'discussions', id));
+                    showToast('Discussion supprimée.', 'success');
+                    showDiscussionsList();
+                }
+            }
+        });
+
+        // Edit Thread
+        document.addEventListener('click', async (e) => {
+            if (e.target.closest('.edit-thread')) {
+                e.stopPropagation();
+                const id = e.target.closest('.edit-thread').dataset.id;
+                const threadRef = doc(db, 'discussions', id);
+                const snap = await getDoc(threadRef);
+                if (!snap.exists()) return;
+
+                const threadData = snap.data();
+                const newTitle = prompt('Modifier le titre :', threadData.title);
+                if (newTitle === null) return;
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = threadData.content;
+                const oldContent = tempDiv.innerText;
+
+                const newContent = prompt('Modifier le contenu :', oldContent);
+                if (newContent !== null) {
+                    await updateDoc(threadRef, {
+                        title: newTitle,
+                        content: newContent
+                    });
+                    showToast('Discussion mise à jour.', 'success');
+                    showDiscussionsList();
+                }
+            }
+        });
+
+        // Delete Reply
+        document.addEventListener('click', async (e) => {
+            if (e.target.closest('.delete-reply')) {
+                const replyId = e.target.closest('.delete-reply').dataset.id;
+                if (confirm('Supprimer cette réponse ?')) {
+                    await deleteDoc(doc(db, 'discussions', currentDiscussionId, 'replies', replyId));
+                    showToast('Réponse supprimée.', 'success');
+                    showDiscussionDetail(currentDiscussionId);
+                }
+            }
+        });
+
+        // Edit Reply
+        document.addEventListener('click', async (e) => {
+            if (e.target.closest('.edit-reply')) {
+                const replyId = e.target.closest('.edit-reply').dataset.id;
+                const replyRef = doc(db, 'discussions', currentDiscussionId, 'replies', replyId);
+                const snap = await getDoc(replyRef);
+                if (!snap.exists()) return;
+
+                const replyData = snap.data();
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = replyData.content;
+                const oldContent = tempDiv.innerText;
+                const newContent = prompt('Modifier votre réponse :', oldContent);
+                if (newContent !== null) {
+                    await updateDoc(replyRef, { content: newContent });
+                    showToast('Réponse mise à jour.', 'success');
+                    showDiscussionDetail(currentDiscussionId);
+                }
+            }
+        });
+        /*
         document.getElementById('replyForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const user = auth.currentUser;
@@ -3986,7 +4629,56 @@
                 showToast('Erreur : ' + error.message, 'danger');
             }
         });
+        */
 
+        document.getElementById('replyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user || !currentDiscussionId) return;
+
+            const content = replyQuill.root.innerHTML;
+
+            try {
+                // --- Step 1: Add the reply (this is your existing code) ---
+                await addDoc(collection(db, 'discussions', currentDiscussionId, 'replies'), {
+                    content: content,
+                    authorId: user.uid,
+                    authorName: user.displayName || 'Anonyme',
+                    createdAt: Timestamp.now()
+                });
+
+                // --- Step 2: Update the reply count (this is your existing code) ---
+                const threadRef = doc(db, 'discussions', currentDiscussionId);
+                const threadSnap = await getDocs(query(collection(db, 'discussions'), where('__name__', '==', currentDiscussionId)));
+                let threadData;
+                if (!threadSnap.empty) {
+                    threadData = threadSnap.docs[0].data();
+                    const currentCount = threadData.replyCount || 0;
+                    await updateDoc(threadRef, { replyCount: currentCount + 1 });
+                }
+
+                showToast('Réponse publiée !', 'success');
+                replyQuill.setText('');
+                showDiscussionDetail(currentDiscussionId);
+
+                // --- Step 3: NEW - Create the notification ---
+                if (threadData) {
+                    const originalAuthorId = threadData.authorId;
+                    // IMPORTANT: Don't notify the user if they reply to their own post
+                    if (originalAuthorId !== user.uid) {
+                        const notificationPayload = {
+                            message: `<strong>User B</strong> a répondu à votre discussion.`,
+                            type: "new_reply",
+                            link: "/discussions/the_thread_id"
+                        };
+                        await createNotification(originalAuthorId, notificationPayload);
+                    }
+                }
+
+            } catch (error) {
+                showToast('Erreur : ' + error.message, 'danger');
+            }
+        });
         document.getElementById('backToDiscussions').addEventListener('click', showDiscussionsList);
 
         function renderVideos() {
@@ -4035,6 +4727,8 @@
             });
         }
 
+        /*
+
         async function fetchYoutubeTutorials() {
             const grid = document.getElementById('youtubeVideosGrid');
             grid.innerHTML = '<div class="col-12 text-center"><div class="loader"></div></div>';
@@ -4051,6 +4745,88 @@
                 renderYoutubeResults(results);
             } catch (err) {
                 grid.innerHTML = '<div class="col-12 text-center text-muted">Erreur de chargement des tutoriels YouTube</div>';
+            }
+        }
+        */
+
+        async function fetchYoutubeTutorials() {
+            const grid = document.getElementById('youtubeVideosGrid');
+            if (!grid) return;
+
+            // --- CACHING LOGIC (for YouTube results) ---
+            const cachedResults = sessionStorage.getItem('youtubeRecommendations');
+            const cacheTimestamp = sessionStorage.getItem('youtubeRecsTimestamp');
+
+            if (cachedResults && cacheTimestamp && (new Date() - new Date(cacheTimestamp)) < 3600000) { // 1 hour
+                console.log("Loading YouTube recommendations from cache.");
+                renderYoutubeResults(JSON.parse(cachedResults));
+                return;
+            }
+
+            grid.innerHTML = '<div class="col-12 text-center"><div class="loader"></div><p class="text-muted mt-2">Recherche de tutoriels...</p></div>';
+
+            try {
+                // --- THE FIX: Call the new self-sufficient function ---
+                const queries = await getYoutubeSearchQueries();
+
+                if (queries.length === 0) {
+                    grid.innerHTML = '<div class="col-12 text-center text-muted py-3"><i class="bi bi-search-heart fs-2"></i><p class="mt-2">Aucun cours trouvé pour générer des recommandations.</p></div>';
+                    return;
+                }
+
+                const fetchPromises = queries.map(q => {
+                    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&type=video,playlist&maxResults=3&key=${YOUTUBE_API_KEY}`;
+                    return fetch(url).then(res => res.json());
+                });
+
+                const results = await Promise.all(fetchPromises);
+
+                const allItems = [];
+                results.forEach(json => {
+                    if (json.error) {
+                        throw new Error(`Erreur API YouTube: ${json.error.message}`);
+                    }
+                    if (json.items) {
+                        allItems.push(...json.items);
+                    }
+                });
+
+                // Save the final results to cache
+                sessionStorage.setItem('youtubeRecommendations', JSON.stringify(allItems));
+                sessionStorage.setItem('youtubeRecsTimestamp', new Date().toISOString());
+
+                renderYoutubeResults(allItems);
+
+            } catch (err) {
+                console.error('Erreur de chargement des tutoriels YouTube:', err);
+                grid.innerHTML = `<div class="col-12 text-center text-danger py-3"><i class="bi bi-exclamation-triangle fs-2"></i><p class="mt-2">Impossible de charger les recommandations.<br><small>${err.message}</small></p></div>`;
+            }
+        }
+        // Add this NEW helper function somewhere in your script
+        async function getYoutubeSearchQueries() {
+            // Use a simple cache to avoid calling the Drive API every time
+            const cachedFolders = sessionStorage.getItem('courseFoldersForYT');
+            if (cachedFolders) {
+                return JSON.parse(cachedFolders);
+            }
+
+            try {
+                // This is a targeted, lightweight API call just to get folder names
+                const url = `https://www.googleapis.com/drive/v3/files?q='${DRIVE_FOLDER_ID}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&fields=files(name)&key=${DRIVE_API_KEY}`;
+                const res = await fetch(url);
+                const json = await res.json();
+
+                if (json.error) throw new Error(json.error.message);
+
+                const queries = json.files.map(f => f.name + ' tutorial');
+
+                // Save the generated queries to cache for next time
+                sessionStorage.setItem('courseFoldersForYT', JSON.stringify(queries));
+                return queries;
+
+            } catch (err) {
+                console.error("Could not fetch course folders for YouTube search:", err);
+                return []; // Return an empty array on failure
             }
         }
 
@@ -4110,7 +4886,7 @@
             });
         }
 
-        function renderContributed() {
+        /*function renderContributed() {
             const grid = document.getElementById('contributedGrid');
             grid.innerHTML = '';
             contributedContent.forEach(content => {
@@ -4134,8 +4910,111 @@
       `;
                 grid.appendChild(col);
             });
+        }*/
+
+        function renderContributed() {
+            const grid = document.getElementById('contributedGrid');
+            grid.innerHTML = '';
+
+            if (contributedContent.length === 0) {
+                grid.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-cloud-slash fs-1"></i><p class="mt-2">Aucun contenu contribué pour le moment.</p></div>';
+                return;
+            }
+
+            contributedContent.forEach(content => {
+                const col = document.createElement('div');
+                col.className = 'col-lg-4 col-md-6';
+                let cardHTML = '';
+
+                // --- STYLING OVERHAUL ---
+                switch (content.type) {
+                    case 'youtube':
+                        cardHTML = `
+                    <div class="video-card h-100 fade-in" style="cursor: pointer;" onclick='viewContributedContent(${JSON.stringify(content)})'>
+                        <div class="video-thumb">
+                            <img src="https://img.youtube.com/vi/${content.youtubeId}/mqdefault.jpg" class="video-thumb-img" alt="${escapeHtml(content.title)}">
+                            <div class="video-overlay"><i class="bi bi-play-fill play-icon"></i></div>
+                        </div>
+                        <div class="video-body d-flex flex-column">
+                            <h6 class="video-title"><i class="bi bi-youtube text-danger me-2"></i>${escapeHtml(content.title || 'Vidéo YouTube')}</h6>
+                            <p class="video-author mt-auto"><i class="bi bi-person-circle me-1"></i>${escapeHtml(content.userName)}</p>
+                        </div>
+                    </div>`;
+                        break;
+
+                    case 'gdrive_video':
+                    case 'gdrive_doc':
+                        const isVideo = content.type === 'gdrive_video';
+                        const iconClass = isVideo ? 'bi-camera-video-fill text-primary' : 'bi-file-earmark-pdf-fill text-danger';
+                        const iconBg = isVideo ? 'linear-gradient(135deg, var(--info) 20%, var(--brand) 100%)' : 'linear-gradient(135deg, var(--danger) 20%, #841212 100%)';
+
+                        cardHTML = `
+                    <div class="card card-modern h-100 fade-in hover-lift" style="cursor: pointer;" onclick='viewContributedContent(${JSON.stringify(content)})'>
+                        <div class="card-body d-flex flex-column">
+                             <div class="flex-grow-1 rounded d-flex align-items-center justify-content-center" style="background: ${iconBg};">
+                                <i class="bi ${iconClass}" style="font-size: 4rem; color: #fff; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));"></i>
+                            </div>
+                            <h6 class="card-title mt-3"><i class="bi bi-google me-2"></i>${escapeHtml(content.title || 'Document Drive')}</h6>
+                            <p class="video-author mt-auto text-muted"><i class="bi bi-person-circle me-1"></i>${escapeHtml(content.userName)}</p>
+                        </div>
+                    </div>`;
+                        break;
+
+                    case 'link':
+                        cardHTML = `
+                     <div class="card card-modern h-100 fade-in hover-lift" style="cursor: pointer;" onclick='viewContributedContent(${JSON.stringify(content)})'>
+                        <div class="card-body d-flex flex-column">
+                             <div class="flex-grow-1 rounded d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, var(--muted) 20%, var(--text) 100%);">
+                                <i class="bi bi-link-45deg" style="font-size: 5rem; color: #fff; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));"></i>
+                            </div>
+                            <h6 class="card-title mt-3"><i class="bi bi-globe me-2"></i>${escapeHtml(content.title || 'Lien Web')}</h6>
+                            <p class="video-author mt-auto text-muted"><i class="bi bi-person-circle me-1"></i>${escapeHtml(content.userName)}</p>
+                        </div>
+                    </div>`;
+                        break;
+                }
+                col.innerHTML = cardHTML;
+                grid.appendChild(col);
+            });
         }
 
+        window.viewContributedContent = function (content) {
+            const safeContent = JSON.parse(JSON.stringify(content));
+
+            switch (safeContent.type) {
+                case 'youtube':
+                    playYoutube(safeContent.youtubeType, safeContent.youtubeId, safeContent.title);
+                    break;
+
+                // --- THE FIX: NEW CASE FOR GDRIVE VIDEOS ---
+                case 'gdrive_video':
+                    // Open in the VIDEO modal
+                    document.getElementById('videoTitle').innerText = safeContent.title || 'Vidéo';
+                    const videoContainer = document.getElementById('videoContainer');
+                    videoContainer.innerHTML = `<iframe src="https://drive.google.com/file/d/${safeContent.gdriveId}/preview" frameborder="0" allow="autoplay" allowfullscreen></iframe>`;
+
+                    // Hide the history panel for non-YouTube videos
+                    playlistPanel.classList.add('d-none');
+                    playlistPanel.classList.remove('d-flex');
+
+                    videoModal.show();
+                    break;
+
+                case 'gdrive_doc':
+                    // Open in the DOCUMENT modal
+                    document.getElementById('documentTitle').innerText = safeContent.title || 'Document';
+                    const docContainer = document.getElementById('documentContainer');
+                    docContainer.innerHTML = `<iframe src="https://drive.google.com/file/d/${safeContent.gdriveId}/preview" frameborder="0"></iframe>`;
+                    documentModal.show();
+                    break;
+
+                case 'link':
+                    if (confirm(`Vous allez être redirigé vers un lien externe:\n\n${safeContent.url}\n\nVoulez-vous continuer ?`)) {
+                        window.open(safeContent.url, '_blank', 'noopener,noreferrer');
+                    }
+                    break;
+            }
+        }
         /*function renderDocuments() {
             const grid = document.getElementById('documentsGrid');
             const docs = allFiles.filter(f => {
@@ -4407,7 +5286,7 @@
         }
 
         // 5. Add these event listeners for the modal form somewhere in your script
-        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+        /*document.getElementById('eventForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const user = auth.currentUser;
             if (!user) return;
@@ -4433,6 +5312,42 @@
                 }
                 eventModal.hide();
                 calendar.refetchEvents(); // Refresh the calendar to show the new/updated event
+            } catch (error) {
+                showToast('Erreur : ' + error.message, 'danger');
+            }
+        });
+        */
+
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const eventId = document.getElementById('eventId').value;
+
+            // THE FIX: Add the new alarm and sound fields to the data object
+            const eventData = {
+                title: document.getElementById('eventTitle').value,
+                start: Timestamp.fromDate(new Date(document.getElementById('eventStart').value)),
+                end: Timestamp.fromDate(new Date(document.getElementById('eventEnd').value)),
+                allDay: document.getElementById('eventAllDay').checked,
+                alarm: document.getElementById('eventAlarm').value, // <-- NEW
+                sound: document.getElementById('eventSound').value, // <-- NEW
+                userId: user.uid
+            };
+
+            try {
+                if (eventId) {
+                    const eventRef = doc(db, 'users', user.uid, 'events', eventId);
+                    await updateDoc(eventRef, eventData);
+                    showToast('Événement mis à jour !', 'success');
+                } else {
+                    const newEventRef = doc(collection(db, 'users', user.uid, 'events'));
+                    await setDoc(newEventRef, eventData);
+                    showToast('Événement ajouté !', 'success');
+                }
+                eventModal.hide();
+                calendar.refetchEvents();
             } catch (error) {
                 showToast('Erreur : ' + error.message, 'danger');
             }
@@ -4723,23 +5638,46 @@
 
         function showToast(message, type = 'info') {
             const toastContainer = document.getElementById('toastContainer');
-            const icon = {
+
+            const icons = {
                 success: 'bi-check-circle-fill',
                 danger: 'bi-exclamation-triangle-fill',
                 warning: 'bi-exclamation-triangle-fill',
                 info: 'bi-info-circle-fill'
-            }[type];
+            };
+            const icon = icons[type] || icons.info;
 
+            // Create the wrapper for Bootstrap's Toast component
             const toastEl = document.createElement('div');
-            toastEl.className = `alert alert-${type} d-flex align-items-center alert-dismissible fade show`;
+            toastEl.className = `toast custom-toast alert-${type}`; // Use 'toast' class
             toastEl.setAttribute('role', 'alert');
+            toastEl.setAttribute('aria-live', 'assertive');
+            toastEl.setAttribute('aria-atomic', 'true');
+
             toastEl.innerHTML = `
-                <i class="bi ${icon} me-2"></i>
-                <div>${message}</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center">
+                        <i class="bi ${icon} me-2 fs-5"></i>
+                        <span class="fw-semibold me-auto">${message}</span>
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
             `;
+
             toastContainer.appendChild(toastEl);
-            const bsToast = new bootstrap.Toast(toastEl, { delay: 4000 });
+
+            // Create a new Bootstrap Toast instance
+            const bsToast = new bootstrap.Toast(toastEl, {
+                delay: 5000,   // Auto-hide after 5 seconds
+                autohide: true
+            });
+
+            // When the toast is hidden, remove it from the DOM to prevent clutter
+            toastEl.addEventListener('hidden.bs.toast', () => {
+                toastEl.remove();
+            });
+
+            // Show the toast!
             bsToast.show();
         }
 
@@ -4764,30 +5702,49 @@
             }
         };
 
-        window.playYoutube = function (type, id, title) {
-            document.getElementById('videoTitle').innerText = title;
+        window.playYoutube = async function (type, id, title) {
             const container = document.getElementById('videoContainer');
+            container.innerHTML = '<div class="d-flex h-100 align-items-center justify-content-center"><div class="loader"></div></div>';
 
-            let src = '';
-            // Construct the correct URL based on the content type
+            // The side panel is now ALWAYS the history panel
+            playlistPanel.classList.remove('d-none');
+            playlistPanel.classList.add('d-flex');
+            renderVideoHistory();
+
+            let videoIdToPlay = id;
+
             if (type === 'playlist') {
-                // For playlists, the list parameter comes first, then others are added with '&'
-                src = `https://www.youtube.com/embed/videoseries?list=${id}&autoplay=1`;
+                // For a playlist, we fetch the *first* video's ID to start playing
+                try {
+                    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=1&playlistId=${id}&key=${YOUTUBE_API_KEY}`;
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    if (data.items && data.items.length > 0) {
+                        videoIdToPlay = data.items[0].snippet.resourceId.videoId;
+                        // We could fetch the whole playlist and let the user navigate via YouTube's iframe controls
+                    }
+                } catch (err) {
+                    console.error("Could not fetch first video of playlist:", err);
+                    showToast("Impossible de charger la playlist.", "danger");
+                    return;
+                }
+                // For playlists, we now just embed the whole list and let YouTube handle the queue inside the iframe.
+                container.innerHTML = `<iframe src="https://www.youtube.com/embed/videoseries?list=${id}&autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
             } else {
-                // For single videos, the first parameter uses '?'
-                src = `https://www.youtube.com/embed/${id}?autoplay=1`;
+                // For a single video, we add it to our history
+                const videoData = {
+                    videoId: id,
+                    title: title,
+                    thumbnailUrl: `https://img.youtube.com/vi/${id}/default.jpg`
+                };
+                addVideoToHistory(videoData);
+                container.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
             }
 
-            // Set the iframe content and show the modal
-            container.innerHTML = `<iframe 
-                src="${src}" 
-                frameborder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen>
-            </iframe>`;
-
+            document.getElementById('videoTitle').innerText = title;
             videoModal.show();
         };
+
 
 
         window.viewDocument = function (fileId, title, url, kind) {
@@ -4891,6 +5848,290 @@
             const select = document.getElementById('themeSelect');
             if (select) select.value = theme;
             setTheme(theme);
+        }
+
+        // ======================================
+        // ALARM SYSTEM LOGIC
+        // ======================================
+
+        // An object to hold our alarm sounds
+        const alarmSounds = {
+            chime: new Audio('https://cdn.freesound.org/previews/510/510323_10899534-lq.mp3'),
+            notification: new Audio('https://cdn.freesound.org/previews/415/415763_6142149-lq.mp3'),
+            digital: new Audio('https://cdn.freesound.org/previews/142/142641_228222-lq.mp3')
+        };
+
+        // This function will run every minute to check for pending alarms
+        function checkAlarms() {
+            const user = auth.currentUser;
+            if (!user) return; // Don't run if logged out
+
+            const now = new Date();
+            // Fetch all events from Firestore to check their alarm times
+            const eventsQuery = query(collection(db, 'users', user.uid, 'events'));
+            getDocs(eventsQuery).then(snapshot => {
+                snapshot.forEach(doc => {
+                    const event = { id: doc.id, ...doc.data() };
+                    // Check if the event has an alarm set
+                    if (event.alarm && event.alarm !== 'none') {
+                        const startTime = event.start.toDate();
+                        const alarmTime = new Date(startTime.getTime() - (parseInt(event.alarm) * 60000));
+
+                        // Check if the alarm time is in the current minute
+                        if (alarmTime.getFullYear() === now.getFullYear() &&
+                            alarmTime.getMonth() === now.getMonth() &&
+                            alarmTime.getDate() === now.getDate() &&
+                            alarmTime.getHours() === now.getHours() &&
+                            alarmTime.getMinutes() === now.getMinutes()) {
+                            console.log("ALARM TRIGGERED FOR:", event.title);
+                            triggerAlarm(event);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Function to show the browser notification and play the sound
+        function triggerAlarm(event) {
+            // 1. Play the selected sound
+            const sound = alarmSounds[event.sound] || alarmSounds.chime;
+            sound.play();
+
+            // 2. Show a browser notification
+            const notificationMessage = `Rappel : "${event.title}" commence bientôt !`;
+
+            if (Notification.permission === 'granted') {
+                new Notification("Rappel d'événement", {
+                    body: notificationMessage,
+                    icon: 'https://img.icons8.com/color/96/000000/alarm.png' // A generic alarm icon
+                });
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        new Notification("Rappel d'événement", {
+                            body: notificationMessage,
+                            icon: 'https://img.icons8.com/color/96/000000/alarm.png'
+                        });
+                    }
+                });
+            }
+
+            // You can also show an in-app toast for good measure
+            showToast(notificationMessage, 'warning');
+        }
+
+
+        function listenForNotifications(userId) {
+            if (unsubscribeNotifications) unsubscribeNotifications(); // Prevent multiple listeners
+
+            const notifQuery = query(
+                collection(db, 'users', userId, 'notifications'),
+                orderBy('createdAt', 'desc')
+            );
+
+            unsubscribeNotifications = onSnapshot(notifQuery, (snapshot) => {
+                const notifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log("Real-time notifications received:", notifications);
+                updateNotificationUI(notifications);
+            });
+        }
+
+        function updateNotificationUI(notifications) {
+            const notifCountBadge = document.getElementById('notifCount');
+            const notifListContainer = document.getElementById('notifListContainer');
+
+            const unreadCount = notifications.filter(n => !n.read).length;
+
+            // Update the bell badge
+            if (unreadCount > 0) {
+                notifCountBadge.textContent = unreadCount;
+                notifCountBadge.classList.remove('d-none');
+            } else {
+                notifCountBadge.classList.add('d-none');
+            }
+
+            // Update the dropdown list
+            notifListContainer.innerHTML = '';
+            if (notifications.length === 0) {
+                notifListContainer.innerHTML = '<div class="text-center text-muted p-4">Aucune notification</div>';
+                return;
+            }
+
+            // Show the latest 5 notifications in the dropdown
+            notifications.slice(0, 5).forEach(notif => {
+                const itemEl = document.createElement('a');
+                itemEl.href = '#';
+                itemEl.className = `list-group-item notification-item ${notif.read ? '' : 'unread'}`;
+                itemEl.onclick = (e) => {
+                    e.preventDefault();
+                    handleNotificationClick(notif);
+                };
+
+                const icon = getNotificationIcon(notif.type);
+
+                itemEl.innerHTML = `
+            <div class="icon" style="color: ${icon.color};">${icon.html}</div>
+            <div class="content flex-grow-1">
+                ${notif.message}
+                <div class="timestamp">${timeAgo(notif.createdAt.toDate())}</div>
+            </div>
+        `;
+                notifListContainer.appendChild(itemEl);
+            });
+        }
+
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 'new_reply':
+                    return { html: '<i class="bi bi-chat-dots-fill"></i>', color: 'var(--info)' };
+                case 'new_content':
+                    return { html: '<i class="bi bi-cloud-arrow-up-fill"></i>', color: 'var(--success)' };
+                case 'assignment_due':
+                    return { html: '<i class="bi bi-exclamation-triangle-fill"></i>', color: 'var(--warning)' };
+                default:
+                    return { html: '<i class="bi bi-info-circle-fill"></i>', color: 'var(--muted)' };
+            }
+        }
+
+        function timeAgo(date) {
+            // Simple time ago function (for a more advanced one, use a library like date-fns)
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return `il y a ${Math.floor(interval)} ans`;
+            interval = seconds / 2592000;
+            if (interval > 1) return `il y a ${Math.floor(interval)} mois`;
+            interval = seconds / 86400;
+            if (interval > 1) return `il y a ${Math.floor(interval)} jours`;
+            interval = seconds / 3600;
+            if (interval > 1) return `il y a ${Math.floor(interval)} heures`;
+            interval = seconds / 60;
+            if (interval > 1) return `il y a ${Math.floor(interval)} minutes`;
+            return "à l'instant";
+        }
+
+        async function handleNotificationClick(notification) {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            // Mark as read in Firestore
+            if (!notification.read) {
+                const notifRef = doc(db, 'users', user.uid, 'notifications', notification.id);
+                await updateDoc(notifRef, { read: true });
+            }
+
+            // TODO: Navigate to the relevant page based on notification.link
+            if (notification.link) {
+                // e.g., if link is '/discussions/threadId123', parse and navigate
+                console.log("Navigate to:", notification.link);
+                showToast(`Navigation vers: ${notification.link}`, 'info');
+            }
+        }
+
+        document.getElementById('markAllAsReadBtn').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const notifQuery = query(
+                collection(db, 'users', user.uid, 'notifications'),
+                where('read', '==', false)
+            );
+            const snapshot = await getDocs(notifQuery);
+
+            // Use a batch write for efficiency
+            const batch = writeBatch(db);
+            snapshot.docs.forEach(doc => {
+                batch.update(doc.ref, { read: true });
+            });
+            await batch.commit();
+
+            showToast("Toutes les notifications ont été marquées comme lues.", 'success');
+        });
+
+        // Logic for the full notification page (you can expand this later)
+        // REPLACE your old, empty renderFullNotificationPage function with this one
+
+        /**
+        * Creates a "raw" notification event in the public inbox.
+        * This is a client-side trigger that other clients will listen for.
+        * @param {string} targetUserId The ID of the user to notify.
+        * @param {object} payload The notification data (message, type, link).
+        */
+        async function triggerNotificationEvent(targetUserId, payload) {
+            if (!targetUserId || !auth.currentUser) return;
+
+            try {
+                const inboxCollection = collection(db, 'notification_inbox');
+                await addDoc(inboxCollection, {
+                    ...payload,
+                    targetUserId: targetUserId,
+                    creatorName: auth.currentUser.displayName || 'Anonyme',
+                    createdAt: Timestamp.now(), // Firestore server timestamp is better
+                });
+                console.log(`Notification event triggered for user ${targetUserId}`);
+            } catch (error) {
+                console.error(`Failed to trigger notification event:`, error);
+            }
+        }
+
+        async function renderFullNotificationPage() {
+            const container = document.getElementById('fullNotifList');
+            if (!container) return;
+
+            container.innerHTML = '<div class="text-center p-5"><div class="loader"></div></div>';
+
+            const user = auth.currentUser;
+            if (!user) {
+                container.innerHTML = '<div class="text-center text-muted p-5"><i class="bi bi-lock fs-1"></i><p class="mt-2">Veuillez vous connecter pour voir vos notifications.</p></div>';
+                return;
+            }
+
+            try {
+                // Fetch ALL notifications for the user, ordered by date
+                const notifQuery = query(
+                    collection(db, 'users', user.uid, 'notifications'),
+                    orderBy('createdAt', 'desc')
+                );
+                const snapshot = await getDocs(notifQuery);
+
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="text-center text-muted p-5"><i class="bi bi-bell-slash fs-1"></i><p class="mt-2">Vous n\'avez aucune notification pour le moment.</p></div>';
+                    return;
+                }
+
+                container.innerHTML = ''; // Clear the loader
+
+                snapshot.docs.forEach(doc => {
+                    const notif = { id: doc.id, ...doc.data() };
+
+                    const itemEl = document.createElement('a');
+                    itemEl.href = '#';
+                    // Use the same CSS classes as the dropdown for a consistent look
+                    itemEl.className = `list-group-item notification-item ${notif.read ? '' : 'unread'}`;
+                    itemEl.onclick = (e) => {
+                        e.preventDefault();
+                        handleNotificationClick(notif);
+                        // After clicking, refresh this view to update the 'read' status visually
+                        renderFullNotificationPage();
+                    };
+
+                    const icon = getNotificationIcon(notif.type);
+
+                    itemEl.innerHTML = `
+                <div class="icon" style="color: ${icon.color};">${icon.html}</div>
+                <div class="content flex-grow-1">
+                    ${notif.message}
+                    <div class="timestamp">${timeAgo(notif.createdAt.toDate())}</div>
+                </div>
+                <!-- Add a chevron to indicate it's clickable -->
+                <i class="bi bi-chevron-right ms-auto text-muted"></i>
+            `;
+                    container.appendChild(itemEl);
+                });
+
+            } catch (error) {
+                console.error("Error fetching full notification list:", error);
+                container.innerHTML = '<div class="text-center text-danger p-5"><i class="bi bi-exclamation-triangle-fill fs-1"></i><p class="mt-2">Impossible de charger les notifications.</p></div>';
+            }
         }
 
     </script>
