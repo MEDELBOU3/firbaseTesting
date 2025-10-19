@@ -8,6 +8,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/bootstrap5@6.1.11/index.global.min.js'></script>
 
     <style>
         /* ============================
@@ -179,6 +184,96 @@
             --border: #e5e7eb;
             --success: #10b981;
             --danger: #ef4444;
+        }
+
+        [data-theme="elegant"] {
+            --brand: #c6a664;
+            /* Elegant gold */
+            --accent: #ffebcd;
+            /* Soft cream */
+            --muted: #a1a1aa;
+            /* Soft gray */
+            --text: #f9fafb;
+            /* Bright text */
+            --surface: #1f1f1f;
+            /* Deep dark surface */
+            --soft: #111111;
+            /* Rich black */
+            --border: #2e2e2e;
+            --success: #4ade80;
+            --danger: #f87171;
+            --warning: #fbbf24;
+            --info: #60a5fa;
+            --shadow-sm: 0 1px 3px rgba(198, 166, 100, 0.25);
+            --shadow: 0 4px 6px rgba(198, 166, 100, 0.25);
+            --shadow-md: 0 10px 15px rgba(198, 166, 100, 0.2);
+            --shadow-lg: 0 20px 25px rgba(198, 166, 100, 0.15);
+        }
+
+        [data-theme="forest"] {
+            --brand: #2e7d32;
+            /* Forest green */
+            --accent: #a5d6a7;
+            /* Light green accent */
+            --muted: #6b7280;
+            --text: #1f2937;
+            --surface: #f1f8f4;
+            /* Light mint surface */
+            --soft: #e8f5e9;
+            /* Softer green */
+            --border: #c8e6c9;
+            --success: #16a34a;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --shadow-sm: 0 1px 3px rgba(46, 125, 50, 0.15);
+            --shadow: 0 4px 6px rgba(46, 125, 50, 0.15);
+            --shadow-md: 0 10px 15px rgba(46, 125, 50, 0.15);
+            --shadow-lg: 0 20px 25px rgba(46, 125, 50, 0.15);
+        }
+
+        [data-theme="ocean"] {
+            --brand: #0284c7;
+            /* Deep blue */
+            --accent: #38bdf8;
+            /* Sky blue */
+            --muted: #64748b;
+            --text: #0f172a;
+            --surface: #f0f9ff;
+            /* Very light blue surface */
+            --soft: #e0f2fe;
+            /* Softer blue */
+            --border: #bae6fd;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #0284c7;
+            --shadow-sm: 0 1px 3px rgba(2, 132, 199, 0.15);
+            --shadow: 0 4px 6px rgba(2, 132, 199, 0.15);
+            --shadow-md: 0 10px 15px rgba(2, 132, 199, 0.15);
+            --shadow-lg: 0 20px 25px rgba(2, 132, 199, 0.15);
+        }
+
+        [data-theme="midnight"] {
+            --brand: #38bdf8;
+            /* Neon cyan */
+            --accent: #a855f7;
+            /* Purple accent */
+            --muted: #94a3b8;
+            --text: #f1f5f9;
+            --surface: #0f172a;
+            /* Deep dark */
+            --soft: #1e293b;
+            /* Softer dark */
+            --border: #334155;
+            --success: #22c55e;
+            --danger: #f87171;
+            --warning: #facc15;
+            --info: #3b82f6;
+            --shadow-sm: 0 1px 3px rgba(56, 189, 248, 0.3);
+            --shadow: 0 4px 6px rgba(56, 189, 248, 0.25);
+            --shadow-md: 0 10px 15px rgba(168, 85, 247, 0.2);
+            --shadow-lg: 0 20px 25px rgba(168, 85, 247, 0.15);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -1364,21 +1459,43 @@
             color: var(--muted);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.25rem;
+            /* Reduced gap since the icon provides spacing */
             flex-wrap: wrap;
         }
 
-        #breadcrumb a {
-            color: var(--brand);
-            transition: all var(--transition-fast);
-            padding: 0.25rem 0.5rem;
+        /* Common styles for both links and the current item */
+        .breadcrumb-link,
+        .breadcrumb-current {
+            display: inline-block;
+            padding: 0.3rem 0.75rem;
             border-radius: var(--radius-sm);
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            font-weight: 500;
+            transition: all var(--transition-fast);
         }
 
-        #breadcrumb a:hover {
-            background: rgba(11, 59, 97, 0.05);
-            color: var(--accent);
-            transform: translateY(-1px);
+        /* Styles specific to the clickable links */
+        .breadcrumb-link {
+            color: var(--brand);
+            text-decoration: none;
+        }
+
+        /* Hover effect for the links */
+        .breadcrumb-link:hover {
+            background-color: var(--brand);
+            color: #fff;
+            border-color: var(--brand);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Styles for the current, non-clickable item */
+        .breadcrumb-current {
+            color: var(--text);
+            background-color: var(--soft);
+            /* A slightly different background */
         }
 
         [data-theme="dark"] #breadcrumb a:hover {
@@ -2022,13 +2139,93 @@
                 border-color var(--transition-base),
                 color var(--transition-base);
         }
+
+        .video-card.playlist .video-thumb {
+            background: linear-gradient(135deg,
+                    var(--brand, #0b3b61),
+                    var(--accent, #d4af37));
+            border-radius: var(--radius-md);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            padding: 15px;
+            min-height: 200px;
+            transition: transform var(--transition-base), box-shadow var(--transition-base);
+        }
+
+        .video-card.playlist:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .video-card.playlist .video-thumb img {
+            display: none;
+            /* Hide the default thumbnail for playlists */
+        }
+
+        .video-card.playlist .playlist-title {
+            color: var(--surface);
+            font-weight: 600;
+            font-size: 1rem;
+            text-align: center;
+            z-index: 2;
+            line-height: 1.2;
+        }
+
+        /* Ensure chart canvases are responsive */
+        canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+
+        /* ============================
+   PLAYLIST QUEUE STYLING
+   ============================ */
+        #playlistQueue {
+            max-height: 450px;
+            /* Adjust as needed */
+            overflow-y: auto;
+        }
+
+        .playlist-item {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background-color var(--transition-fast);
+            border: none;
+            background-color: transparent;
+        }
+
+        .playlist-item:hover {
+            background-color: var(--soft);
+        }
+
+        .playlist-item.active {
+            background-color: var(--brand);
+            color: #fff;
+        }
+
+        .playlist-item.active .text-muted {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .playlist-item img {
+            width: 100px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+        }
     </style>
 </head>
 
 <body data-theme="light"> <!-- Thème par défaut -->
 
     <!-- Navigation -->
-
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container-fluid">
             <!-- Sidebar Toggle -->
@@ -2138,6 +2335,10 @@
             <span>Calendrier</span>
         </a>
 
+        <a class="sidebar-item" data-view="discussions">
+            <i class="bi bi-chat-square-dots"></i>
+            <span>Discussions</span>
+        </a>
         <div class="p-3 mt-3">
             <h6 class="text-muted text-uppercase" style="font-size:11px; letter-spacing:1px">Outils</h6>
         </div>
@@ -2362,9 +2563,28 @@
             <div class="row g-4" id="contributedGrid"></div>
         </div>
 
-        <!-- Documents View -->
+        <!-- Documents View 
         <div id="documentsView" class="view-content d-none">
             <h2 class="mb-4" style="color:var(--brand); font-weight:700">Documents & Matériaux</h2>
+            <div class="row g-4" id="documentsGrid"></div>
+        </div>-->
+
+        <div id="documentsView" class="view-content d-none">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 style="color:var(--brand); font-weight:700">Documents & Matériaux</h2>
+
+                <!-- START: NEW LAYOUT TOGGLE -->
+                <div class="btn-group" role="group" aria-label="Layout Toggle">
+                    <button type="button" class="btn btn-outline-primary active" id="btnGridDocuments">
+                        <i class="bi bi-grid-3x3-gap-fill"></i> Grille
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" id="btnListDocuments">
+                        <i class="bi bi-list"></i> Liste
+                    </button>
+                </div>
+                <!-- END: NEW LAYOUT TOGGLE -->
+
+            </div>
             <div class="row g-4" id="documentsGrid"></div>
         </div>
 
@@ -2374,12 +2594,165 @@
             <div class="row g-4" id="assignmentsGrid"></div>
         </div>
 
-        <!-- Calendrier View -->
+        <!-- Calendrier View 
         <div id="calendarView" class="view-content d-none">
             <h2 class="mb-4" style="color:var(--brand); font-weight:700">Calendrier</h2>
             <div class="card card-modern">
                 <div class="card-body">
                     <div id="calendarEvents"></div>
+                </div>
+            </div>
+        </div>-->
+
+
+        <!-- Calendrier View -->
+        <div id="calendarView" class="view-content d-none">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 style="color:var(--brand); font-weight:700">Calendrier</h2>
+                <button id="addEventButton" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Ajouter un événement
+                </button>
+            </div>
+            <div class="card card-modern">
+                <div class="card-body">
+                    <!-- FullCalendar will be rendered here -->
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Modal -->
+        <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="eventModalLabel">Ajouter/Modifier un événement</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="eventForm">
+                            <!-- Hidden input to store event ID for updates -->
+                            <input type="hidden" id="eventId">
+                            <div class="mb-3">
+                                <label for="eventTitle" class="form-label">Titre de l'événement</label>
+                                <input type="text" class="form-control" id="eventTitle" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="eventStart" class="form-label">Début</label>
+                                    <input type="datetime-local" class="form-control" id="eventStart" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="eventEnd" class="form-label">Fin</label>
+                                    <input type="datetime-local" class="form-control" id="eventEnd" required>
+                                </div>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="eventAllDay">
+                                <label class="form-check-label" for="eventAllDay">
+                                    Toute la journée
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-danger" id="deleteEventButton"
+                            style="display: none;">Supprimer</button>
+                        <div>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" form="eventForm" class="btn btn-primary">Enregistrer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Discussions View -->
+        <div id="discussionsView" class="view-content d-none">
+
+            <!-- Sub-view: List of all discussion threads -->
+            <div id="discussionsList">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 style="color:var(--brand); font-weight:700">Discussions</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newDiscussionModal">
+                        <i class="bi bi-plus-circle me-2"></i>Démarrer une nouvelle discussion
+                    </button>
+                </div>
+                <div id="threadsContainer" class="d-flex flex-column gap-3">
+                    <!-- Discussion threads will be loaded here -->
+                    <div class="text-center p-5">
+                        <div class="loader"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-view: A single discussion thread with replies -->
+            <div id="discussionDetail" class="d-none">
+                <div class="mb-4">
+                    <button class="btn btn-outline-secondary" id="backToDiscussions">
+                        <i class="bi bi-arrow-left me-2"></i>Retour aux discussions
+                    </button>
+                </div>
+
+                <!-- Original Post -->
+                <div class="card card-modern mb-4">
+                    <div class="card-body">
+                        <h3 id="threadTitle" style="color:var(--brand);"></h3>
+                        <p class="text-muted border-bottom pb-2 mb-3">
+                            Par <strong id="threadAuthor"></strong> le <span id="threadDate"></span>
+                        </p>
+                        <div id="threadContent" class="ql-snow">
+                            <div class="ql-editor"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Replies Section -->
+                <h4 class="mb-3">Réponses</h4>
+                <div id="repliesContainer" class="d-flex flex-column gap-3 mb-4">
+                    <!-- Replies will be loaded here -->
+                </div>
+
+                <!-- Reply Editor -->
+                <div class="card card-modern">
+                    <div class="card-body">
+                        <h5 class="mb-3">Votre réponse</h5>
+                        <form id="replyForm">
+                            <!-- Quill editor for the reply -->
+                            <div id="replyEditor" style="min-height: 150px;"></div>
+                            <button type="submit" class="btn btn-primary mt-3">Publier la réponse</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Creating a New Discussion -->
+        <div class="modal fade" id="newDiscussionModal" tabindex="-1" aria-labelledby="newDiscussionModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newDiscussionModalLabel">Démarrer une nouvelle discussion</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="newDiscussionForm">
+                            <div class="mb-3">
+                                <label for="newDiscussionTitle" class="form-label">Titre du sujet</label>
+                                <input type="text" class="form-control" id="newDiscussionTitle" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Votre question ou sujet</label>
+                                <!-- Quill editor will be mounted here -->
+                                <div id="newDiscussionEditor" style="min-height: 200px;"></div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" form="newDiscussionForm" class="btn btn-primary">Publier</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2400,7 +2773,7 @@
             <div id="notesList" class="row g-4"></div>
         </div>
 
-        <!-- Suivi des progrès View -->
+        <!-- Suivi des progrès View 
         <div id="progressView" class="view-content d-none">
             <h2 class="mb-4" style="color:var(--brand); font-weight:700">Suivi des progrès</h2>
             <div class="card card-modern">
@@ -2408,13 +2781,70 @@
                     <canvas id="progressChart" height="200"></canvas>
                 </div>
             </div>
+        </div>-->
+
+        <!-- Suivi des progrès View -->
+        <div id="progressView" class="view-content d-none">
+            <h2 class="mb-4" style="color:var(--brand); font-weight:700">Votre progression</h2>
+
+            <div class="row g-4">
+                <!-- Main Progress Donut and KPIs -->
+                <div class="col-xl-5">
+                    <div class="card card-modern h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-3">Progression globale</h5>
+                            <div class="flex-grow-1 d-flex align-items-center justify-content-center"
+                                style="min-height: 250px;">
+                                <canvas id="progressDonutChart"></canvas>
+                            </div>
+                            <div class="row text-center mt-3 pt-3 border-top">
+                                <div class="col-6">
+                                    <h4 id="kpiCompleted" class="mb-0">0</h4>
+                                    <small class="text-muted">Cours terminés</small>
+                                </div>
+                                <div class="col-6">
+                                    <h4 id="kpiInProgress" class="mb-0">0</h4>
+                                    <small class="text-muted">En cours</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress by Course -->
+                <div class="col-xl-7">
+                    <div class="card card-modern h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Progression par cours</h5>
+                            <div style="min-height: 400px;">
+                                <canvas id="progressByCourseChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="col-12">
+                    <div class="card card-modern">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Activité des 7 derniers jours</h5>
+                            <div style="min-height: 250px;">
+                                <canvas id="activityLineChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Paramètres View -->
         <div id="settingsView" class="view-content d-none">
             <h2 class="mb-4" style="color:var(--brand); font-weight:700">Paramètres</h2>
+
+            <!-- Theme Settings -->
             <div class="card card-modern">
                 <div class="card-body">
+                    <h5 class="card-title mb-3">Préférences d'affichage</h5>
                     <div class="mb-3">
                         <label for="themeSelect" class="form-label">Thème</label>
                         <select id="themeSelect" class="form-select">
@@ -2422,15 +2852,69 @@
                             <option value="dark">Sombre</option>
                             <option value="modern">Moderne</option>
                             <option value="pastel">Pastel</option>
+                            <option value="forest">Forêt</option>
+                            <option value="ocean">Océan</option>
+                            <option value="midnight">Minuit</option>
                             <option value="system">Système</option>
                         </select>
                     </div>
                 </div>
             </div>
+
+            <!-- START: NEW ACCOUNT SETTINGS SECTION -->
+            <div id="accountSettingsWrapper">
+                <!-- Account Profile Settings -->
+                <div class="card card-modern mt-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Profil du compte</h5>
+                        <form id="profileSettingsForm">
+                            <div class="mb-3">
+                                <label for="accountName" class="form-label">Nom complet</label>
+                                <input type="text" class="form-control" id="accountName"
+                                    placeholder="Votre nom complet">
+                            </div>
+                            <div class="mb-3">
+                                <label for="accountEmail" class="form-label">Adresse e-mail</label>
+                                <input type="email" class="form-control" id="accountEmail"
+                                    placeholder="Votre adresse e-mail" disabled>
+                                <div class="form-text">L'adresse e-mail ne peut pas être modifiée.</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Password Settings -->
+                <div class="card card-modern mt-4" id="passwordSettingsCard" style="display: none;">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Changer le mot de passe</h5>
+                        <form id="passwordChangeForm">
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">Nouveau mot de passe</label>
+                                <input type="password" class="form-control" id="newPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Mettre à jour le mot de passe</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="card card-modern mt-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3 text-danger">Zone de danger</h5>
+                        <p class="text-muted">
+                            Cette action est irréversible. Toutes vos données, y compris vos progrès et vos notes,
+                            seront définitivement supprimées.
+                        </p>
+                        <button class="btn btn-outline-danger" id="btnDeleteAccount">Supprimer mon compte</button>
+                    </div>
+                </div>
+            </div>
+            <!-- END: NEW ACCOUNT SETTINGS SECTION -->
         </div>
     </main>
 
-    <!-- Vidéo Modal -->
+    <!-- Vidéo Modal 
     <div class="modal fade video-modal" id="videoModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -2447,6 +2931,41 @@
                         <button class="btn btn-sm btn-outline-primary me-2"><i class="bi bi-bookmark"></i>
                             Enregistrer</button>
                         <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-share"></i> Partager</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>-->
+
+    <!-- Vidéo Modal (Upgraded for Playlists) -->
+    <div class="modal fade video-modal" id="videoModal" tabindex="-1">
+        <!-- Use modal-xl for more space -->
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="videoTitle">Tutoriel vidéo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-2">
+                    <div class="row g-2">
+                        <!-- Main Video Player Column -->
+                        <div class="col-lg-8">
+                            <div class="video-container" id="videoContainer"
+                                style="padding-bottom: 56.25%; min-height: 0;">
+                                <!-- Iframe will be inserted here -->
+                            </div>
+                        </div>
+                        <!-- Playlist Queue Column (hidden by default) -->
+                        <div class="col-lg-4 d-none" id="playlistPanel">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">Contenu de la playlist</h6>
+                                    <div id="playlistQueue" class="list-group list-group-flush">
+                                        <!-- Playlist items will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2539,10 +3058,12 @@
         </div>
     </div>
 
+    <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1100"></div>
+
     <script type="module">
         const DRIVE_API_KEY = 'AIzaSyAcOuFc10xwtujaClC_TZckrGkKx3h0iNI';
         const DRIVE_FOLDER_ID = '1rWQnAn8e2fLPpGa-8_GXYHmb0NeTLNH2';
-        const YOUTUBE_API_KEY = 'AIzaSyAcOuFc10xwtujaClC_TZckrGkKx3h0iNI'; // Remplacer par une clé valide
+        const YOUTUBE_API_KEY = 'AIzaSyA8gx66XUFZ-abihuxnF3mvLed5qgOnvdY'; // Remplacer par une clé valide
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
         import {
@@ -2553,9 +3074,25 @@
             createUserWithEmailAndPassword,
             signOut,
             onAuthStateChanged,
-            updateProfile
+            updateProfile,
+            updatePassword,
+            deleteUser
         } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+        // THIS IS THE NEW, CORRECTED IMPORT. USE THIS ONE.
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            getDocs, // Already here from before
+            query,
+            where,
+            // --- New functions for the calendar ---
+            doc,
+            setDoc,
+            updateDoc,
+            deleteDoc,
+            Timestamp
+        } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAgl557z1SyRSljc3UpIUELUpr2SM0SkBs",
@@ -2571,7 +3108,8 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
-   
+        provider.addScope('https://www.googleapis.com/auth/drive.readonly');
+
         let allFiles = [];
         let currentFiles = [];
         let userProgress = {};
@@ -2581,24 +3119,64 @@
         let contributedContent = [];
 
         let googleAccessToken = localStorage.getItem('googleAccessToken') || null;
+
+        let newDiscussionQuill, replyQuill; // To hold Quill instances
+        let currentDiscussionId = null;
+        let progressDonutChart, progressByCourseChart, activityLineChart;
+        const newDiscussionModal = new bootstrap.Modal(document.getElementById('newDiscussionModal'));
         // Éléments DOM
         const btnLogin = document.getElementById('btnLogin');
         const btnLogout = document.getElementById('btnLogout');
         const modalAuth = new bootstrap.Modal(document.getElementById('modalAuth'));
         const videoModal = new bootstrap.Modal(document.getElementById('videoModal'));
         const documentModal = new bootstrap.Modal(document.getElementById('documentModal'));
+        const videoModalEl = document.getElementById('videoModal');
+        const documentModalEl = document.getElementById('documentModal');
         const sidebarToggle = document.getElementById('sidebarToggle');
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
         const contentCourseSelect = document.getElementById('contentCourse');
 
+        // 1. Add this constant near your other modal constants
+        const playlistPanel = document.getElementById('playlistPanel');
+        const playlistQueue = document.getElementById('playlistQueue');
+
+
+        // 2. ENTIRELY REPLACE your old `window.playYoutube` function with this new version
+        window.playYoutube = async function (type, id, title) {
+            document.getElementById('videoTitle').innerText = title;
+            const container = document.getElementById('videoContainer');
+
+            // Reset from previous state
+            container.innerHTML = '';
+            playlistQueue.innerHTML = '';
+
+            if (type === 'playlist') {
+                playlistPanel.classList.remove('d-none');
+                // Fetch playlist items and load the first video
+                await fetchAndRenderPlaylist(id);
+            } else {
+                // It's a single video, hide the playlist panel
+                playlistPanel.classList.add('d-none');
+                // Load the single video
+                container.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            }
+
+            videoModal.show();
+        };
+
         // Initialisation
-        document.querySelectorAll('.sidebar-item').forEach(item => {
-            item.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar-item, .dropdown-item[data-view]').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
                 const view = item.dataset.view;
-                switchView(view);
+
                 document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
+                const sidebarItem = document.querySelector(`.sidebar-item[data-view="${view}"]`);
+                if (sidebarItem) sidebarItem.classList.add('active');
+
+                switchView(view);
+
                 if (window.innerWidth < 992) sidebar.classList.remove('show');
             });
         });
@@ -2609,26 +3187,6 @@
 
         btnLogin.addEventListener('click', () => modalAuth.show());
 
-        /*document.getElementById('googleSignIn').addEventListener('click', async () => {
-            try {
-                await signInWithPopup(auth, provider);
-                modalAuth.hide();
-            } catch (err) {
-                alert('Erreur de connexion : ' + err.message);
-            }
-        });
-        
-        document.getElementById('googleSignup').addEventListener('click', async () => {
-            try {
-                const result = await signInWithPopup(auth, provider);
-                await updateProfile(result.user, { displayName: result.user.displayName });
-                modalAuth.hide();
-            } catch (err) {
-                alert('Erreur d\'inscription : ' + err.message);
-            }
-        });
-        */
-
         document.getElementById('googleSignIn').addEventListener('click', async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
@@ -2637,7 +3195,7 @@
                 localStorage.setItem('googleAccessToken', googleAccessToken);
                 modalAuth.hide();
             } catch (err) {
-                alert('Erreur de connexion : ' + err.message);
+                showToast('Erreur de connexion : ' + err.message, 'danger');
             }
         });
 
@@ -2650,7 +3208,7 @@
                 await updateProfile(result.user, { displayName: result.user.displayName });
                 modalAuth.hide();
             } catch (err) {
-                alert('Erreur d\'inscription : ' + err.message);
+                showToast('Erreur d\'inscription : ' + err.message, 'danger');
             }
         });
         document.getElementById('signinForm').addEventListener('submit', async (e) => {
@@ -2661,7 +3219,7 @@
                 await signInWithEmailAndPassword(auth, email, password);
                 modalAuth.hide();
             } catch (err) {
-                alert('Erreur de connexion : ' + err.message);
+                showToast('Erreur de connexion : ' + err.message, 'danger');
             }
         });
 
@@ -2675,14 +3233,9 @@
                 await updateProfile(result.user, { displayName: name });
                 modalAuth.hide();
             } catch (err) {
-                alert('Erreur d\'inscription : ' + err.message);
+                showToast('Erreur d\'inscription : ' + err.message, 'danger');
             }
         });
-
-        /*btnLogout.addEventListener('click', async () => {
-            await signOut(auth);
-            location.reload();
-        });*/
 
         btnLogout.addEventListener('click', async () => {
             await signOut(auth);
@@ -2691,37 +3244,21 @@
             location.reload();
         });
 
-        /*onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('userBox').classList.remove('d-none');
-                document.getElementById('userPhoto').src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email)}`;
-                document.getElementById('userName').innerText = user.displayName || 'Utilisateur';
-                document.getElementById('userEmail').innerText = user.email;
-                btnLogin.classList.add('d-none');
-                btnLogout.classList.remove('d-none');
-                loadUserProgress();
-                fetchDriveFolder(currentFolderId);
-                loadContributedContent();
-            } else {
-                fetchDriveFolder(currentFolderId);
-            }
-            loadTheme();
-        });
-        */
         onAuthStateChanged(auth, (user) => {
             const profileDropdown = document.getElementById('profileDropdown');
             const btnLogin = document.getElementById('btnLogin');
+            const welcomeEl = document.getElementById('welcomeUserName');
 
             if (user) {
                 profileDropdown.style.display = 'block';
                 btnLogin.classList.add('d-none');
+                if (welcomeEl) welcomeEl.textContent = user.displayName || 'Utilisateur';
 
                 document.getElementById('userPhoto').src =
                     user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email)}`;
                 document.getElementById('userName').innerText = user.displayName || 'Utilisateur';
                 document.getElementById('userEmail').innerText = user.email;
 
-                // Reload token from storage (in case of refresh)
                 googleAccessToken = localStorage.getItem('googleAccessToken') || null;
 
                 loadUserProgress();
@@ -2730,13 +3267,15 @@
             } else {
                 profileDropdown.style.display = 'none';
                 btnLogin.classList.remove('d-none');
+                if (welcomeEl) welcomeEl.textContent = '';
+
                 googleAccessToken = null;
-                // Optional: Clear or show placeholder for courses
                 document.getElementById('coursesGrid').innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-lock fs-1"></i><p class="mt-2">Veuillez vous connecter avec Google pour accéder aux cours.</p></div>';
             }
 
             loadTheme();
         });
+
         // Recherche
         document.getElementById('searchInput')?.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
@@ -2774,13 +3313,115 @@
                         createdAt: new Date()
                     });
                     loadContributedContent();
+                    showToast('Contenu ajouté avec succès !', 'success');
                     e.target.reset();
                 } catch (err) {
-                    alert('Erreur : ' + err.message);
+                    showToast('Erreur : ' + err.message, 'danger');
                 }
             } else {
-                alert('URL YouTube invalide');
+                showToast('URL YouTube invalide', 'warning');
             }
+        });
+
+         async function fetchAndRenderPlaylist(playlistId) {
+            playlistQueue.innerHTML = '<div class="p-3 text-center"><div class="loader-sm"></div> Chargement...</div>';
+
+            try {
+                const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${YOUTUBE_API_KEY}`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data.error || !data.items) {
+                    throw new Error(data.error?.message || "Impossible de charger la playlist.");
+                }
+
+                playlistQueue.innerHTML = ''; // Clear loader
+
+                data.items.forEach((item, index) => {
+                    const snippet = item.snippet;
+                    const videoId = snippet.resourceId.videoId;
+                    const title = snippet.title;
+                    const thumbnailUrl = snippet.thumbnails.default.url;
+
+                    const itemEl = document.createElement('a');
+                    itemEl.href = "#";
+                    itemEl.className = 'list-group-item playlist-item';
+                    itemEl.onclick = (e) => {
+                        e.preventDefault();
+                        playVideoFromQueue(videoId, itemEl);
+                    };
+                    itemEl.innerHTML = `
+                <img src="${thumbnailUrl}" alt="">
+                <div class="flex-grow-1">
+                    <small class="fw-bold d-block">${escapeHtml(title)}</small>
+                </div>
+            `;
+                    playlistQueue.appendChild(itemEl);
+
+                    // Play the first video automatically
+                    if (index === 0) {
+                        playVideoFromQueue(videoId, itemEl);
+                    }
+                });
+
+            } catch (err) {
+                playlistQueue.innerHTML = `<div class="p-3 text-center text-danger">Erreur: ${err.message}</div>`;
+                console.error(err);
+            }
+        }
+
+        window.playVideoFromQueue = function (videoId, clickedElement) {
+            const container = document.getElementById('videoContainer');
+            container.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+
+            // Update the active state in the queue
+            document.querySelectorAll('.playlist-item.active').forEach(el => el.classList.remove('active'));
+            if (clickedElement) {
+                clickedElement.classList.add('active');
+            }
+        }
+
+
+        // --- FIX: Stop video/document from playing when modal is closed ---
+        videoModalEl.addEventListener('hidden.bs.modal', () => {
+            const videoContainer = document.getElementById('videoContainer');
+            const iframe = videoContainer.querySelector('iframe');
+            if (iframe) {
+                // Setting the src to empty effectively stops and unloads the video
+                iframe.src = '';
+            }
+
+            playlistQueue.innerHTML = '';
+            playlistPanel.classList.add('d-none');
+        });
+
+    
+
+        documentModalEl.addEventListener('hidden.bs.modal', () => {
+            const documentContainer = document.getElementById('documentContainer');
+            const iframe = documentContainer.querySelector('iframe');
+            if (iframe) {
+                // This is also good practice for document modals to free up resources
+                iframe.src = '';
+            }
+        });
+
+        // 1. Add this variable at the top with your other global variables
+        let documentViewMode = 'grid'; // Can be 'grid' or 'list'
+
+        // 2. Add these event listeners for the new buttons in your initialization section
+        document.getElementById('btnGridDocuments').addEventListener('click', () => {
+            documentViewMode = 'grid';
+            document.getElementById('btnGridDocuments').classList.add('active');
+            document.getElementById('btnListDocuments').classList.remove('active');
+            renderDocuments();
+        });
+
+        document.getElementById('btnListDocuments').addEventListener('click', () => {
+            documentViewMode = 'list';
+            document.getElementById('btnListDocuments').classList.add('active');
+            document.getElementById('btnGridDocuments').classList.remove('active');
+            renderDocuments();
         });
 
         // Sélecteur de thème
@@ -2788,6 +3429,57 @@
             const theme = e.target.value;
             setTheme(theme);
         });
+
+        // START: EVENT LISTENERS FOR ACCOUNT SETTINGS
+        document.getElementById('profileSettingsForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const newName = document.getElementById('accountName').value;
+            if (newName !== user.displayName) {
+                try {
+                    await updateProfile(user, { displayName: newName });
+                    document.getElementById('userName').innerText = newName;
+                    document.getElementById('welcomeUserName').innerText = newName;
+                    showToast('Profil mis à jour avec succès !', 'success');
+                } catch (error) {
+                    showToast('Erreur lors de la mise à jour du profil.', 'danger');
+                }
+            }
+        });
+
+        document.getElementById('passwordChangeForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const newPassword = document.getElementById('newPassword').value;
+            try {
+                await updatePassword(user, newPassword);
+                showToast('Mot de passe mis à jour avec succès.', 'success');
+                e.target.reset();
+            } catch (error) {
+                showToast('Erreur: ' + error.message, 'danger');
+            }
+        });
+
+        document.getElementById('btnDeleteAccount')?.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            if (confirm("Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.")) {
+                try {
+                    await deleteUser(user);
+                    showToast('Compte supprimé avec succès.', 'info');
+                    // The onAuthStateChanged will handle the UI changes after deletion.
+                } catch (error) {
+                    showToast('Erreur lors de la suppression du compte: ' + error.message, 'danger');
+                }
+            }
+        });
+        // END: EVENT LISTENERS FOR ACCOUNT SETTINGS
+
 
         function switchView(view) {
             document.querySelectorAll('.view-content').forEach(v => v.classList.add('d-none'));
@@ -2803,6 +3495,7 @@
             if (view === 'documents') renderDocuments();
             if (view === 'assignments') renderAssignments();
             if (view === 'calendar') renderCalendar();
+            if (view === 'discussions') showDiscussionsList();
             if (view === 'notes') renderNotes();
             if (view === 'progress') renderProgress();
             if (view === 'settings') renderSettings();
@@ -2819,43 +3512,9 @@
             updateStats();
         }
 
-        /*
         async function fetchDriveFolder(folderId) {
             document.getElementById('loader').style.display = 'block';
-
-            try {
-                const keyParam = DRIVE_API_KEY ? `&key=${DRIVE_API_KEY}` : '';
-                const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name,mimeType,webViewLink,thumbnailLink,iconLink,webContentLink,description,createdTime,modifiedTime)&pageSize=200${keyParam}`;
-
-                const res = await fetch(url);
-                const json = await res.json();
-
-                if (json.error) {
-                    console.error('Erreur API Drive', json.error);
-                    document.getElementById('loader').style.display = 'none';
-                    return;
-                }
-
-                currentFiles = json.files || [];
-                if (folderId === DRIVE_FOLDER_ID) allFiles = currentFiles;
-                document.getElementById('loader').style.display = 'none';
-
-                renderCourses();
-                renderFolderContributed();
-                renderDashboard();
-                updateStats();
-                renderBreadcrumb();
-                populateCourseSelect();
-            } catch (err) {
-                console.error('Erreur de fetch', err);
-                document.getElementById('loader').style.display = 'none';
-            }
-        }
-        */
-
-        async function fetchDriveFolder(folderId) {
-            document.getElementById('loader').style.display = 'block';
-            const coursesGrid = document.getElementById('coursesGrid'); // Assuming this is where courses render
+            const coursesGrid = document.getElementById('coursesGrid');
 
             try {
                 let param = '';
@@ -2890,7 +3549,6 @@
             } catch (err) {
                 console.error('Erreur de fetch', err);
                 document.getElementById('loader').style.display = 'none';
-                // Display error in UI
                 coursesGrid.innerHTML = `<div class="col-12 text-center text-danger py-5"><i class="bi bi-exclamation-triangle fs-1"></i><p class="mt-2">Erreur de chargement des cours : ${err.message}. Vérifiez votre connexion ou les permissions Drive.</p></div>`;
             }
         }
@@ -2938,6 +3596,7 @@
             return type === 'playlist' ? extractPlaylistId(url) : extractVideoId(url);
         }
 
+        /*
         function renderBreadcrumb() {
             const breadcrumb = document.getElementById('breadcrumb');
             if (!breadcrumb) return;
@@ -2946,6 +3605,23 @@
                     `<span>${escapeHtml(folder.name)}</span>` :
                     `<a href="#" onclick="navigateToFolder('${folder.id}', ${index})">${escapeHtml(folder.name)}</a> > `;
             }).join('');
+        }
+        */
+
+        function renderBreadcrumb() {
+            const breadcrumb = document.getElementById('breadcrumb');
+            if (!breadcrumb) return;
+
+            // Use join() with a separator element for cleaner logic
+            breadcrumb.innerHTML = folderPath.map((folder, index) => {
+                if (index === folderPath.length - 1) {
+                    // This is the current, non-clickable folder
+                    return `<span class="breadcrumb-current">${escapeHtml(folder.name)}</span>`;
+                } else {
+                    // These are the clickable parent folders
+                    return `<a href="#" class="breadcrumb-link" onclick="navigateToFolder('${folder.id}', ${index})">${escapeHtml(folder.name)}</a>`;
+                }
+            }).join(' <i class="bi bi-chevron-right text-muted mx-1"></i> ');
         }
 
         window.navigateToFolder = function (folderId, index) {
@@ -3043,27 +3719,29 @@
                 const col = document.createElement('div');
                 col.className = 'col-md-4 col-sm-6 mb-4';
 
-                const thumbnailUrl =
-                    content.type === 'playlist'
-                        ? 'https://img.icons8.com/fluency/96/youtube-playlist.png'
-                        : `https://img.youtube.com/vi/${content.id}/mqdefault.jpg`;
+                const isPlaylist = content.type === 'playlist';
+                const thumbnailUrl = isPlaylist
+                    ? ''
+                    : `https://img.youtube.com/vi/${content.id}/mqdefault.jpg`;
 
                 col.innerHTML = `
-      <div class="video-card fade-in" onclick="playYoutube('${content.type}', '${content.id}', '${escapeHtml(content.title)}')">
+    <div class="video-card fade-in ${isPlaylist ? 'playlist' : ''}" 
+         onclick="playYoutube('${content.type}', '${content.id}', '${escapeHtml(content.title)}')">
         <div class="video-thumb">
-          <img src="${thumbnailUrl}" alt="${escapeHtml(content.title)}" class="video-thumb-img">
-          <div class="video-overlay">
-            <i class="bi bi-play-fill play-icon"></i>
-          </div>
-          <span class="video-badge">${content.type.charAt(0).toUpperCase() + content.type.slice(1)}</span>
+            ${isPlaylist ? `<span class="playlist-title">${escapeHtml(content.title || 'Playlist')}</span>` : `<img src="${thumbnailUrl}" alt="${escapeHtml(content.title)}" class="video-thumb-img">`}
+            <div class="video-overlay">
+                <i class="bi bi-play-fill play-icon"></i>
+            </div>
+            <span class="video-badge">${content.type.charAt(0).toUpperCase() + content.type.slice(1)}</span>
         </div>
         <div class="video-body">
-          <h6 class="video-title">${escapeHtml(content.title || 'Sans titre')}</h6>
-          <p class="video-author">
-            <i class="bi bi-person-circle me-1"></i>${escapeHtml(content.userName || 'Inconnu')}
-          </p>
+            <h6 class="video-title">${escapeHtml(content.title || 'Sans titre')}</h6>
+            <p class="video-author">
+                <i class="bi bi-person-circle me-1"></i>${escapeHtml(content.userName || 'Inconnu')}
+            </p>
         </div>
-      </div>`;
+    </div>`;
+
                 grid.appendChild(col);
             });
         }
@@ -3116,6 +3794,200 @@
                 continueSection.appendChild(col);
             });
         }
+
+        function initializeQuill(selector) {
+            return new Quill(selector, {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, false] }],
+                        ['bold', 'italic', 'underline'],
+                        ['link', 'image'],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }]
+                    ]
+                }
+            });
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'date inconnue';
+            return new Date(timestamp.seconds * 1000).toLocaleString('fr-FR', {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+            });
+        }
+
+        // Shows the main list of discussion threads
+        async function showDiscussionsList() {
+            document.getElementById('discussionsList').classList.remove('d-none');
+            document.getElementById('discussionDetail').classList.add('d-none');
+            currentDiscussionId = null;
+
+            const threadsContainer = document.getElementById('threadsContainer');
+            threadsContainer.innerHTML = '<div class="text-center p-5"><div class="loader"></div></div>';
+
+            try {
+                const q = query(collection(db, 'discussions'), where('createdAt', '!=', null));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    threadsContainer.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-chat-square-quote fs-1"></i><p class="mt-2">Aucune discussion pour le moment. Soyez le premier à en démarrer une !</p></div>';
+                    return;
+                }
+
+                threadsContainer.innerHTML = '';
+                querySnapshot.forEach(doc => {
+                    const thread = doc.data();
+                    const threadCard = document.createElement('div');
+                    threadCard.className = 'card card-modern hover-lift';
+                    threadCard.style.cursor = 'pointer';
+                    threadCard.onclick = () => showDiscussionDetail(doc.id);
+                    threadCard.innerHTML = `
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h5 class="card-title mb-1">${escapeHtml(thread.title)}</h5>
+                        <small class="text-muted">
+                            Par ${escapeHtml(thread.authorName)} - ${formatDate(thread.createdAt)}
+                        </small>
+                    </div>
+                    <div class="text-center ms-3" style="min-width: 80px;">
+                        <span class="fs-4 fw-bold">${thread.replyCount || 0}</span><br>
+                        <small class="text-muted">Réponses</small>
+                    </div>
+                </div>
+            `;
+                    threadsContainer.appendChild(threadCard);
+                });
+            } catch (error) {
+                threadsContainer.innerHTML = '<div class="text-center text-danger p-5">Erreur de chargement des discussions.</div>';
+                console.error("Error fetching discussions: ", error);
+            }
+        }
+
+        // Shows a single thread and its replies
+        async function showDiscussionDetail(threadId) {
+            document.getElementById('discussionsList').classList.add('d-none');
+            document.getElementById('discussionDetail').classList.remove('d-none');
+            currentDiscussionId = threadId;
+
+            try {
+                // Fetch original post
+                const threadRef = doc(db, 'discussions', threadId);
+                const threadSnap = await getDocs(query(collection(db, 'discussions'), where('__name__', '==', threadId)));
+                if (!threadSnap.empty) {
+                    const threadData = threadSnap.docs[0].data();
+                    document.getElementById('threadTitle').textContent = threadData.title;
+                    document.getElementById('threadAuthor').textContent = threadData.authorName;
+                    document.getElementById('threadDate').textContent = formatDate(threadData.createdAt);
+                    document.querySelector('#threadContent .ql-editor').innerHTML = threadData.content;
+                }
+
+                // Fetch replies
+                const repliesContainer = document.getElementById('repliesContainer');
+                repliesContainer.innerHTML = '<div class="text-center p-3"><div class="loader"></div></div>';
+                const repliesQuery = query(collection(db, 'discussions', threadId, 'replies'));
+                const repliesSnapshot = await getDocs(repliesQuery);
+
+                if (repliesSnapshot.empty) {
+                    repliesContainer.innerHTML = '<p class="text-muted">Aucune réponse pour le moment.</p>';
+                } else {
+                    repliesContainer.innerHTML = '';
+                    repliesSnapshot.forEach(replyDoc => {
+                        const replyData = replyDoc.data();
+                        const replyCard = document.createElement('div');
+                        replyCard.className = 'card';
+                        replyCard.innerHTML = `
+                    <div class="card-body">
+                        <p class="text-muted border-bottom pb-2 mb-2">
+                            Par <strong>${escapeHtml(replyData.authorName)}</strong> le ${formatDate(replyData.createdAt)}
+                        </p>
+                        <div class="ql-snow"><div class="ql-editor">${replyData.content}</div></div>
+                    </div>
+                `;
+                        repliesContainer.appendChild(replyCard);
+                    });
+                }
+
+            } catch (error) {
+                console.error("Error fetching thread detail:", error);
+            }
+        }
+       
+        // 4. Add all these event listeners to your script
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Quill editors when the modals are shown to ensure the containers are visible
+            document.getElementById('newDiscussionModal').addEventListener('shown.bs.modal', () => {
+                if (!newDiscussionQuill) {
+                    newDiscussionQuill = initializeQuill('#newDiscussionEditor');
+                }
+            });
+
+            if (document.getElementById('discussionDetail')) { // Check if element exists before adding listener
+                replyQuill = initializeQuill('#replyEditor');
+            }
+        });
+
+        document.getElementById('newDiscussionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) {
+                showToast('Vous devez être connecté pour poster.', 'warning');
+                return;
+            }
+
+            const title = document.getElementById('newDiscussionTitle').value;
+            const content = newDiscussionQuill.root.innerHTML;
+
+            try {
+                await addDoc(collection(db, 'discussions'), {
+                    title: title,
+                    content: content,
+                    authorId: user.uid,
+                    authorName: user.displayName || 'Anonyme',
+                    createdAt: Timestamp.now(),
+                    replyCount: 0
+                });
+                showToast('Discussion publiée avec succès !', 'success');
+                newDiscussionModal.hide();
+                document.getElementById('newDiscussionForm').reset();
+                newDiscussionQuill.setText('');
+                showDiscussionsList(); // Refresh the list
+            } catch (error) {
+                showToast('Erreur : ' + error.message, 'danger');
+            }
+        });
+
+        document.getElementById('replyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user || !currentDiscussionId) return;
+
+            const content = replyQuill.root.innerHTML;
+
+            try {
+                await addDoc(collection(db, 'discussions', currentDiscussionId, 'replies'), {
+                    content: content,
+                    authorId: user.uid,
+                    authorName: user.displayName || 'Anonyme',
+                    createdAt: Timestamp.now()
+                });
+
+                // This is a simple way to update reply count. For high-traffic apps, use Cloud Functions.
+                const threadRef = doc(db, 'discussions', currentDiscussionId);
+                const threadSnap = await getDocs(query(collection(db, 'discussions'), where('__name__', '==', currentDiscussionId)));
+                if (!threadSnap.empty) {
+                    const currentCount = threadSnap.docs[0].data().replyCount || 0;
+                    await updateDoc(threadRef, { replyCount: currentCount + 1 });
+                }
+
+                showToast('Réponse publiée !', 'success');
+                replyQuill.setText('');
+                showDiscussionDetail(currentDiscussionId); // Refresh the detail view
+            } catch (error) {
+                showToast('Erreur : ' + error.message, 'danger');
+            }
+        });
+
+        document.getElementById('backToDiscussions').addEventListener('click', showDiscussionsList);
 
         function renderVideos() {
             const grid = document.getElementById('videosGrid');
@@ -3212,35 +4084,6 @@
             });
         }
 
-        function displayUserInfo(user) {
-            const nameEl = document.getElementById('userName');
-            const photoEl = document.getElementById('userPhoto');
-            const emailEl = document.getElementById('userEmail');
-            const welcomeEl = document.getElementById('welcomeUserName');
-
-            if (user) {
-                // set avatar and dropdown info
-                nameEl.textContent = user.name || '';
-                emailEl.textContent = user.email || '';
-                if (photoEl) photoEl.src = user.photoURL || 'https://via.placeholder.com/40';
-
-                // 👇 Set welcome message name
-                if (welcomeEl) {
-                    welcomeEl.textContent = user.name || 'Utilisateur';
-                }
-
-                document.getElementById('profileDropdown').style.display = 'block';
-                document.getElementById('btnLogin').classList.add('d-none');
-                document.getElementById('btnLogout').classList.remove('d-none');
-            } else {
-                if (welcomeEl) welcomeEl.textContent = '';
-                document.getElementById('profileDropdown').style.display = 'none';
-                document.getElementById('btnLogin').classList.remove('d-none');
-                document.getElementById('btnLogout').classList.add('d-none');
-            }
-        }
-
-
         function renderContributedVideos() {
             const grid = document.getElementById('contributedVideosGrid');
             grid.innerHTML = '';
@@ -3293,7 +4136,7 @@
             });
         }
 
-        function renderDocuments() {
+        /*function renderDocuments() {
             const grid = document.getElementById('documentsGrid');
             const docs = allFiles.filter(f => {
                 const mime = f.mimeType || '';
@@ -3337,60 +4180,289 @@
       `;
                 grid.appendChild(col);
             });
-        }
+        }*/
 
-        function renderAssignments() {
-            const grid = document.getElementById('assignmentsGrid');
+        function renderDocuments() {
+            const grid = document.getElementById('documentsGrid');
+            const docs = allFiles.filter(f => {
+                const mime = f.mimeType || '';
+                return mime.includes('pdf') || mime.includes('document') || mime.includes('spreadsheet') || mime.includes('presentation');
+            });
+
             grid.innerHTML = '';
-            // Exemples de devoirs (peuvent être fetched de Firestore)
-            const assignments = [
-                { name: 'Devoir 1 : Algorithmes', due: '2025-10-20', status: 'En attente' },
-                { name: 'Devoir 2 : Bases de données', due: '2025-10-25', status: 'Soumis' }
-            ];
+            if (!docs.length) {
+                grid.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-file-earmark-x fs-1"></i><p class="mt-2">Aucun document trouvé</p></div>';
+                return;
+            }
 
-            assignments.forEach(ass => {
+            // Adjust grid classes based on view mode
+            grid.className = documentViewMode === 'grid' ? 'row g-4' : 'row g-2';
+
+            docs.forEach(file => {
+                const meta = getFileMeta(file.mimeType);
                 const col = document.createElement('div');
-                col.className = 'col-md-6';
-                col.innerHTML = `
-        <div class="card card-modern fade-in">
-          <div class="card-body">
-            <h6>${ass.name}</h6>
-            <p class="text-muted">Échéance : ${ass.due}</p>
-            <p>Statut : ${ass.status}</p>
-            <button class="btn btn-primary">Soumettre</button>
-          </div>
-        </div>
-      `;
+
+                if (documentViewMode === 'grid') {
+                    // --- GRID VIEW RENDER ---
+                    col.className = 'col-lg-4 col-md-6';
+                    col.innerHTML = `
+                <div class="card card-modern h-100 fade-in">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex gap-3 mb-3">
+                            <div style="font-size:48px; color:${meta.color}">
+                                <i class="${meta.icon}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${escapeHtml(file.name)}</h6>
+                                <small class="text-muted">${meta.label}</small>
+                                ${file.modifiedTime ? `<div><small class="text-muted">Modifié : ${new Date(file.modifiedTime).toLocaleDateString('fr-FR')}</small></div>` : ''}
+                            </div>
+                            <button class="btn btn-sm btn-link text-warning p-0" onclick="toggleFavorite('${file.id}', event)" title="Ajouter aux favoris">
+                                <i class="bi ${favoriteDocuments.includes(file.id) ? 'bi-star-fill' : 'bi-star'}"></i>
+                            </button>
+                        </div>
+                        <div class="mt-auto d-grid gap-2">
+                            <button class="btn btn-sm btn-primary" onclick="viewDocument('${file.id}', '${escapeHtml(file.name)}', '${file.webViewLink || ''}', '${meta.kind}')">
+                                <i class="bi bi-eye me-1"></i>Voir
+                            </button>
+                            ${file.webContentLink ? `<a class="btn btn-sm btn-outline-secondary" href="${file.webContentLink}" target="_blank"><i class="bi bi-download me-1"></i>Télécharger</a>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+                } else {
+                    // --- LIST VIEW RENDER ---
+                    col.className = 'col-12';
+                    col.innerHTML = `
+                <div class="card card-modern fade-in">
+                    <div class="card-body p-2 d-flex align-items-center gap-3">
+                        <div style="font-size:32px; color:${meta.color}; min-width: 40px; text-align: center;">
+                            <i class="${meta.icon}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 small">${escapeHtml(file.name)}</h6>
+                            <small class="text-muted">${meta.label} - Modifié le ${new Date(file.modifiedTime).toLocaleDateString('fr-FR')}</small>
+                        </div>
+                        <div class="ms-auto">
+                            <button class="btn btn-sm btn-outline-warning" onclick="toggleFavorite('${file.id}', event)" title="Ajouter aux favoris">
+                                <i class="bi ${favoriteDocuments.includes(file.id) ? 'bi-star-fill' : 'bi-star'}"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewDocument('${file.id}', '${escapeHtml(file.name)}', '${file.webViewLink || ''}', '${meta.kind}')" title="Voir">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                             ${file.webContentLink ? `<a class="btn btn-sm btn-outline-secondary" href="${file.webContentLink}" target="_blank" title="Télécharger"><i class="bi bi-download"></i></a>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+                }
                 grid.appendChild(col);
             });
         }
 
-        function renderCalendar() {
-            const eventsDiv = document.getElementById('calendarEvents');
-            eventsDiv.innerHTML = '';
-            // Exemples d'événements
-            const events = [
-                { date: '2025-10-18', title: 'Examen de base de données', time: '10:00' },
-                { date: '2025-10-20', title: 'Soumission de projet', time: '23:59' }
-            ];
+        // 1. Add these variables at the top
+        let favoriteDocuments = JSON.parse(localStorage.getItem('favoriteDocuments')) || [];
 
-            events.forEach(ev => {
-                const item = document.createElement('div');
-                item.className = 'timeline-item fade-in';
-                item.innerHTML = `
-        <div class="timeline-dot"><i class="bi bi-calendar"></i></div>
-        <div>
-          <strong>${ev.title}</strong>
-          <p class="text-muted small mb-0">${ev.date} à ${ev.time}</p>
-        </div>
-      `;
-                eventsDiv.appendChild(item);
-            });
+        // 2. Add this new function to handle toggling favorites
+        window.toggleFavorite = function (fileId, event) {
+            event.stopPropagation(); // Prevents the card from being clicked
+            const starIcon = event.currentTarget.querySelector('i');
+
+            const index = favoriteDocuments.indexOf(fileId);
+            if (index > -1) {
+                favoriteDocuments.splice(index, 1); // Remove from favorites
+                starIcon.classList.remove('bi-star-fill');
+                starIcon.classList.add('bi-star');
+            } else {
+                favoriteDocuments.push(fileId); // Add to favorites
+                starIcon.classList.add('bi-star-fill');
+                starIcon.classList.remove('bi-star');
+            }
+
+            localStorage.setItem('favoriteDocuments', JSON.stringify(favoriteDocuments));
+            showToast('Favoris mis à jour !', 'info');
         }
+
+        function renderAssignments() {
+            const grid = document.getElementById('assignmentsGrid');
+            grid.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-tools fs-1"></i><p class="mt-2">Cette fonctionnalité est en cours de développement.</p></div>';
+        }
+
+        /*function renderCalendar() {
+            const eventsDiv = document.getElementById('calendarEvents');
+            eventsDiv.innerHTML = '<div class="text-center text-muted py-5"><i class="bi bi-tools fs-1"></i><p class="mt-2">Cette fonctionnalité est en cours de développement.</p></div>';
+        }*/
+
+        // 2. Add these constants near your other modal constants
+        const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
+        let calendar; // Will hold the FullCalendar instance
+
+
+        // 3. ENTIRELY REPLACE your old `renderCalendar` function with this new one
+        async function renderCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            if (!calendarEl) return;
+
+            // Clear any previous calendar instance to prevent memory leaks
+            if (calendar) {
+                calendar.destroy();
+            }
+
+            const user = auth.currentUser;
+            if (!user) {
+                calendarEl.innerHTML = '<div class="text-center text-muted p-5"><i class="bi bi-lock fs-1"></i><p class="mt-2">Veuillez vous connecter pour voir votre calendrier.</p></div>';
+                return;
+            }
+
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                themeSystem: 'bootstrap5',
+                locale: 'fr',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                },
+                initialView: 'dayGridMonth',
+                editable: true,    // Allow dragging and resizing
+                selectable: true,  // Allow clicking and dragging to select dates
+                events: async (fetchInfo, successCallback, failureCallback) => {
+                    // Fetch events from Firestore
+                    try {
+                        const eventsCol = collection(db, 'users', user.uid, 'events');
+                        const eventSnapshot = await getDocs(eventsCol);
+                        const events = eventSnapshot.docs.map(doc => ({
+                            id: doc.id,
+                            title: doc.data().title,
+                            start: doc.data().start.toDate(),
+                            end: doc.data().end.toDate(),
+                            allDay: doc.data().allDay
+                        }));
+                        successCallback(events);
+                    } catch (error) {
+                        console.error("Error fetching events: ", error);
+                        failureCallback(error);
+                    }
+                },
+
+                // --- Event Handlers ---
+
+                // Fired when a user clicks and drags on a date range
+                select: (selectionInfo) => {
+                    const eventForm = document.getElementById('eventForm');
+                    eventForm.reset();
+                    document.getElementById('eventId').value = '';
+                    document.getElementById('deleteEventButton').style.display = 'none';
+
+                    // Pre-fill dates in the modal
+                    document.getElementById('eventStart').value = formatDateTimeLocal(selectionInfo.start);
+                    document.getElementById('eventEnd').value = formatDateTimeLocal(selectionInfo.end);
+                    document.getElementById('eventAllDay').checked = selectionInfo.allDay;
+
+                    eventModal.show();
+                },
+
+                // Fired when a user clicks an existing event
+                eventClick: (clickInfo) => {
+                    const event = clickInfo.event;
+                    document.getElementById('eventId').value = event.id;
+                    document.getElementById('eventTitle').value = event.title;
+                    document.getElementById('eventStart').value = formatDateTimeLocal(event.start);
+                    document.getElementById('eventEnd').value = event.end ? formatDateTimeLocal(event.end) : formatDateTimeLocal(event.start);
+                    document.getElementById('eventAllDay').checked = event.allDay;
+
+                    document.getElementById('deleteEventButton').style.display = 'block';
+                    eventModal.show();
+                },
+
+                // Fired when an event is dragged and dropped
+                eventDrop: async (dropInfo) => {
+                    try {
+                        const eventRef = doc(db, 'users', user.uid, 'events', dropInfo.event.id);
+                        await updateDoc(eventRef, {
+                            start: Timestamp.fromDate(dropInfo.event.start),
+                            end: Timestamp.fromDate(dropInfo.event.end || dropInfo.event.start),
+                            allDay: dropInfo.event.allDay
+                        });
+                        showToast('Événement déplacé avec succès !', 'success');
+                    } catch (error) {
+                        showToast('Erreur lors du déplacement de l\'événement.', 'danger');
+                        dropInfo.revert(); // Revert the change on failure
+                    }
+                },
+            });
+
+            calendar.render();
+        }
+
+        // 4. Add this new helper function somewhere in your script
+        function formatDateTimeLocal(date) {
+            if (!date) return '';
+            const ten = (i) => (i < 10 ? '0' : '') + i;
+            const YYYY = date.getFullYear();
+            const MM = ten(date.getMonth() + 1);
+            const DD = ten(date.getDate());
+            const HH = ten(date.getHours());
+            const II = ten(date.getMinutes());
+            return `${YYYY}-${MM}-${DD}T${HH}:${II}`;
+        }
+
+        // 5. Add these event listeners for the modal form somewhere in your script
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const eventId = document.getElementById('eventId').value;
+            const eventData = {
+                title: document.getElementById('eventTitle').value,
+                start: Timestamp.fromDate(new Date(document.getElementById('eventStart').value)),
+                end: Timestamp.fromDate(new Date(document.getElementById('eventEnd').value)),
+                allDay: document.getElementById('eventAllDay').checked,
+                userId: user.uid // Important for security rules
+            };
+
+            try {
+                if (eventId) { // Update existing event
+                    const eventRef = doc(db, 'users', user.uid, 'events', eventId);
+                    await updateDoc(eventRef, eventData);
+                    showToast('Événement mis à jour !', 'success');
+                } else { // Create new event
+                    const newEventRef = doc(collection(db, 'users', user.uid, 'events'));
+                    await setDoc(newEventRef, eventData);
+                    showToast('Événement ajouté !', 'success');
+                }
+                eventModal.hide();
+                calendar.refetchEvents(); // Refresh the calendar to show the new/updated event
+            } catch (error) {
+                showToast('Erreur : ' + error.message, 'danger');
+            }
+        });
+
+        document.getElementById('deleteEventButton').addEventListener('click', async () => {
+            const user = auth.currentUser;
+            const eventId = document.getElementById('eventId').value;
+            if (!user || !eventId) return;
+
+            if (confirm("Êtes-vous sûr de vouloir supprimer cet événement ?")) {
+                try {
+                    await deleteDoc(doc(db, 'users', user.uid, 'events', eventId));
+                    showToast('Événement supprimé.', 'info');
+                    eventModal.hide();
+                    calendar.refetchEvents();
+                } catch (error) {
+                    showToast('Erreur lors de la suppression.', 'danger');
+                }
+            }
+        });
 
         function renderNotes() {
             const list = document.getElementById('notesList');
             list.innerHTML = '';
+
+            if (notes.length === 0) {
+                list.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-journal-x fs-1"></i><p class="mt-2">Vous n\'avez aucune note.</p></div>';
+                return;
+            }
 
             notes.forEach((note, index) => {
                 const col = document.createElement('div');
@@ -3401,7 +4473,7 @@
             <h6>${note.title}</h6>
             <p class="text-muted small">${note.date}</p>
             <p>${note.content.substring(0, 100)}...</p>
-            <button class="btn btn-sm btn-danger" onclick="deleteNote(${index})">Supprimer</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteNote(${index})">Supprimer</button>
           </div>
         </div>
       `;
@@ -3415,7 +4487,7 @@
             renderNotes();
         };
 
-        function renderProgress() {
+        /*function renderProgress() {
             const ctx = document.getElementById('progressChart').getContext('2d');
             const completed = Object.values(userProgress).filter(p => p === 100).length;
             const inProgress = Object.values(userProgress).filter(p => p > 0 && p < 100).length;
@@ -3427,7 +4499,7 @@
                     labels: ['Complétés', 'En cours', 'Non commencés'],
                     datasets: [{
                         data: [completed, inProgress, notStarted],
-                        backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+                        backgroundColor: ['var(--success)', 'var(--warning)', 'var(--danger)']
                     }]
                 },
                 options: {
@@ -3438,10 +4510,198 @@
                 }
             });
         }
+        */
+        async function renderProgress() {
+            const user = auth.currentUser;
+            const progressView = document.getElementById('progressView');
 
-        function renderSettings() {
-            // Déjà rendu, rien à ajouter
+            // Destroy previous chart instances to prevent memory leaks
+            if (progressDonutChart) progressDonutChart.destroy();
+            if (progressByCourseChart) progressByCourseChart.destroy();
+            if (activityLineChart) activityLineChart.destroy();
+
+            if (!user) {
+                progressView.innerHTML = '<div class="text-center text-muted p-5"><i class="bi bi-lock fs-1"></i><p class="mt-2">Veuillez vous connecter pour voir votre progression.</p></div>';
+                return;
+            }
+
+            // --- DATA PREPARATION ---
+            const completed = Object.values(userProgress).filter(p => p === 100).length;
+            const inProgress = Object.values(userProgress).filter(p => p > 0 && p < 100).length;
+            const notStarted = allFiles.length - completed - inProgress;
+
+            // Update KPIs
+            document.getElementById('kpiCompleted').textContent = completed;
+            document.getElementById('kpiInProgress').textContent = inProgress;
+
+            // Data for the Bar Chart (only show courses with progress > 0)
+            const coursesWithProgress = allFiles
+                .map(file => ({ name: file.name, progress: userProgress[file.id] || 0 }))
+                .filter(course => course.progress > 0)
+                .sort((a, b) => a.progress - b.progress);
+
+            // --- CHART.JS GLOBAL CONFIG ---
+            // Use theme variables for chart colors and fonts
+            const style = getComputedStyle(document.body);
+            const brandColor = style.getPropertyValue('--brand').trim();
+            const accentColor = style.getPropertyValue('--accent').trim();
+            const successColor = style.getPropertyValue('--success').trim();
+            const warningColor = style.getPropertyValue('--warning').trim();
+            const dangerColor = style.getPropertyValue('--danger').trim();
+            const textColor = style.getPropertyValue('--text').trim();
+            const gridColor = style.getPropertyValue('--border').trim();
+
+            Chart.defaults.color = textColor;
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.plugins.legend.position = 'bottom';
+
+            // --- 1. OVERALL PROGRESS DONUT CHART ---
+            const donutCtx = document.getElementById('progressDonutChart').getContext('2d');
+            progressDonutChart = new Chart(donutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Terminés', 'En cours', 'Non commencés'],
+                    datasets: [{
+                        data: [completed, inProgress, notStarted],
+                        backgroundColor: [successColor, warningColor, dangerColor],
+                        borderColor: style.getPropertyValue('--surface').trim(),
+                        borderWidth: 4,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: true },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `${context.label}: ${context.raw} cours`
+                            }
+                        }
+                    }
+                }
+            });
+
+            // --- 2. PROGRESS BY COURSE BAR CHART ---
+            const barCtx = document.getElementById('progressByCourseChart').getContext('2d');
+            progressByCourseChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: coursesWithProgress.map(c => c.name.substring(0, 30) + (c.name.length > 30 ? '...' : '')),
+                    datasets: [{
+                        label: 'Progression (%)',
+                        data: coursesWithProgress.map(c => c.progress),
+                        backgroundColor: brandColor,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Horizontal bars
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: gridColor }
+                        },
+                        y: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `${context.raw}%`
+                            }
+                        }
+                    }
+                }
+            });
+
+            // --- 3. RECENT ACTIVITY LINE CHART ---
+            // NOTE: This uses randomly generated data for demonstration.
+            // A real implementation would require storing timestamps of user actions.
+            const lineCtx = document.getElementById('activityLineChart').getContext('2d');
+            const activityLabels = Array.from({ length: 7 }, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                return d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' });
+            }).reverse();
+
+            const gradient = lineCtx.createLinearGradient(0, 0, 0, 250);
+            gradient.addColorStop(0, `${accentColor}80`); // 50% opacity
+            gradient.addColorStop(1, `${accentColor}00`); // 0% opacity
+
+            activityLineChart = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: activityLabels,
+                    datasets: [{
+                        label: 'Actions complétées',
+                        data: Array.from({ length: 7 }, () => Math.floor(Math.random() * 5)), // FAKE DATA
+                        fill: true,
+                        backgroundColor: gradient,
+                        borderColor: accentColor,
+                        tension: 0.4, // Makes the line smooth
+                        pointBackgroundColor: accentColor,
+                        pointBorderColor: style.getPropertyValue('--surface').trim(),
+                        pointHoverRadius: 7,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: {
+                                precision: 0 // Only show whole numbers
+                            }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
         }
+
+        // START: NEW FUNCTION FOR SETTINGS VIEW
+        function renderSettings() {
+            const user = auth.currentUser;
+            const settingsWrapper = document.getElementById('accountSettingsWrapper');
+            const passwordCard = document.getElementById('passwordSettingsCard');
+
+            if (user) {
+                settingsWrapper.style.display = 'block';
+                document.getElementById('accountName').value = user.displayName || '';
+                document.getElementById('accountEmail').value = user.email || '';
+
+                // Check if user signed up with email/password
+                const isPasswordProvider = user.providerData.some(
+                    (provider) => provider.providerId === 'password'
+                );
+
+                if (isPasswordProvider) {
+                    passwordCard.style.display = 'block';
+                } else {
+                    passwordCard.style.display = 'none';
+                }
+            } else {
+                // Hide settings if no user is logged in
+                settingsWrapper.style.display = 'none';
+            }
+        }
+        // END: NEW FUNCTION
 
         function updateStats() {
             const total = allFiles.length;
@@ -3459,6 +4719,28 @@
                 const title = card.querySelector('.card-title')?.innerText.toLowerCase() || '';
                 card.style.display = title.includes(query) ? '' : 'none';
             });
+        }
+
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            const icon = {
+                success: 'bi-check-circle-fill',
+                danger: 'bi-exclamation-triangle-fill',
+                warning: 'bi-exclamation-triangle-fill',
+                info: 'bi-info-circle-fill'
+            }[type];
+
+            const toastEl = document.createElement('div');
+            toastEl.className = `alert alert-${type} d-flex align-items-center alert-dismissible fade show`;
+            toastEl.setAttribute('role', 'alert');
+            toastEl.innerHTML = `
+                <i class="bi ${icon} me-2"></i>
+                <div>${message}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            toastContainer.appendChild(toastEl);
+            const bsToast = new bootstrap.Toast(toastEl, { delay: 4000 });
+            bsToast.show();
         }
 
         // Fonctions globales
@@ -3485,10 +4767,28 @@
         window.playYoutube = function (type, id, title) {
             document.getElementById('videoTitle').innerText = title;
             const container = document.getElementById('videoContainer');
-            const src = type === 'playlist' ? `https://www.youtube.com/embed/videoseries?list=${id}` : `https://www.youtube.com/embed/${id}`;
-            container.innerHTML = `<iframe src="${src}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+
+            let src = '';
+            // Construct the correct URL based on the content type
+            if (type === 'playlist') {
+                // For playlists, the list parameter comes first, then others are added with '&'
+                src = `https://www.youtube.com/embed/videoseries?list=${id}&autoplay=1`;
+            } else {
+                // For single videos, the first parameter uses '?'
+                src = `https://www.youtube.com/embed/${id}?autoplay=1`;
+            }
+
+            // Set the iframe content and show the modal
+            container.innerHTML = `<iframe 
+                src="${src}" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+            </iframe>`;
+
             videoModal.show();
         };
+
 
         window.viewDocument = function (fileId, title, url, kind) {
             document.getElementById('documentTitle').innerText = title;
@@ -3507,17 +4807,7 @@
             saveProgress(fileId, 100);
             renderCourses();
             renderDashboard();
-
-            const toast = document.createElement('div');
-            toast.className = 'position-fixed top-0 end-0 p-3';
-            toast.style.zIndex = '9999';
-            toast.innerHTML = `
-      <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle me-2"></i>Cours marqué comme complété !
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            showToast('Cours marqué comme complété !', 'success');
         };
 
         window.resumeCourse = function (fileId) {
@@ -3542,17 +4832,7 @@
             if (!saved.includes(fileId)) {
                 saved.push(fileId);
                 localStorage.setItem('savedCourses', JSON.stringify(saved));
-
-                const toast = document.createElement('div');
-                toast.className = 'position-fixed top-0 end-0 p-3';
-                toast.style.zIndex = '9999';
-                toast.innerHTML = `
-        <div class="alert alert-info alert-dismissible fade show" role="alert">
-          <i class="bi bi-bookmark-fill me-2"></i>Enregistré pour plus tard !
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>`;
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 3000);
+                showToast('Enregistré pour plus tard !', 'info');
             }
         };
 
@@ -3613,13 +4893,11 @@
             setTheme(theme);
         }
 
-        // Initialisation
-        fetchDriveFolder(currentFolderId);
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  
+   
 </body>
 
 </html>
