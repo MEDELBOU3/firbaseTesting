@@ -1203,6 +1203,14 @@
     <!-- END: NEW Edit Reply Modal -->
 
     <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1100"></div>
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+    <script type="module">
+        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+        createChat({
+            webhookUrl: 'https://smstudioelb3.app.n8n.cloud/webhook/90a6a5d0-1e35-417b-b5cb-e05694deb18b/chat'
+        });
+    </script>
 
     <script src="setAdmin.js"></script>
     <script type="module">
