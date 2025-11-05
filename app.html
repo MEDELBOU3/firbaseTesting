@@ -39,7 +39,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 
     <link rel="stylesheet" href="thems.css">
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="app2.css" />
 
 
 </head>
@@ -2638,8 +2638,14 @@
             const profileDropdown = document.getElementById("profileDropdown");
             const btnLogin = document.getElementById("btnLogin");
             const welcomeEl = document.getElementById("welcomeUserName");
-
+            const justLoggedIn = localStorage.getItem('fpn_just_logged_in');
             if (user) {
+
+                if (justLoggedIn === 'true') {
+                    localStorage.removeItem('fpn_just_logged_in');
+                    // Optionnel: Afficher un toast de bienvenue ou rediriger vers la dernière page consultée
+                    showToast(`Bienvenue, ${user.displayName || 'Utilisateur'}!`, "success");
+                }
                 // --- USER IS LOGGED IN ---
                 profileDropdown.style.display = "block";
                 btnLogin.classList.add("d-none");
@@ -2673,7 +2679,7 @@
                     }
                 });
 
-                // FIX CRITIQUE DE SÉCURITÉ/PROGRESSION : Assurer l'existence du document utilisateur pour les transactions
+                // Assurer l'existence du document utilisateur pour les transactions
                 const userDocRef = doc(db, 'users', user.uid);
                 setDoc(userDocRef, {
                     name: user.displayName || 'Anonyme',
@@ -2695,6 +2701,10 @@
                 initializeAlarmSystem();
                 renderCalendar();
             } else {
+                if (justLoggedIn) {
+                    localStorage.removeItem('fpn_just_logged_in');
+                }
+
                 // --- USER IS LOGGED OUT ---
                 profileDropdown.style.display = "none";
                 btnLogin.classList.remove("d-none");
