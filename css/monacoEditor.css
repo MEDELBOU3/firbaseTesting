@@ -1,0 +1,1009 @@
+/* ===========================================================
+   SANDBOX CODE EDITOR - THEME-INTEGRATED VERSION
+   =========================================================== */
+
+/* --- Global Variables --- */
+:root {
+    --primary: #007bff;
+    --primary-dark: #0056b3;
+    --surface: #ffffff;
+    --surface-light: #f8f9fa;
+    --surface-dark: #e9ecef;
+    --soft: #f1f3f5;
+    --muted: #6c757d;
+    --text: #212529;
+    --brand: #007bff;
+    --brand-light: #e7f1ff;
+    --dark-bg: #212529;
+    --dark-text: #f8f9fa;
+    --dark-border: #343a40;
+    --success: #28a745;
+    --error: #dc3545;
+    --warning: #ff8c00;
+    --border: #dee2e6;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --transition-base: 0.3s ease;
+    --transition-fast: 0.2s ease;
+    --backdrop-blur: blur(4px);
+}
+
+[data-theme="dark"] {
+    --surface: #1e1e1e;
+    --surface-light: #2d2d2d;
+    --surface-dark: #252525;
+    --soft: #343a40;
+    --muted: #adb5bd;
+    --text: #f8f9fa;
+    --brand: #66b0ff;
+    --brand-light: #2a3b57;
+    --dark-bg: #1e1e1e;
+    --dark-text: #f8f9fa;
+    --dark-border: #495057;
+    --border: #495057;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Global Reset --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    background: var(--surface);
+    color: var(--text);
+    padding: 8px 0;
+    transition: background var(--transition-base), color var(--transition-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
+}
+
+/* --- App Layout --- */
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 12px;
+    gap: 12px;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* --- Header & Toolbar --- */
+.header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    transition: background var(--transition-base), box-shadow var(--transition-base);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.title {
+    font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+    font-weight: 700;
+    color: var(--brand);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color var(--transition-base);
+}
+
+.tools {
+    margin-left: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.btn {
+    border: 1px solid var(--border);
+    background: var(--surface-light);
+    color: var(--muted);
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: clamp(0.85rem, 1.5vw, 0.9rem);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover {
+    border-color: var(--brand);
+    background: var(--brand-light);
+    color: var(--brand);
+    transform: translateY(-1px);
+}
+
+.btn.primary {
+    background: var(--brand);
+    color: var(--dark-text);
+    border-color: var(--brand);
+}
+
+.btn.primary:hover {
+    background: var(--primary-dark);
+    color: var(--dark-text);
+    transform: translateY(-1px);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn:focus {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+}
+
+.btn[title]::after {
+    content: attr(title);
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface-dark);
+    color: var(--text);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast);
+    z-index: 1000;
+}
+
+.btn:hover[title]::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* --- Main Layout --- */
+.main {
+    display: flex;
+    flex: 1;
+    gap: 12px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* --- Explorer --- */
+.explorer {
+    width: clamp(200px, 20vw, 280px);
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 180px;
+    max-width: 300px;
+    transition: background var(--transition-base);
+}
+
+.explorer .header {
+    padding: 10px 12px;
+    box-shadow: none;
+    border-radius: 0;
+    background: var(--surface);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.actions {
+    display: flex;
+    gap: 6px;
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.tree {
+    padding: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-size: clamp(0.85rem, 1.5vw, 0.95rem);
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted) var(--surface);
+}
+
+.node-wrapper {
+    user-select: none;
+}
+
+.node-label {
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast), border var(--transition-fast);
+}
+
+.node-label:hover {
+    background: var(--soft);
+}
+
+.node-label.active {
+    background: var(--brand-light);
+    color: var(--brand);
+    font-weight: 500;
+}
+
+.node-label.selected {
+    background: var(--brand-light);
+    border: 1px solid var(--brand);
+}
+
+.node-wrapper.drag-over {
+    background: var(--brand-light);
+    border: 2px dashed var(--brand);
+}
+
+.node-wrapper.root .node-label {
+    font-weight: 600;
+    color: var(--brand);
+    background: var(--brand-light);
+    border: 1px solid var(--brand);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+}
+
+.children {
+    padding-left: 16px;
+}
+
+/* --- Workspace --- */
+.workspace {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.tabs {
+    display: flex;
+    gap: 4px;
+    padding: 8px 8px 0;
+    background: var(--surface);
+    border-top-left-radius: var(--radius-md);
+    border-top-right-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    min-height: 48px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted) var(--surface);
+}
+
+.tab {
+    padding: 6px 12px;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    background: var(--surface-dark);
+    border: 1px solid transparent;
+    border-bottom: 1px solid var(--surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    transition: all var(--transition-fast);
+}
+
+.tab:hover {
+    background: var(--soft);
+    color: var(--brand);
+}
+
+.tab.active {
+    background: var(--surface);
+    border: 1px solid var(--brand);
+    border-bottom: 1px solid var(--surface);
+    color: var(--brand);
+    font-weight: 500;
+}
+
+.tab i.bi-x {
+    font-size: 1rem;
+    opacity: 0.7;
+    transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.tab i.bi-x:hover {
+    opacity: 1;
+    color: var(--error);
+}
+
+.split {
+    display: flex;
+    flex: 1;
+    gap: 0;
+    min-height: 0;
+    position: relative;
+    background: var(--surface);
+}
+
+.editorPanel,
+.previewPanel {
+    flex-grow: 1;
+    flex-shrink: 0;
+    min-width: 200px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width var(--transition-base), opacity var(--transition-base);
+}
+
+.editorPanel {
+    border-radius: 0 0 0 var(--radius-md);
+}
+
+.previewPanel {
+    border-radius: 0 0 var(--radius-md) 0;
+}
+
+.previewPanel[style*="display: none"] {
+    opacity: 0;
+    width: 0;
+}
+
+.panelHeader {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: clamp(0.9rem, 1.5vw, 1rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--brand);
+    background: var(--surface-light);
+}
+
+.editorContainer {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
+iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: var(--surface);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.1);
+    transition: background var(--transition-base);
+}
+
+.resizer {
+    width: 6px;
+    cursor: ew-resize;
+    background: var(--border);
+    z-index: 10;
+    transition: background var(--transition-fast);
+}
+
+.resizer:hover {
+    background: var(--brand);
+}
+
+/* --- Status Bar --- */
+.status {
+    font-size: 0.85rem;
+    color: var(--muted);
+    padding: 6px 8px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-light);
+    transition: background var(--transition-base);
+    position: relative;
+    text-align: center;
+}
+
+.status::before {
+    content: '';
+    display: none;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--brand);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.status:where(:has-text("Téléchargement en cours"))::before {
+    display: inline-block;
+}
+
+.status:where(:has-text("réussi")) {
+    color: var(--success);
+}
+
+.status:where(:has-text("Erreur")) {
+    color: var(--error);
+}
+
+@keyframes spin {
+    to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* --- Console --- */
+.console {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.85rem;
+    padding: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    border-top: 1px solid var(--dark-border);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    scrollbar-width: thin;
+    scrollbar-color: var(--dark-border) var(--dark-bg);
+}
+
+.console div {
+    margin: 2px 0;
+}
+
+.console div[style*="color: red"] {
+    color: var(--error);
+}
+
+.console div[style*="color: orange"] {
+    color: var(--warning);
+}
+
+/* --- File Icons --- */
+.i-folder { color: #f0c14b; }
+.i-html { color: #e34f26; }
+.i-css { color: #1572b6; }
+.i-js { color: #f7df1e; }
+.i-ts { color: #3178c6; }
+.i-json { color: #ff8c00; }
+.i-md { color: var(--text); }
+.i-image { color: var(--success); }
+
+/* --- Context Menu --- */
+.ctx {
+    position: fixed;
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-sm);
+    padding: 6px;
+    display: none;
+    z-index: 10000;
+    min-width: 160px;
+    backdrop-filter: var(--backdrop-blur);
+}
+
+.ctx button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.ctx button:hover {
+    background: var(--soft);
+    color: var(--brand);
+}
+
+.ctx button:focus {
+    outline: 2px solid var(--brand);
+    outline-offset: -2px;
+}
+
+.ctx button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* --- Project Modal --- */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-content {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    max-width: 400px;
+    margin: 0 auto;
+    width: 90%;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-content h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--brand);
+    margin: 0;
+}
+
+
+#projectList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted) var(--surface);
+}
+
+.project-item {
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background var(--transition-fast);
+}
+
+.project-item:hover {
+    background: var(--soft);
+}
+
+.project-item.active {
+    background: var(--brand-light);
+    color: var(--brand);
+    font-weight: 500;
+}
+
+.project-item span {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.project-item button {
+    padding: 4px 8px;
+    font-size: 0.85rem;
+}
+
+.project-item .delete-btn {
+    border-color: var(--error);
+    color: var(--error);
+}
+
+.project-item .delete-btn:hover {
+    background: var(--error);
+    color: var(--dark-text);
+}
+
+#newProjectBtn {
+    margin-bottom: 12px;
+}
+
+#closeProjectModal {
+    margin-top: 12px;
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--muted);
+    border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--brand);
+}
+
+/* --- Monaco Editor --- */
+.monaco-editor {
+    border-radius: 0 0 var(--radius-md) 0;
+}
+
+.monaco-editor .monaco-scrollable-element {
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted) var(--surface);
+}
+
+/* --- Focus States --- */
+.btn:focus,
+.tab:focus,
+.node-label:focus {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+}
+
+/* --- Media Queries --- */
+@media (pointer: coarse), (max-width: 900px) {
+    .resizer {
+        width: 10px;
+    }
+
+    .previewPanel {
+        position: absolute;
+        right: 0;
+        width: 100%;
+        z-index: 10;
+        height: 100%;
+        display: none;
+    }
+
+    .previewPanel[style*="display: flex"] {
+        display: flex !important;
+    }
+
+    .explorer {
+        display: none;
+    }
+
+    .resizer {
+        display: none !important;
+    }
+
+    .editorPanel {
+        border-radius: 0 0 var(--radius-md) var(--radius-md);
+    }
+
+    .header {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .tools {
+        justify-content: flex-start;
+        gap: 6px;
+    }
+
+    .btn {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .app {
+        padding: 8px;
+    }
+
+    .header {
+        padding: 8px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .title {
+        font-size: 1rem;
+    }
+
+    .tools {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .btn {
+        flex: 1;
+        text-align: center;
+        padding: 5px 8px;
+        font-size: 0.8rem;
+    }
+
+    .tab {
+        padding: 4px 8px;
+        font-size: 0.85rem;
+    }
+
+    .tab i.bi-x {
+        font-size: 0.9rem;
+    }
+
+    .status {
+        font-size: 0.8rem;
+        padding: 4px 6px;
+    }
+
+    .console {
+        font-size: 0.8rem;
+        max-height: 150px;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 12px;
+    }
+
+    .project-item {
+        padding: 6px;
+    }
+
+    .project-item span {
+        font-size: 0.85rem;
+    }
+
+    .project-item button {
+        padding: 3px 6px;
+        font-size: 0.8rem;
+    }
+}
+
+
+/* ===========================================================
+   SANDBOX CODE EDITOR - ENHANCEMENTS
+   =========================================================== */
+
+/* --- Snippets Modal --- */
+.snippets-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.snippets-modal-content {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.snippets-modal-content h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--brand);
+    margin: 0;
+}
+
+.snippets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted) var(--surface);
+}
+
+.snippet-item {
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background var(--transition-fast);
+}
+
+.snippet-item:hover {
+    background: var(--soft);
+}
+
+.snippet-item.active {
+    background: var(--brand-light);
+    color: var(--brand);
+    font-weight: 500;
+}
+
+.snippet-item span {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+/* --- Auto-Save Toggle --- */
+.btn.auto-save-on {
+    background: var(--success);
+    border-color: var(--success);
+    color: var(--dark-text);
+}
+
+.btn.auto-save-on:hover {
+    background: var(--success);
+    opacity: 0.9;
+}
+
+/* --- Find and Replace Panel --- */
+.find-replace-panel {
+    display: none;
+    padding: 8px;
+    background: var(--surface-light);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.find-replace-panel.active {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.find-replace-panel input {
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.85rem;
+    width: 150px;
+}
+
+.find-replace-panel input:focus {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+}
+
+.find-replace-panel .btn {
+    padding: 6px 10px;
+}
+
+/* --- Search Bar in Explorer --- */
+.search-bar {
+    display: none;
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-light);
+}
+
+.search-bar.active {
+    display: block;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.85rem;
+}
+
+.search-bar input:focus {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+}
+
+/* --- Settings Panel --- */
+.settings-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 100%;
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+    padding: 16px;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 2000;
+    transform: translateX(100%);
+    transition: transform var(--transition-base);
+}
+
+.settings-panel.active {
+    display: flex;
+    transform: translateX(0);
+}
+
+.settings-panel h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--brand);
+    margin: 0;
+}
+
+.settings-panel label {
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.settings-panel select,
+.settings-panel input[type="checkbox"] {
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.85rem;
+}
+
+.settings-panel select:focus,
+.settings-panel input[type="checkbox"]:focus {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+}
+
+/* --- Media Queries for Enhancements --- */
+@media (max-width: 600px) {
+    .snippets-modal-content,
+    .settings-panel {
+        width: 95%;
+        max-width: none;
+    }
+
+    .find-replace-panel input {
+        width: 100px;
+        font-size: 0.8rem;
+    }
+
+    .find-replace-panel .btn {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+
+    .search-bar input {
+        font-size: 0.8rem;
+    }
+
+    .settings-panel {
+        width: 100%;
+        border-radius: 0;
+    }
+}
