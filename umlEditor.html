@@ -1,0 +1,2613 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Éditeur UML Professionnel</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
+    rel="stylesheet">
+  <link rel="stylesheet" href="thems.css">
+  <style>
+/* ===================================
+   UML EDITOR PROFESSIONAL STYLES
+   (Theme Adapted)
+   =================================== */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  background: var(--soft);
+  color: var(--text);
+  font-size: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+  gap: 12px;
+  padding: 12px;
+}
+
+/* -----------------------------
+   TOOLBAR
+----------------------------- */
+.toolbar {
+  width: 72px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.toolbar button {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color var(--transition-base), color var(--transition-base), border-color var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar button:hover {
+  background: var(--brand-light);
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
+.toolbar button.active {
+  background: var(--brand);
+  color: white;
+  border-color: var(--brand);
+}
+
+.toolbar button i {
+  font-size: 20px;
+}
+
+.divider {
+  height: 1px;
+  width: 100%;
+  background: var(--border);
+  margin: 6px 0;
+}
+
+/* -----------------------------
+   BOARD + CANVAS
+----------------------------- */
+.board-wrap {
+  flex: 1;
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  background: var(--surface-light);
+  border: 1px solid var(--border);
+}
+
+#svgBoard {
+  width: 100%;
+  height: 100%;
+  background-color: var(--surface-light);
+  background-image: linear-gradient(rgba(var(--brand-rgb), 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(var(--brand-rgb), 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* -----------------------------
+   SIDE PANEL
+----------------------------- */
+.side {
+  width: 360px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow);
+  overflow-y: auto;
+  border: 1px solid var(--border);
+}
+
+.panel {
+  background: var(--soft);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.panel h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--brand);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Inputs */
+label {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+  display: block;
+  margin: 10px 0 4px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  transition: border-color var(--transition-base);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--brand);
+}
+
+input:disabled {
+  background: var(--soft);
+  color: var(--muted);
+}
+
+textarea {
+  font-family: 'Monaco', 'Courier New', monospace;
+  resize: vertical;
+}
+
+/* Buttons */
+.btn {
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  border: 1px solid transparent;
+  padding: 8px 12px;
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--accent);
+  color: var(--text);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.btn-glass:hover {
+  background: var(--brand-light);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* -----------------------------
+   UML Nodes
+----------------------------- */
+.node-rect {
+  fill: var(--surface);
+  stroke: var(--brand);
+  stroke-width: 2;
+  transition: stroke var(--transition-fast);
+}
+
+.node-rect.selected {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.uml-text {
+  font-size: 12px;
+  fill: var(--text);
+  font-family: 'Inter', sans-serif;
+}
+
+.port {
+  fill: var(--surface);
+  stroke: var(--brand);
+  stroke-width: 2;
+  cursor: crosshair;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.node:hover .port {
+  opacity: 1;
+}
+
+.port:hover {
+  fill: var(--brand);
+  stroke: var(--accent);
+}
+
+.connector {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 2;
+  cursor: pointer;
+  transition: stroke var(--transition-fast);
+}
+
+.connector:hover,
+.connector.selected {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.connector.dependency {
+  stroke-dasharray: 6 3;
+}
+
+.node-separator {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+/* -----------------------------
+   GROUPS
+----------------------------- */
+.group-rect {
+  fill: rgba(var(--brand-rgb), 0.04);
+  stroke: rgba(var(--brand-rgb), 0.3);
+  stroke-dasharray: 6 3;
+  stroke-width: 2;
+  transition: stroke var(--transition-fast);
+}
+
+.group:hover .group-rect {
+  stroke: rgba(var(--brand-rgb), 0.5);
+}
+
+.group.selected .group-rect {
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-dasharray: none;
+}
+
+/* -----------------------------
+   RESIZE HANDLES
+----------------------------- */
+.resize-handle {
+  fill: var(--brand);
+  stroke: white;
+  stroke-width: 2;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  cursor: nwse-resize;
+}
+
+.resize-handle[data-position="ne"],
+.resize-handle[data-position="sw"] {
+  cursor: nesw-resize;
+}
+
+.group:hover .resize-handle,
+.group.selected .resize-handle {
+  opacity: 0.8;
+}
+
+.resize-handle:hover {
+  opacity: 1;
+  fill: var(--accent);
+}
+
+/* -----------------------------
+   CONTEXT MENU
+----------------------------- */
+.context-menu {
+  position: absolute;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  min-width: 180px;
+  z-index: 50;
+}
+
+.context-menu button {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 12px;
+  transition: background-color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.context-menu button:hover {
+  background: var(--brand-light);
+  color: var(--brand);
+}
+
+.context-menu button i {
+  color: var(--brand);
+  font-size: 14px;
+}
+
+/* -----------------------------
+   TOPBAR + SEARCH
+----------------------------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(var(--surface-rgb), 0.9);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+.search-input {
+  flex: 1;
+  min-width: 140px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.search-input:focus {
+  border-color: var(--brand);
+}
+
+/* -----------------------------
+   ZOOM INDICATOR
+----------------------------- */
+.zoom-indicator {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: var(--surface);
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  font-size: 11px;
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  z-index: 40;
+}
+
+/* -----------------------------
+   TOASTS
+----------------------------- */
+.toast-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+}
+
+.custom-toast {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+/* -----------------------------
+   MINIMAP & HISTORY
+----------------------------- */
+.minimap {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 200px;
+  height: 150px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.history-item {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--text);
+  border-left: 2px solid var(--brand-light);
+  margin: 4px 0;
+  cursor: pointer;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--surface);
+  transition: background-color var(--transition-fast);
+}
+
+.history-item:hover {
+  background: var(--brand-light);
+  border-left-color: var(--brand);
+}
+
+.history-item.text-primary {
+  background: var(--brand-light);
+  border-left-color: var(--brand);
+  font-weight: 600;
+}
+
+/* -----------------------------
+   SCROLLBARS
+----------------------------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--soft);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* -----------------------------
+   SHORTCUT KEY STYLING
+----------------------------- */
+kbd {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-size: 10px;
+  font-family: monospace;
+}
+
+/* -----------------------------
+   FULLSCREEN ACTIVE STATE
+----------------------------- */
+.toolbar button#fullscreenBtn.active {
+  background: var(--accent);
+  color: var(--text);
+}
+
+/* -----------------------------
+   RESPONSIVE DESIGN
+----------------------------- */
+
+/* Tablets and Small Laptops (768px - 1023px) */
+@media (max-width: 1023px) {
+  .app {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .toolbar {
+    width: 100%;
+    height: auto;
+    min-height: 64px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-x: auto;
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .toolbar button {
+    width: 48px;
+    height: 48px;
+  }
+
+  .toolbar button i {
+    font-size: 18px;
+  }
+
+  .divider {
+    height: 32px;
+    width: 1px;
+    margin: 0 3px;
+  }
+
+  .side {
+    width: 100%;
+    max-height: 360px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .panel {
+    flex: 1;
+    min-width: calc(50% - 10px);
+  }
+
+  .panel:last-child {
+    flex-basis: 100%;
+  }
+
+  .board-wrap {
+    min-height: 400px;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .search-input {
+    min-width: 120px;
+  }
+}
+
+/* Large Mobile Devices (576px - 767px) */
+@media (max-width: 767px) {
+  .app {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .toolbar {
+    min-height: 56px;
+    padding: 6px;
+  }
+
+  .toolbar button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .toolbar button span {
+    display: none;
+  }
+
+  .side {
+    max-height: 320px;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .panel {
+    min-width: 100%;
+    padding: 10px;
+  }
+
+  .panel h3 {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .topbar {
+    position: relative;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .zoom-indicator {
+    bottom: 8px;
+    left: 8px;
+    font-size: 10px;
+    padding: 5px 8px;
+  }
+
+  .minimap {
+    width: 160px;
+    height: 120px;
+  }
+
+  input,
+  select,
+  textarea {
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+
+  label {
+    font-size: 11px;
+    margin-top: 8px;
+  }
+}
+
+/* Small Mobile Devices (up to 575px) */
+@media (max-width: 575px) {
+  .app {
+    padding: 6px;
+  }
+
+  .toolbar {
+    min-height: 48px;
+    padding: 5px;
+  }
+
+  .toolbar button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .toolbar button i {
+    font-size: 16px;
+  }
+
+  .side {
+    max-height: 280px;
+    padding: 8px;
+  }
+
+  .panel {
+    padding: 8px;
+  }
+
+  .history-item {
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+
+  .topbar {
+    padding: 6px;
+  }
+
+  .search-input {
+    min-width: 100px;
+    padding: 5px 8px;
+  }
+
+  .minimap {
+    width: 140px;
+    height: 105px;
+  }
+
+  .zoom-indicator {
+    font-size: 9px;
+    padding: 4px 6px;
+  }
+}
+
+/* Landscape Orientation for Mobile */
+@media (max-height: 600px) and (orientation: landscape) {
+  .app {
+    flex-direction: row;
+    height: 100vh;
+  }
+
+  .toolbar {
+    width: 56px;
+    height: 100%;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    overflow-y: auto;
+  }
+
+  .side {
+    width: 280px;
+    max-height: 100%;
+    flex-direction: column;
+  }
+
+  .panel {
+    min-width: auto;
+  }
+
+  .divider {
+    height: 1px;
+    width: 100%;
+    margin: 3px 0;
+  }
+}
+
+/* High-DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .node-rect,
+  .group-rect,
+  .connector {
+    shape-rendering: geometricPrecision;
+  }
+
+  .uml-text {
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .port,
+  .resize-handle {
+    opacity: 0.7;
+    r: 7;
+  }
+
+  .toolbar button,
+  .context-menu button {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 12px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .toolbar,
+  .side,
+  .topbar,
+  .zoom-indicator,
+  .minimap {
+    display: none;
+  }
+
+  .app {
+    padding: 0;
+    gap: 0;
+  }
+
+  .board-wrap {
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+  }
+
+  #svgBoard {
+    background: white;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none;
+  }
+
+  .custom-toast {
+    animation: none;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-light: #334155;
+    --soft: #1e293b;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --border: #475569;
+  }
+}
+  </style>
+</head>
+
+<body>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="app">
+    <div class="toolbar">
+      <button id="fullscreenBtn" title="Plein écran (F)">
+        <i class="bi bi-arrows-fullscreen"></i>
+      </button>
+      <button id="selectBtn" class="active" title="Sélection (V)">
+        <i class="bi bi-cursor"></i>
+      </button>
+      <button id="classBtn" title="Classe (C)">
+        <i class="bi bi-file-earmark-richtext"></i>
+      </button>
+      <button id="interfaceBtn" title="Interface (I)">
+        <i class="bi bi-puzzle"></i>
+      </button>
+      <button id="enumBtn" title="Énumération (E)">
+        <i class="bi bi-list-nested"></i>
+      </button>
+      <button id="abstractBtn" title="Classe abstraite (A)">
+        <i class="bi bi-file-earmark-code"></i>
+      </button>
+
+      <div class="divider"></div>
+
+      <button id="assocBtn" title="Association">
+        <i class="bi bi-link-45deg"></i>
+      </button>
+      <button id="inheritBtn" title="Héritage">
+        <i class="bi bi-arrow-up"></i>
+      </button>
+      <button id="aggBtn" title="Agrégation">
+        <i class="bi bi-circle"></i>
+      </button>
+      <button id="compBtn" title="Composition">
+        <i class="bi bi-stop-circle"></i>
+      </button>
+      <button id="depBtn" title="Dépendance">
+        <i class="bi bi-three-dots"></i>
+      </button>
+
+      <div style="flex:1"></div>
+
+      <button id="groupBtn" title="Créer groupe (G)">
+        <i class="bi bi-collection"></i>
+      </button>
+      <button id="undoBtn" title="Annuler (Ctrl+Z)">
+        <i class="bi bi-arrow-counterclockwise"></i>
+      </button>
+      <button id="redoBtn" title="Refaire (Ctrl+Y)">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
+      <button id="exportJson" title="Exporter JSON">
+        <i class="bi bi-download"></i>
+      </button>
+      <button id="exportPng" title="Exporter PNG">
+        <i class="bi bi-image"></i>
+      </button>
+    </div>
+
+    <div class="board-wrap">
+      <div class="topbar position-absolute" style="left:16px;top:16px;z-index:40">
+        <button id="zoomIn" class="btn btn-sm btn-glass">
+          <i class="bi bi-zoom-in"></i>
+        </button>
+        <button id="zoomOut" class="btn btn-sm btn-glass">
+          <i class="bi bi-zoom-out"></i>
+        </button>
+        <button id="resetView" class="btn btn-sm btn-glass">
+          <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+        </button>
+        <button id="fitView" class="btn btn-sm btn-glass">
+          <i class="bi bi-arrows-angle-contract me-1"></i> Fit
+        </button>
+        <input id="search" class="form-control form-control-sm search-input" placeholder="🔍 Rechercher..." />
+      </div>
+
+      <!-- Add this zoom indicator -->
+      <div class="zoom-indicator" id="zoomIndicator">
+        Zoom: 100%
+      </div>
+
+      <svg id="svgBoard" xmlns="http://www.w3.org/2000/svg">
+      </svg>
+      <div id="ctxMenu" class="context-menu"></div>
+      <div class="minimap" id="minimap"></div>
+    </div>
+
+    <div class="side">
+      <div class="panel">
+        <h3><i class="bi bi-sliders"></i>Propriétés</h3>
+        <label>Type</label>
+        <input id="propType" disabled />
+        <label>Nom</label>
+        <input id="propName" />
+        <label>Stéréotype</label>
+        <input id="propStereotype" placeholder="<<interface>>, <<abstract>>, etc." />
+        <label>Couleur de fond</label>
+        <input id="propColor" type="color" value="#ffffff" />
+        <label>Attributs (un par ligne)</label>
+        <textarea id="propAttrs" rows="3" placeholder="- attribut: type"></textarea>
+        <label>Opérations (un par ligne)</label>
+        <textarea id="propMethods" rows="3" placeholder="+ operation(): void"></textarea>
+        <label>Image / Icône</label>
+        <input id="propImage" type="file" accept="image/*" class="form-control form-control-sm" />
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button id="applyProps" class="btn btn-sm btn-primary w-100">
+            <i class="bi bi-check-lg me-1"></i> Appliquer
+          </button>
+          <button id="deleteNode" class="btn btn-sm btn-danger">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3><i class="bi bi-gear"></i>Options</h3>
+        <div class="mb-3">
+          <label class="form-check-label">
+            <input id="snapCheckbox" type="checkbox" class="form-check-input me-2">
+            Snap to Grid (20px)
+          </label>
+        </div>
+        <div class="mb-3">
+          <label class="form-check-label">
+            <input id="showGridCheckbox" type="checkbox" checked class="form-check-input me-2">
+            Afficher la grille
+          </label>
+        </div>
+        <div class="mb-3">
+          <label class="form-check-label">
+            <input id="autoSaveCheckbox" type="checkbox" class="form-check-input me-2">
+            Sauvegarde automatique
+          </label>
+        </div>
+        <button id="alignHorizontal" class="btn btn-sm btn-glass w-100 mb-2">
+          <i class="bi bi-distribute-horizontal me-1"></i> Aligner horizontalement
+        </button>
+        <button id="alignVertical" class="btn btn-sm btn-glass w-100 mb-2">
+          <i class="bi bi-distribute-vertical me-1"></i> Aligner verticalement
+        </button>
+        <button id="ungroupBtn" class="btn btn-sm btn-glass w-100">
+          <i class="bi bi-bounding-box me-1"></i> Dégrouper tout
+        </button>
+      </div>
+
+      <div class="panel history-panel">
+        <h3><i class="bi bi-clock-history"></i>Historique</h3>
+        <div id="historyList" style="max-height:160px;overflow-y:auto"></div>
+      </div>
+
+      <div class="panel">
+        <h3><i class="bi bi-keyboard"></i>Raccourcis</h3>
+        <div style="font-size:12px;color:var(--muted);line-height:2">
+          <div><kbd>V</kbd> Sélection</div>
+          <div><kbd>C</kbd> Classe</div>
+          <div><kbd>I</kbd> Interface</div>
+          <div><kbd>Del</kbd> Supprimer</div>
+          <div><kbd>Ctrl+Z</kbd> Annuler</div>
+          <div><kbd>Ctrl+Y</kbd> Refaire</div>
+          <div><kbd>Ctrl+S</kbd> Sauvegarder</div>
+          <div><kbd>Molette</kbd> Zoom</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="thems.js"></script>
+
+  <script>
+
+    const svg = document.getElementById('svgBoard');
+    const ctxMenu = document.getElementById('ctxMenu');
+    let mode = 'select', scale = 1, panX = 0, panY = 0;
+    const state = {
+      nodes: [], connectors: [], groups: [],
+      idCounter: 1, selected: null, connecting: null,
+      selectedConnector: null, history: [], historyIndex: -1
+    };
+
+    function svgEl(tag, attrs = {}) {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (const k in attrs) el.setAttribute(k, attrs[k]);
+      return el;
+    }
+
+    svg.innerHTML = '';
+    const defs = svgEl('defs');
+    defs.innerHTML = `
+  <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+  </marker>
+  <marker id="diamond" viewBox="0 0 20 20" refX="20" refY="10" markerWidth="14" markerHeight="14" orient="auto">
+    <path d="M0 10 L10 0 L20 10 L10 20 z" fill="none" stroke="#2563eb" stroke-width="2"/>
+  </marker>
+  <marker id="filledDiamond" viewBox="0 0 20 20" refX="20" refY="10" markerWidth="14" markerHeight="14" orient="auto">
+    <path d="M0 10 L10 0 L20 10 L10 20 z" fill="#2563eb"/>
+  </marker>
+`;
+    svg.appendChild(defs);
+
+    const bgRect = svgEl('rect', { x: -10000, y: -10000, width: 20000, height: 20000, fill: 'transparent' });
+    svg.appendChild(bgRect);
+    const view = svgEl('g', { id: 'viewGroup' });
+    svg.appendChild(view);
+    const gridGroup = svgEl('g', { id: 'gridGroup' });
+    view.appendChild(gridGroup);
+    const groupsLayer = svgEl('g', { id: 'groupsLayer' });
+    view.appendChild(groupsLayer);
+    const connectorsLayer = svgEl('g', { id: 'connectorsLayer' });
+    view.appendChild(connectorsLayer);
+    const nodesLayer = svgEl('g', { id: 'nodesLayer' });
+    view.appendChild(nodesLayer);
+
+
+
+    // History management
+    function saveHistory() {
+      const snapshot = JSON.stringify({
+        nodes: state.nodes.map(n => ({
+          id: n.id, type: n.type, x: n.x, y: n.y, width: n.width, height: n.height,
+          title: n.title, attrs: n.attrs, methods: n.methods, color: n.color,
+          image: n.image, stereotype: n.stereotype
+        })),
+        connectors: state.connectors,
+        groups: state.groups.map(g => ({ id: g.id, x: g.x, y: g.y, w: g.w, h: g.h, name: g.name }))
+      });
+      state.history = state.history.slice(0, state.historyIndex + 1);
+      state.history.push(snapshot);
+      state.historyIndex++;
+      if (state.history.length > 50) {
+        state.history.shift();
+        state.historyIndex--;
+      }
+      updateHistoryUI();
+    }
+
+    function undo() {
+      if (state.historyIndex > 0) {
+        state.historyIndex--;
+        restoreFromHistory(state.history[state.historyIndex]);
+        showToast('✓ Action annulée');
+      }
+    }
+
+    function redo() {
+      if (state.historyIndex < state.history.length - 1) {
+        state.historyIndex++;
+        restoreFromHistory(state.history[state.historyIndex]);
+        showToast('✓ Action refaite');
+      }
+    }
+
+    function restoreFromHistory(snapshot) {
+      const data = JSON.parse(snapshot);
+      state.nodes = [];
+      state.connectors = [];
+      state.groups = [];
+      nodesLayer.innerHTML = '';
+
+      if (data.nodes) {
+        data.nodes.forEach(n => {
+          const node = createNode(n.type, n.x, n.y, false);
+          node.title = n.title;
+          node.attrs = n.attrs || [];
+          node.methods = n.methods || [];
+          node.color = n.color || '#ffffff';
+          node.image = n.image || null;
+          node.stereotype = n.stereotype || '';
+        });
+      }
+
+      if (data.connectors) {
+        data.connectors.forEach(c => createConnector(c.fromId, c.fromPort, c.toId, c.toPort, c.type, false));
+      }
+
+      if (data.groups) {
+        data.groups.forEach(g => createGroup(g.x, g.y, g.w, g.h, g.name, false));
+      }
+
+      renderAll();
+    }
+
+    function updateHistoryUI() {
+      const list = document.getElementById('historyList');
+      list.innerHTML = '';
+      const recent = state.history.slice(-10).reverse();
+      recent.forEach((h, i) => {
+        const idx = state.history.length - 1 - i;
+        const div = document.createElement('div');
+        div.className = 'history-item' + (idx === state.historyIndex ? ' text-primary' : '');
+        div.innerHTML = `<i class="bi bi-clock me-2"></i> État ${idx + 1}`;
+        div.onclick = () => {
+          state.historyIndex = idx;
+          restoreFromHistory(state.history[idx]);
+        };
+        list.appendChild(div);
+      });
+    }
+
+    function createNode(type = 'class', x = 120, y = 80, saveHist = true) {
+      const id = 'n' + (state.idCounter++);
+      const g = svgEl('g', { class: 'node', transform: `translate(${x},${y})`, cursor: 'move', 'data-id': id });
+      const width = 220, headerH = 36, attrsH = 60, methodsH = 60, height = headerH + attrsH + methodsH;
+
+      const rect = svgEl('rect', { class: 'node-rect', x: 0, y: 0, width: width, height: height, rx: 10, ry: 10, fill: 'white', stroke: '#2563eb' });
+
+      const title = svgEl('text', { class: 'uml-text', x: width / 2, y: 22, 'text-anchor': 'middle', 'data-role': 'title', 'font-weight': '600' });
+      title.textContent = type === 'class' ? 'NomClasse' : (type === 'interface' ? 'NomInterface' : (type === 'enum' ? 'EnumName' : 'AbstractClass'));
+
+      const stereotype = svgEl('text', { class: 'uml-text', x: width / 2, y: 10, 'text-anchor': 'middle', 'data-role': 'stereotype', 'font-size': '11', 'fill': '#64748b' });
+
+      const sep1 = svgEl('line', { class: 'node-separator', x1: 0, y1: headerH, x2: width, y2: headerH });
+      const sep2 = svgEl('line', { class: 'node-separator', x1: 0, y1: headerH + attrsH, x2: width, y2: headerH + attrsH });
+
+      const attrsText = svgEl('text', { class: 'uml-text', x: 12, y: headerH + 20, 'data-role': 'attrs', 'font-size': '12' });
+      attrsText.textContent = '- attribut: type';
+
+      const methodsText = svgEl('text', { class: 'uml-text', x: 12, y: headerH + attrsH + 20, 'data-role': 'methods', 'font-size': '12' });
+      methodsText.textContent = '+ operation(): void';
+
+      const img = svgEl('image', { class: 'node-image', x: width - 50, y: 6, width: 40, height: 40, 'data-role': 'image', opacity: 0.8 });
+
+      const ports = ['left', 'right', 'top', 'bottom'].map(pos => {
+        const p = svgEl('circle', { class: 'port', r: 6, 'data-port': pos });
+        const coords = { left: [0, height / 2], right: [width, height / 2], top: [width / 2, 0], bottom: [width / 2, height] };
+        p.setAttribute('cx', coords[pos][0]);
+        p.setAttribute('cy', coords[pos][1]);
+        return p;
+      });
+
+      g.append(rect, stereotype, title, sep1, attrsText, sep2, methodsText, img, ...ports);
+      nodesLayer.appendChild(g);
+
+      const nodeObj = {
+        id, type, x, y, width, height,
+        title: title.textContent,
+        attrs: ['- attribut: type'],
+        methods: ['+ operation(): void'],
+        color: '#ffffff',
+        image: null,
+        stereotype: '',
+        g
+      };
+
+      state.nodes.push(nodeObj);
+      makeDraggable(nodeObj);
+      makeInteractive(nodeObj);
+      selectNode(nodeObj);
+
+      if (saveHist) saveHistory();
+      return nodeObj;
+    }
+
+    function findNodeById(id) { return state.nodes.find(n => n.id === id); }
+
+    function makeDraggable(node) {
+      const g = node.g;
+      let ox = 0, oy = 0, startX = 0, startY = 0, dragging = false;
+
+      g.addEventListener('mousedown', e => {
+        if (e.button !== 0 || e.target.classList.contains('port')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        startX = e.clientX;
+        startY = e.clientY;
+        const tr = g.getAttribute('transform');
+        const m = /translate\(([^,]+),([^\)]+)\)/.exec(tr);
+        ox = parseFloat(m[1]);
+        oy = parseFloat(m[2]);
+        dragging = true;
+
+        window.addEventListener('mousemove', draggingFn);
+        window.addEventListener('mouseup', stopDrag);
+      });
+
+      function draggingFn(e) {
+        if (!dragging) return;
+        const dx = (e.clientX - startX) / scale;
+        const dy = (e.clientY - startY) / scale;
+        let nx = ox + dx;
+        let ny = oy + dy;
+
+        if (document.getElementById('snapCheckbox').checked) {
+          nx = Math.round(nx / 20) * 20;
+          ny = Math.round(ny / 20) * 20;
+        }
+
+        node.x = nx;
+        node.y = ny;
+        g.setAttribute('transform', `translate(${nx},${ny})`);
+        renderConnectors();
+      }
+
+      function stopDrag() {
+        if (dragging) {
+          dragging = false;
+          saveHistory();
+        }
+        window.removeEventListener('mousemove', draggingFn);
+        window.removeEventListener('mouseup', stopDrag);
+      }
+    }
+
+    function makeInteractive(node) {
+      const ports = node.g.querySelectorAll('.port');
+      ports.forEach(p => {
+        p.addEventListener('click', e => {
+          e.stopPropagation();
+
+          if (state.connecting && state.connecting.nodeId === node.id && state.connecting.port === p.getAttribute('data-port')) {
+            state.connecting = null;
+            return;
+          }
+
+          if (!state.connecting) {
+            state.connecting = { nodeId: node.id, port: p.getAttribute('data-port') };
+            state.connectType = mode === 'select' ? 'association' : mode;
+            showToast('🔗 Sélectionnez un autre port');
+          } else {
+            const from = state.connecting;
+            const to = { nodeId: node.id, port: p.getAttribute('data-port') };
+
+            if (from.nodeId !== to.nodeId) {
+              createConnector(from.nodeId, from.port, to.nodeId, to.port, state.connectType || 'association');
+              saveHistory();
+            }
+            state.connecting = null;
+          }
+        });
+      });
+
+      node.g.addEventListener('click', e => {
+        e.stopPropagation();
+        selectNode(node);
+      });
+
+      node.g.addEventListener('dblclick', e => {
+        e.stopPropagation();
+        editTitle(node);
+      });
+
+      node.g.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        showContextMenuForNode(node, e.clientX, e.clientY);
+      });
+    }
+
+    function selectNode(node) {
+      state.selected = node;
+      state.selectedConnector = null;
+
+      document.getElementById('propType').value = node.type;
+      document.getElementById('propName').value = node.title;
+      document.getElementById('propStereotype').value = node.stereotype || '';
+      document.getElementById('propAttrs').value = node.attrs.join('\n');
+      document.getElementById('propMethods').value = node.methods.join('\n');
+      document.getElementById('propColor').value = node.color || '#ffffff';
+
+      state.nodes.forEach(n => {
+        n.g.querySelector('.node-rect').classList.remove('selected');
+      });
+      node.g.querySelector('.node-rect').classList.add('selected');
+    }
+
+    function editTitle(node) {
+      const newName = prompt('Modifier le nom', node.title);
+      if (newName !== null) {
+        node.title = newName;
+        renderAll();
+        saveHistory();
+      }
+    }
+
+    function createConnector(fromId, fromPort, toId, toPort, type = 'association', saveHist = true) {
+      const id = 'c' + (state.idCounter++);
+      const conn = { id, fromId, fromPort, toId, toPort, type };
+      state.connectors.push(conn);
+      renderConnectors();
+      if (saveHist) saveHistory();
+    }
+
+    function renderConnectors() {
+      connectorsLayer.innerHTML = '';
+      state.connectors.forEach(c => {
+        const a = findNodeById(c.fromId);
+        const b = findNodeById(c.toId);
+        if (!a || !b) return;
+
+        const p1 = portCoords(a, c.fromPort);
+        const p2 = portCoords(b, c.toPort);
+
+        const path = svgEl('path', {
+          class: `connector ${c.type}`,
+          d: `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`,
+          'data-id': c.id
+        });
+
+        if (c.type === 'inheritance') path.setAttribute('marker-end', 'url(#arrow)');
+        if (c.type === 'aggregation') path.setAttribute('marker-end', 'url(#diamond)');
+        if (c.type === 'composition') path.setAttribute('marker-end', 'url(#filledDiamond)');
+        if (c === state.selectedConnector) path.classList.add('selected');
+
+        connectorsLayer.appendChild(path);
+
+        const mx = (p1.x + p2.x) / 2;
+        const my = (p1.y + p2.y) / 2;
+
+        const lab = svgEl('text', {
+          x: mx, y: my - 8,
+          class: 'uml-text',
+          'font-size': '11',
+          fill: '#64748b',
+          'text-anchor': 'middle'
+        });
+        lab.textContent = c.type;
+        connectorsLayer.appendChild(lab);
+
+        path.addEventListener('click', e => {
+          e.stopPropagation();
+          state.selectedConnector = c;
+          state.selected = null;
+          selectConnector(c);
+        });
+
+        path.addEventListener('contextmenu', e => {
+          e.preventDefault();
+          e.stopPropagation();
+          showContextMenuForConnector(c, e.clientX, e.clientY);
+        });
+      });
+    }
+
+    function portCoords(node, port) {
+      const nx = node.x, ny = node.y;
+      const w = node.width, h = node.height;
+      let x = nx, y = ny;
+
+      if (port === 'left') { x = nx; y = ny + h / 2; }
+      else if (port === 'right') { x = nx + w; y = ny + h / 2; }
+      else if (port === 'top') { x = nx + w / 2; y = ny; }
+      else { x = nx + w / 2; y = ny + h; }
+
+      return { x, y };
+    }
+
+    function selectConnector(conn) {
+      document.getElementById('propType').value = 'connector';
+      document.getElementById('propName').value = conn.type;
+      document.getElementById('propAttrs').value = `De: ${conn.fromId}.${conn.fromPort}\nVers: ${conn.toId}.${conn.toPort}`;
+      renderConnectors();
+    }
+
+    function renderAll() {
+      nodesLayer.innerHTML = '';
+
+      state.nodes.forEach(n => {
+        nodesLayer.appendChild(n.g);
+        n.g.setAttribute('transform', `translate(${n.x},${n.y})`);
+
+        const texts = n.g.querySelectorAll('text');
+        const stereotypeEl = n.g.querySelector('[data-role="stereotype"]');
+        const titleEl = n.g.querySelector('[data-role="title"]');
+        const attrsEl = n.g.querySelector('[data-role="attrs"]');
+        const methodsEl = n.g.querySelector('[data-role="methods"]');
+
+        if (n.stereotype) {
+          stereotypeEl.textContent = `<<${n.stereotype}>>`;
+          titleEl.setAttribute('y', '24');
+        } else {
+          stereotypeEl.textContent = '';
+          titleEl.setAttribute('y', '22');
+        }
+
+        titleEl.textContent = n.title;
+
+        attrsEl.innerHTML = '';
+        n.attrs.forEach((attr, i) => {
+          const tspan = svgEl('tspan', { x: 12, dy: i === 0 ? 0 : 14 });
+          tspan.textContent = attr;
+          attrsEl.appendChild(tspan);
+        });
+
+        methodsEl.innerHTML = '';
+        n.methods.forEach((method, i) => {
+          const tspan = svgEl('tspan', { x: 12, dy: i === 0 ? 0 : 14 });
+          tspan.textContent = method;
+          methodsEl.appendChild(tspan);
+        });
+
+        const img = n.g.querySelector('[data-role="image"]');
+        if (n.image) {
+          img.setAttribute('href', n.image);
+        } else {
+          img.removeAttribute('href');
+        }
+
+        n.g.querySelector('.node-rect').setAttribute('fill', n.color || '#ffffff');
+      });
+
+      renderConnectors();
+      renderGroups();
+    }
+
+    function showContextMenuForNode(node, x, y) {
+      ctxMenu.innerHTML = '';
+      ctxMenu.style.display = 'block';
+      ctxMenu.style.left = x + 'px';
+      ctxMenu.style.top = y + 'px';
+
+      addCtxButton('<i class="bi bi-plus-circle"></i> Ajouter attribut', () => {
+        node.attrs.push('- nouvel: type');
+        selectNode(node);
+        renderAll();
+        saveHistory();
+      });
+
+      addCtxButton('<i class="bi bi-plus-square"></i> Ajouter opération', () => {
+        node.methods.push('+ nouvelle(): void');
+        selectNode(node);
+        renderAll();
+        saveHistory();
+      });
+
+      addCtxButton('<i class="bi bi-image"></i> Ajouter image', () => {
+        document.getElementById('propImage').click();
+        selectNode(node);
+      });
+
+      addCtxButton('<i class="bi bi-palette"></i> Changer couleur', () => {
+        document.getElementById('propColor').click();
+      });
+
+      addCtxButton('<i class="bi bi-files"></i> Dupliquer', () => {
+        duplicateNode(node);
+      });
+
+      addCtxButton('<i class="bi bi-trash"></i> Supprimer', () => {
+        deleteNodeById(node.id);
+      });
+    }
+
+    function showContextMenuForConnector(conn, x, y) {
+      ctxMenu.innerHTML = '';
+      ctxMenu.style.display = 'block';
+      ctxMenu.style.left = x + 'px';
+      ctxMenu.style.top = y + 'px';
+
+      addCtxButton('<i class="bi bi-pencil"></i> Changer type', () => {
+        const types = ['association', 'inheritance', 'aggregation', 'composition', 'dependency'];
+        const newType = prompt('Type (association, inheritance, aggregation, composition, dependency)', conn.type);
+        if (newType && types.includes(newType)) {
+          conn.type = newType;
+          renderConnectors();
+          saveHistory();
+        }
+      });
+
+      addCtxButton('<i class="bi bi-trash"></i> Supprimer liaison', () => {
+        state.connectors = state.connectors.filter(c => c.id !== conn.id);
+        ctxMenu.style.display = 'none';
+        renderAll();
+        saveHistory();
+      });
+    }
+
+    function showContextMenuForCanvas(x, y) {
+      ctxMenu.innerHTML = '';
+      ctxMenu.style.display = 'block';
+      ctxMenu.style.left = x + 'px';
+      ctxMenu.style.top = y + 'px';
+
+      const rect = svg.getBoundingClientRect();
+      const canvasX = (x - rect.left - panX) / scale;
+      const canvasY = (y - rect.top - panY) / scale;
+
+      addCtxButton('<i class="bi bi-file-earmark-text"></i> Ajouter classe', () => {
+        createNode('class', canvasX - 110, canvasY - 80);
+      });
+
+      addCtxButton('<i class="bi bi-puzzle"></i> Ajouter interface', () => {
+        createNode('interface', canvasX - 110, canvasY - 80);
+      });
+
+      addCtxButton('<i class="bi bi-collection"></i> Créer groupe', () => {
+        createGroup(canvasX - 150, canvasY - 100, 300, 200);
+      });
+
+      addCtxButton('<i class="bi bi-code-square"></i> Importer JSON', () => {
+        const j = prompt('Coller le JSON');
+        if (j) {
+          try {
+            const data = JSON.parse(j);
+            importFromJSON(data);
+          } catch (e) {
+            alert('JSON invalide: ' + e.message);
+          }
+        }
+      });
+    }
+
+    function addCtxButton(html, fn) {
+      const btn = document.createElement('button');
+      btn.innerHTML = html;
+      btn.addEventListener('click', () => {
+        fn();
+        ctxMenu.style.display = 'none';
+      });
+      ctxMenu.appendChild(btn);
+    }
+
+    window.addEventListener('click', () => {
+      ctxMenu.style.display = 'none';
+    });
+
+    function deleteNodeById(id) {
+      state.connectors = state.connectors.filter(c => c.fromId !== id && c.toId !== id);
+      state.nodes = state.nodes.filter(n => n.id !== id);
+      state.selected = null;
+      renderAll();
+      saveHistory();
+    }
+
+    document.getElementById('deleteNode').addEventListener('click', () => {
+      if (state.selected) {
+        deleteNodeById(state.selected.id);
+      } else if (state.selectedConnector) {
+        state.connectors = state.connectors.filter(c => c.id !== state.selectedConnector.id);
+        state.selectedConnector = null;
+        renderAll();
+        saveHistory();
+      }
+    });
+
+    function duplicateNode(node) {
+      const copy = createNode(node.type, node.x + 40, node.y + 40, false);
+      copy.title = node.title + ' Copy';
+      copy.attrs = [...node.attrs];
+      copy.methods = [...node.methods];
+      copy.color = node.color;
+      copy.image = node.image;
+      copy.stereotype = node.stereotype;
+      renderAll();
+      saveHistory();
+    }
+
+    document.getElementById('propImage').addEventListener('change', async e => {
+      const f = e.target.files[0];
+      if (!f || !state.selected) return;
+
+      const b = await fileToDataURL(f);
+      state.selected.image = b;
+      renderAll();
+      saveHistory();
+      e.target.value = '';
+    });
+
+    function fileToDataURL(file) {
+      return new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+    }
+
+    document.getElementById('applyProps').addEventListener('click', () => {
+      if (state.selected) {
+        state.selected.title = document.getElementById('propName').value || state.selected.title;
+        state.selected.stereotype = document.getElementById('propStereotype').value || '';
+        state.selected.attrs = document.getElementById('propAttrs').value.split('\n').filter(Boolean);
+        state.selected.methods = document.getElementById('propMethods').value.split('\n').filter(Boolean);
+        state.selected.color = document.getElementById('propColor').value;
+        renderAll();
+        saveHistory();
+        showToast('✓ Propriétés appliquées');
+      } else if (state.selectedConnector) {
+        state.selectedConnector.type = document.getElementById('propName').value;
+        renderConnectors();
+        saveHistory();
+      }
+    });
+
+    const tools = {
+      select: document.getElementById('selectBtn'),
+      class: document.getElementById('classBtn'),
+      interface: document.getElementById('interfaceBtn'),
+      enum: document.getElementById('enumBtn'),
+      abstract: document.getElementById('abstractBtn'),
+      association: document.getElementById('assocBtn'),
+      inheritance: document.getElementById('inheritBtn'),
+      aggregation: document.getElementById('aggBtn'),
+      composition: document.getElementById('compBtn'),
+      dependency: document.getElementById('depBtn')
+    };
+
+    Object.entries(tools).forEach(([k, el]) => {
+      el.addEventListener('click', () => {
+        setMode(k);
+        Object.values(tools).forEach(x => x.classList.remove('active'));
+        el.classList.add('active');
+      });
+    });
+
+    function setMode(m) {
+      mode = m;
+      if (['class', 'interface', 'enum', 'abstract'].includes(m)) {
+        createNode(m, 120 + Math.random() * 100, 80 + Math.random() * 100);
+      }
+    }
+
+    document.getElementById('exportJson').addEventListener('click', () => {
+      const data = {
+        nodes: state.nodes.map(n => ({
+          id: n.id, type: n.type, x: n.x, y: n.y,
+          width: n.width, height: n.height,
+          title: n.title, attrs: n.attrs, methods: n.methods,
+          color: n.color, image: n.image, stereotype: n.stereotype
+        })),
+        connectors: state.connectors,
+        groups: state.groups
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'uml-diagram-' + Date.now() + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('💾 Exporté en JSON');
+    });
+
+    document.getElementById('exportPng').addEventListener('click', () => {
+      const serializer = new XMLSerializer();
+      const source = serializer.serializeToString(svg);
+      const img = new Image();
+      const svgBlob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+
+      img.onload = function () {
+        const canvas = document.createElement('canvas');
+        canvas.width = svg.clientWidth * 2;
+        canvas.height = svg.clientHeight * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+
+        const png = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = png;
+        a.download = 'uml-diagram-' + Date.now() + '.png';
+        a.click();
+        showToast('🖼️ Exporté en PNG');
+      };
+
+      img.src = url;
+    });
+
+
+    // Enhanced zoom functions with mouse wheel support
+    function updateView() {
+      view.setAttribute('transform', `translate(${panX},${panY}) scale(${scale})`);
+      document.getElementById('zoomIndicator').textContent = `Zoom: ${Math.round(scale * 100)}%`;
+    }
+
+    function setZoom(z, centerX = null, centerY = null) {
+      const oldScale = scale;
+      scale = Math.max(0.2, Math.min(4, z));
+
+      // If center coordinates provided, adjust pan to zoom around that point
+      if (centerX !== null && centerY !== null) {
+        const zoomFactor = scale / oldScale;
+        panX = centerX - (centerX - panX) * zoomFactor;
+        panY = centerY - (centerY - panY) * zoomFactor;
+      }
+
+      updateView();
+    }
+
+    // Enhanced mouse wheel zoom with smooth zooming around cursor
+    svg.addEventListener('wheel', e => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const rect = svg.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      // Convert mouse coordinates to SVG coordinates
+      const point = svg.createSVGPoint();
+      point.x = mouseX;
+      point.y = mouseY;
+      const svgPoint = point.matrixTransform(view.getScreenCTM().inverse());
+
+      const delta = e.deltaY > 0 ? -0.15 : 0.15;
+      const newScale = Math.max(0.2, Math.min(4, scale + delta));
+
+      setZoom(newScale, svgPoint.x, svgPoint.y);
+
+      // Show subtle feedback
+      document.getElementById('zoomIndicator').style.opacity = '1';
+      setTimeout(() => {
+        document.getElementById('zoomIndicator').style.opacity = '0.7';
+      }, 300);
+    });
+
+    // Update existing zoom buttons to use the new setZoom function
+    document.getElementById('zoomIn').addEventListener('click', () => {
+      setZoom(scale + 0.15);
+      showToast('🔍 Zoom: ' + Math.round(scale * 100) + '%');
+    });
+
+    document.getElementById('zoomOut').addEventListener('click', () => {
+      setZoom(scale - 0.15);
+      showToast('🔍 Zoom: ' + Math.round(scale * 100) + '%');
+    });
+
+    document.getElementById('resetView').addEventListener('click', () => {
+      scale = 1;
+      panX = 0;
+      panY = 0;
+      updateView();
+      showToast('↺ Vue réinitialisée');
+    });
+
+    // Add smooth transition for zoom indicator
+    document.getElementById('zoomIndicator').style.transition = 'opacity 0.3s ease';
+
+
+
+    document.getElementById('fitView').addEventListener('click', () => {
+      if (state.nodes.length === 0) return;
+
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      state.nodes.forEach(n => {
+        minX = Math.min(minX, n.x);
+        minY = Math.min(minY, n.y);
+        maxX = Math.max(maxX, n.x + n.width);
+        maxY = Math.max(maxY, n.y + n.height);
+      });
+
+      const width = maxX - minX;
+      const height = maxY - minY;
+      const padding = 50;
+
+      scale = Math.min(
+        (svg.clientWidth - padding * 2) / width,
+        (svg.clientHeight - padding * 2) / height
+      );
+
+      panX = (svg.clientWidth / 2) - ((minX + maxX) / 2) * scale;
+      panY = (svg.clientHeight / 2) - ((minY + maxY) / 2) * scale;
+
+      updateView();
+      showToast('📐 Vue ajustée');
+    });
+
+    svg.addEventListener('wheel', e => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        setZoom(scale + delta);
+      }
+    });
+
+    let panning = false, panStartX = 0, panStartY = 0, startPanX = 0, startPanY = 0;
+
+    bgRect.addEventListener('mousedown', e => {
+      if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
+        e.preventDefault();
+        panning = true;
+        panStartX = e.clientX;
+        panStartY = e.clientY;
+        startPanX = panX;
+        startPanY = panY;
+        svg.style.cursor = 'grabbing';
+      }
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (panning) {
+        panX = startPanX + (e.clientX - panStartX);
+        panY = startPanY + (e.clientY - panStartY);
+        updateView();
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (panning) {
+        panning = false;
+        svg.style.cursor = 'default';
+      }
+    });
+
+    svg.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      const target = e.target;
+      if (target.closest('.node') || target.closest('.connector')) return;
+      showContextMenuForCanvas(e.clientX, e.clientY);
+    });
+
+    /*function createGroup(x, y, w, h, name = '', saveHist = true) {
+      const id = 'g' + (state.idCounter++);
+      const g = svgEl('g', { 'data-id': id });
+      const rect = svgEl('rect', {
+        x: x, y: y, width: w, height: h,
+        class: 'group-rect', rx: 10, ry: 10
+      });
+      g.appendChild(rect);
+
+      const label = svgEl('text', {
+        x: x + 12, y: y + 22,
+        class: 'uml-text',
+        fill: '#2563eb',
+        'font-weight': '600'
+      });
+      label.textContent = name || 'Groupe';
+      g.appendChild(label);
+
+      groupsLayer.appendChild(g);
+      state.groups.push({ id, x, y, w, h, name: name || 'Groupe', g });
+
+      if (saveHist) saveHistory();
+    }
+    */
+
+    function createGroup(x, y, w, h, name = '', saveHist = true) {
+      const id = 'g' + (state.idCounter++);
+      const g = svgEl('g', {
+        'data-id': id,
+        class: 'group',
+        cursor: 'move',
+        transform: `translate(${x},${y})`
+      });
+
+      const rect = svgEl('rect', {
+        x: 0, y: 0, width: w, height: h,
+        class: 'group-rect', rx: 10, ry: 10,
+        fill: 'rgba(var(--brand-rgb), 0.04)',
+        stroke: 'rgba(var(--brand-rgb), 0.3)',
+        'stroke-dasharray': '8 4',
+        'stroke-width': 2
+      });
+
+      const label = svgEl('text', {
+        x: 12, y: 22,
+        class: 'uml-text',
+        fill: 'var(--brand)',
+        'font-weight': '600',
+        'data-role': 'label'
+      });
+      label.textContent = name || 'Groupe';
+
+      // Create resize handles
+      const resizeHandles = createResizeHandles(w, h);
+
+      g.appendChild(rect);
+      g.appendChild(label);
+      resizeHandles.forEach(handle => g.appendChild(handle));
+
+      groupsLayer.appendChild(g);
+
+      const groupObj = {
+        id, x, y, w, h,
+        name: name || 'Groupe',
+        g,
+        nodes: [] // Track nodes inside group
+      };
+
+      state.groups.push(groupObj);
+
+      // Make group draggable and resizable
+      makeGroupDraggable(groupObj);
+      makeGroupResizable(groupObj);
+      makeGroupInteractive(groupObj);
+
+      if (saveHist) saveHistory();
+      return groupObj;
+    }
+
+    function createResizeHandles(width, height) {
+      const handles = [
+        { position: 'nw', x: -4, y: -4 },
+        { position: 'ne', x: width - 4, y: -4 },
+        { position: 'sw', x: -4, y: height - 4 },
+        { position: 'se', x: width - 4, y: height - 4 }
+      ];
+
+      return handles.map(handle => {
+        const circle = svgEl('circle', {
+          class: 'resize-handle',
+          'data-position': handle.position,
+          cx: handle.x,
+          cy: handle.y,
+          r: 6,
+          fill: 'var(--brand)',
+          stroke: 'white',
+          'stroke-width': 2,
+          opacity: 0,
+          cursor: getResizeCursor(handle.position)
+        });
+        return circle;
+      });
+    }
+
+    function getResizeCursor(position) {
+      const cursors = {
+        'nw': 'nw-resize',
+        'ne': 'ne-resize',
+        'sw': 'sw-resize',
+        'se': 'se-resize'
+      };
+      return cursors[position];
+    }
+    function makeGroupResizable(group) {
+      const g = group.g;
+      const handles = g.querySelectorAll('.resize-handle');
+
+      handles.forEach(handle => {
+        handle.addEventListener('mousedown', startResize);
+      });
+
+      function startResize(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const position = e.target.getAttribute('data-position');
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startWidth = group.w;
+        const startHeight = group.h;
+        const startGroupX = group.x;
+        const startGroupY = group.y;
+
+        // Get all nodes in group before resize
+        const nodesInGroup = getNodesInGroup(group);
+        const nodePositions = nodesInGroup.map(node => ({
+          node,
+          relativeX: (node.x - startGroupX) / startWidth,
+          relativeY: (node.y - startGroupY) / startHeight,
+          relativeWidth: node.width / startWidth,
+          relativeHeight: node.height / startHeight
+        }));
+
+        function resizing(e) {
+          const dx = (e.clientX - startX) / scale;
+          const dy = (e.clientY - startY) / scale;
+
+          let newWidth = startWidth;
+          let newHeight = startHeight;
+          let newX = startGroupX;
+          let newY = startGroupY;
+
+          // Calculate new dimensions based on resize handle
+          switch (position) {
+            case 'se':
+              newWidth = Math.max(100, startWidth + dx);
+              newHeight = Math.max(80, startHeight + dy);
+              break;
+            case 'sw':
+              newWidth = Math.max(100, startWidth - dx);
+              newHeight = Math.max(80, startHeight + dy);
+              newX = startGroupX + dx;
+              break;
+            case 'ne':
+              newWidth = Math.max(100, startWidth + dx);
+              newHeight = Math.max(80, startHeight - dy);
+              newY = startGroupY + dy;
+              break;
+            case 'nw':
+              newWidth = Math.max(100, startWidth - dx);
+              newHeight = Math.max(80, startHeight - dy);
+              newX = startGroupX + dx;
+              newY = startGroupY + dy;
+              break;
+          }
+
+          // Update group dimensions
+          group.w = newWidth;
+          group.h = newHeight;
+          group.x = newX;
+          group.y = newY;
+
+          // Update group visual
+          const rect = g.querySelector('.group-rect');
+          rect.setAttribute('width', newWidth);
+          rect.setAttribute('height', newHeight);
+          g.setAttribute('transform', `translate(${newX},${newY})`);
+
+          // Update resize handles positions
+          updateResizeHandles(group);
+
+          // Scale nodes proportionally inside the group
+          scaleNodesInGroup(group, nodePositions, startWidth, startHeight, newWidth, newHeight);
+
+          renderConnectors();
+        }
+
+        function stopResize() {
+          window.removeEventListener('mousemove', resizing);
+          window.removeEventListener('mouseup', stopResize);
+          saveHistory();
+        }
+
+        window.addEventListener('mousemove', resizing);
+        window.addEventListener('mouseup', stopResize);
+      }
+    }
+
+
+    function scaleNodesInGroup(group, nodePositions, oldWidth, oldHeight, newWidth, newHeight) {
+      const scaleX = newWidth / oldWidth;
+      const scaleY = newHeight / oldHeight;
+
+      nodePositions.forEach(({ node, relativeX, relativeY, relativeWidth, relativeHeight }) => {
+        // Calculate new position maintaining relative position
+        node.x = group.x + (relativeX * newWidth);
+        node.y = group.y + (relativeY * newHeight);
+
+        // Scale node size proportionally (optional - you can remove this if you don't want nodes to scale)
+        node.width = Math.max(120, node.width * scaleX);
+        node.height = Math.max(80, node.height * scaleY);
+
+        // Update node visual
+        node.g.setAttribute('transform', `translate(${node.x},${node.y})`);
+
+        // Update node rectangle size
+        const rect = node.g.querySelector('.node-rect');
+        rect.setAttribute('width', node.width);
+        rect.setAttribute('height', node.height);
+
+        // Update ports positions
+        updateNodePorts(node);
+      });
+    }
+
+    function updateNodePorts(node) {
+      const ports = node.g.querySelectorAll('.port');
+      const positions = {
+        'left': [0, node.height / 2],
+        'right': [node.width, node.height / 2],
+        'top': [node.width / 2, 0],
+        'bottom': [node.width / 2, node.height]
+      };
+
+      ports.forEach(port => {
+        const pos = port.getAttribute('data-port');
+        const coords = positions[pos];
+        port.setAttribute('cx', coords[0]);
+        port.setAttribute('cy', coords[1]);
+      });
+    }
+
+    function updateResizeHandles(group) {
+      const g = group.g;
+      const handles = g.querySelectorAll('.resize-handle');
+      const positions = {
+        'nw': { x: -4, y: -4 },
+        'ne': { x: group.w - 4, y: -4 },
+        'sw': { x: -4, y: group.h - 4 },
+        'se': { x: group.w - 4, y: group.h - 4 }
+      };
+
+      handles.forEach(handle => {
+        const pos = handle.getAttribute('data-position');
+        const coords = positions[pos];
+        handle.setAttribute('cx', coords.x);
+        handle.setAttribute('cy', coords.y);
+      });
+    }
+
+    function makeGroupDraggable(group) {
+      const g = group.g;
+      let ox = 0, oy = 0, startX = 0, startY = 0, dragging = false;
+
+      g.addEventListener('mousedown', e => {
+        if (e.button !== 0 || e.target.getAttribute('data-role') === 'label') return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        startX = e.clientX;
+        startY = e.clientY;
+        const tr = g.getAttribute('transform');
+        const m = /translate\(([^,]+),([^\)]+)\)/.exec(tr);
+        ox = parseFloat(m[1]);
+        oy = parseFloat(m[2]);
+        dragging = true;
+
+        window.addEventListener('mousemove', draggingFn);
+        window.addEventListener('mouseup', stopDrag);
+      });
+      function draggingFn(e) {
+        if (!dragging) return;
+        const dx = (e.clientX - startX) / scale;
+        const dy = (e.clientY - startY) / scale;
+        let nx = ox + dx;
+        let ny = oy + dy;
+
+        if (document.getElementById('snapCheckbox').checked) {
+          nx = Math.round(nx / 20) * 20;
+          ny = Math.round(ny / 20) * 20;
+        }
+
+        // Update group position
+        group.x = nx;
+        group.y = ny;
+        g.setAttribute('transform', `translate(${nx},${ny})`);
+
+        // Move all nodes inside the group
+        moveNodesWithGroup(group, dx, dy);
+      }
+
+      function stopDrag() {
+        if (dragging) {
+          dragging = false;
+          saveHistory();
+        }
+        window.removeEventListener('mousemove', draggingFn);
+        window.removeEventListener('mouseup', stopDrag);
+      }
+    }
+
+    function moveNodesWithGroup(group, dx, dy) {
+      // Find nodes that are inside this group
+      state.nodes.forEach(node => {
+        if (isNodeInGroup(node, group)) {
+          node.x += dx;
+          node.y += dy;
+          node.g.setAttribute('transform', `translate(${node.x},${node.y})`);
+        }
+      });
+      renderConnectors();
+    }
+
+    function isNodeInGroup(node, group) {
+      return node.x >= group.x &&
+        node.x <= group.x + group.w &&
+        node.y >= group.y &&
+        node.y <= group.y + group.h;
+    }
+
+
+    function makeGroupInteractive(group) {
+      const g = group.g;
+
+      g.addEventListener('mouseenter', () => {
+        const handles = g.querySelectorAll('.resize-handle');
+        handles.forEach(handle => {
+          handle.style.opacity = '1';
+        });
+      });
+
+      g.addEventListener('mouseleave', () => {
+        const handles = g.querySelectorAll('.resize-handle');
+        handles.forEach(handle => {
+          handle.style.opacity = '0';
+        });
+      });
+
+      g.addEventListener('click', e => {
+        e.stopPropagation();
+        selectGroup(group);
+      });
+
+      g.addEventListener('dblclick', e => {
+        e.stopPropagation();
+        editGroupName(group);
+      });
+
+      g.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        showContextMenuForGroup(group, e.clientX, e.clientY);
+      });
+    }
+
+    function selectGroup(group) {
+      state.selected = null;
+      state.selectedConnector = null;
+
+      // Update properties panel for group
+      document.getElementById('propType').value = 'group';
+      document.getElementById('propName').value = group.name;
+      document.getElementById('propStereotype').value = '';
+      document.getElementById('propAttrs').value =
+        `Width: ${Math.round(group.w)}\n` +
+        `Height: ${Math.round(group.h)}\n` +
+        `Position: (${Math.round(group.x)}, ${Math.round(group.y)})\n` +
+        `Nodes: ${getNodesInGroup(group).length}`;
+      document.getElementById('propMethods').value = '';
+      document.getElementById('propColor').value = '#ffffff';
+
+      // Visual selection
+      state.groups.forEach(g => {
+        g.g.querySelector('.group-rect').style.stroke = 'rgba(var(--brand-rgb), 0.3)';
+      });
+      group.g.querySelector('.group-rect').style.stroke = 'var(--accent)';
+      group.g.querySelector('.group-rect').style.strokeDasharray = '0';
+    }
+    function editGroupName(group) {
+      const newName = prompt('Modifier le nom du groupe', group.name);
+      if (newName !== null) {
+        group.name = newName;
+        const label = group.g.querySelector('[data-role="label"]');
+        label.textContent = newName;
+        saveHistory();
+      }
+    }
+
+    function getNodesInGroup(group) {
+      return state.nodes.filter(node => isNodeInGroup(node, group));
+    }
+    /*
+    function renderGroups() {
+      groupsLayer.innerHTML = '';
+      state.groups.forEach(gr => {
+        const g = svgEl('g', { 'data-id': gr.id });
+        const rect = svgEl('rect', {
+          x: gr.x, y: gr.y,
+          width: gr.w, height: gr.h,
+          class: 'group-rect',
+          rx: 10, ry: 10
+        });
+        g.appendChild(rect);
+
+        const label = svgEl('text', {
+          x: gr.x + 12, y: gr.y + 22,
+          class: 'uml-text',
+          fill: '#2563eb',
+          'font-weight': '600'
+        });
+        label.textContent = gr.name || 'Groupe';
+        g.appendChild(label);
+
+        groupsLayer.appendChild(g);
+
+        g.addEventListener('contextmenu', e => {
+          e.preventDefault();
+          showContextMenuForGroup(gr, e.clientX, e.clientY);
+        });
+      });
+    }
+    */
+
+    function renderGroups() {
+      groupsLayer.innerHTML = '';
+      state.groups.forEach(gr => {
+        const g = svgEl('g', {
+          'data-id': gr.id,
+          class: 'group',
+          cursor: 'move',
+          transform: `translate(${gr.x},${gr.y})`
+        });
+
+        const rect = svgEl('rect', {
+          x: 0, y: 0, width: gr.w, height: gr.h,
+          class: 'group-rect', rx: 10, ry: 10
+        });
+
+        const label = svgEl('text', {
+          x: 12, y: 22,
+          class: 'uml-text',
+          fill: 'var(--brand)',
+          'font-weight': '600',
+          'data-role': 'label'
+        });
+        label.textContent = gr.name || 'Groupe';
+
+        // Create resize handles
+        const resizeHandles = createResizeHandles(gr.w, gr.h);
+
+        g.appendChild(rect);
+        g.appendChild(label);
+        resizeHandles.forEach(handle => g.appendChild(handle));
+        groupsLayer.appendChild(g);
+
+        // Reattach event listeners
+        makeGroupDraggable(gr);
+        makeGroupResizable(gr);
+        makeGroupInteractive(gr);
+      });
+    }
+
+    /*function showContextMenuForGroup(gr, x, y) {
+      ctxMenu.innerHTML = '';
+      ctxMenu.style.display = 'block';
+      ctxMenu.style.left = x + 'px';
+      ctxMenu.style.top = y + 'px';
+
+      addCtxButton('<i class="bi bi-pencil"></i> Renommer', () => {
+        const n = prompt('Nom du groupe', gr.name);
+        if (n) {
+          gr.name = n;
+          renderGroups();
+          saveHistory();
+        }
+      });
+
+      addCtxButton('<i class="bi bi-trash"></i> Supprimer', () => {
+        state.groups = state.groups.filter(g => g.id !== gr.id);
+        renderGroups();
+        saveHistory();
+      });
+    }
+    */
+    function showContextMenuForGroup(gr, x, y) {
+      ctxMenu.innerHTML = '';
+      ctxMenu.style.display = 'block';
+      ctxMenu.style.left = x + 'px';
+      ctxMenu.style.top = y + 'px';
+
+      addCtxButton('<i class="bi bi-pencil"></i> Renommer', () => {
+        editGroupName(gr);
+      });
+
+      addCtxButton('<i class="bi bi-arrows-move"></i> Déplacer le contenu', () => {
+        moveAllNodesToGroup(gr);
+      });
+
+      addCtxButton('<i class="bi bi-arrow-right"></i> Aligner le contenu', () => {
+        alignNodesInGroup(gr);
+      });
+
+      addCtxButton('<i class="bi bi-trash"></i> Supprimer le groupe', () => {
+        deleteGroup(gr.id);
+      });
+    }
+
+    function moveAllNodesToGroup(group) {
+      const nodes = getNodesInGroup(group);
+      if (nodes.length === 0) {
+        showToast('ℹ️ Aucun nœud dans le groupe');
+        return;
+      }
+
+      // Center nodes in group
+      const centerX = group.x + group.w / 2;
+      const centerY = group.y + group.h / 2;
+
+      nodes.forEach(node => {
+        node.x = centerX - node.width / 2;
+        node.y = centerY - node.height / 2;
+        node.g.setAttribute('transform', `translate(${node.x},${node.y})`);
+      });
+
+      renderConnectors();
+      saveHistory();
+      showToast('✓ Nœuds centrés dans le groupe');
+    }
+
+    function alignNodesInGroup(group) {
+      const nodes = getNodesInGroup(group);
+      if (nodes.length < 2) {
+        showToast('ℹ️ Besoin d au moins 2 nœuds pour aligner');
+        return;
+      }
+
+      // Simple vertical alignment
+      const startY = group.y + 40;
+      nodes.forEach((node, index) => {
+        node.y = startY + (index * 100);
+        node.x = group.x + 20;
+        node.g.setAttribute('transform', `translate(${node.x},${node.y})`);
+      });
+
+      renderConnectors();
+      saveHistory();
+      showToast('✓ Nœuds alignés dans le groupe');
+    }
+    function deleteGroup(id) {
+      state.groups = state.groups.filter(g => g.id !== id);
+      renderGroups();
+      saveHistory();
+      showToast('🗑️ Groupe supprimé');
+    }
+    document.getElementById('groupBtn').addEventListener('click', () => {
+      createGroup(100, 100, 400, 300, 'Nouveau Groupe');
+    });
+
+    document.getElementById('ungroupBtn').addEventListener('click', () => {
+      state.groups = [];
+      renderGroups();
+      saveHistory();
+      showToast('✂️ Groupes supprimés');
+    });
+
+    function importFromJSON(data) {
+      state.nodes = [];
+      state.connectors = [];
+      state.groups = [];
+      nodesLayer.innerHTML = '';
+
+      if (data.nodes) {
+        data.nodes.forEach(n => {
+          const node = createNode(n.type, n.x, n.y, false);
+          node.title = n.title;
+          node.attrs = n.attrs || [];
+          node.methods = n.methods || [];
+          node.color = n.color || '#ffffff';
+          node.image = n.image || null;
+          node.stereotype = n.stereotype || '';
+        });
+      }
+
+      if (data.connectors) {
+        data.connectors.forEach(c =>
+          createConnector(c.fromId, c.fromPort, c.toId, c.toPort, c.type, false)
+        );
+      }
+
+      if (data.groups) {
+        data.groups.forEach(g =>
+          createGroup(g.x, g.y, g.w, g.h, g.name, false)
+        );
+      }
+
+      renderAll();
+      saveHistory();
+      showToast('📂 Projet importé');
+    }
+
+    document.getElementById('search').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      state.nodes.forEach(n => {
+        const match = n.title.toLowerCase().includes(q) ||
+          n.attrs.join(' ').toLowerCase().includes(q) ||
+          n.methods.join(' ').toLowerCase().includes(q);
+        n.g.style.opacity = (match || !q) ? 1 : 0.2;
+      });
+    });
+
+    document.getElementById('alignHorizontal').addEventListener('click', () => {
+      if (state.nodes.length < 2) return;
+      const avgY = state.nodes.reduce((sum, n) => sum + n.y, 0) / state.nodes.length;
+      state.nodes.forEach(n => {
+        n.y = avgY;
+        n.g.setAttribute('transform', `translate(${n.x},${n.y})`);
+      });
+      renderConnectors();
+      saveHistory();
+      showToast('↔️ Alignement horizontal');
+    });
+
+    document.getElementById('alignVertical').addEventListener('click', () => {
+      if (state.nodes.length < 2) return;
+      const avgX = state.nodes.reduce((sum, n) => sum + n.x, 0) / state.nodes.length;
+      state.nodes.forEach(n => {
+        n.x = avgX;
+        n.g.setAttribute('transform', `translate(${n.x},${n.y})`);
+      });
+      renderConnectors();
+      saveHistory();
+      showToast('↕️ Alignement vertical');
+    });
+
+    document.getElementById('undoBtn').addEventListener('click', undo);
+    document.getElementById('redoBtn').addEventListener('click', redo);
+
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = 'custom-toast';
+      t.innerHTML = `<i class="bi bi-check-circle-fill" style="color:var(--success)"></i> ${msg}`;
+      container.appendChild(t);
+      setTimeout(() => t.remove(), 2500);
+    }
+
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Delete' && state.selected) {
+        deleteNodeById(state.selected.id);
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      }
+
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) {
+        e.preventDefault();
+        redo();
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        document.getElementById('exportJson').click();
+      }
+
+      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+        if (e.key === 'v' || e.key === 'V') { setMode('select'); tools.select.click(); }
+        if (e.key === 'c' || e.key === 'C') { createNode('class', 120, 80); }
+        if (e.key === 'i' || e.key === 'I') { createNode('interface', 140, 100); }
+        if (e.key === 'e' || e.key === 'E') { createNode('enum', 160, 120); }
+        if (e.key === 'a' || e.key === 'A') { createNode('abstract', 180, 140); }
+        if (e.key === 'g' || e.key === 'G') { createGroup(80, 80, 400, 300); }
+      }
+    });
+
+    let autoSaveInterval;
+    document.getElementById('autoSaveCheckbox').addEventListener('change', e => {
+      if (e.target.checked) {
+        autoSaveInterval = setInterval(() => {
+          const data = {
+            nodes: state.nodes.map(n => ({
+              id: n.id, type: n.type, x: n.x, y: n.y,
+              title: n.title, attrs: n.attrs, methods: n.methods,
+              color: n.color, stereotype: n.stereotype
+            })),
+            connectors: state.connectors
+          };
+          const saved = { data, timestamp: Date.now() };
+          try {
+            const store = {};
+            store['uml_autosave'] = JSON.stringify(saved);
+            Object.assign(window, { umlStorage: store });
+            showToast('💾 Sauvegarde auto');
+          } catch (e) {
+            console.error('Auto-save failed:', e);
+          }
+        }, 30000);
+      } else {
+        clearInterval(autoSaveInterval);
+      }
+    });
+
+    document.getElementById('showGridCheckbox').addEventListener('change', e => {
+      if (e.target.checked) {
+        svg.style.backgroundImage = 'linear-gradient(rgba(37,99,235,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.05) 1px, transparent 1px)';
+        svg.style.backgroundSize = '20px 20px';
+      } else {
+        svg.style.backgroundImage = 'none';
+      }
+    });
+
+    // --- GESTION DU MODE PLEIN ÉCRAN ---
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+          fullscreenBtn.classList.add('active');
+          fullscreenBtn.querySelector('i').classList.replace('bi-arrows-fullscreen', 'bi-fullscreen-exit');
+          showToast('🖥️ Mode plein écran activé');
+        });
+      } else {
+        document.exitFullscreen().then(() => {
+          fullscreenBtn.classList.remove('active');
+          fullscreenBtn.querySelector('i').classList.replace('bi-fullscreen-exit', 'bi-arrows-fullscreen');
+          showToast('🖥️ Mode plein écran désactivé');
+        });
+      }
+    }
+
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+    // Raccourci clavier (F)
+    window.addEventListener('keydown', (e) => {
+      if (!e.ctrlKey && !e.metaKey && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+    });
+
+
+    createNode('class', 120, 80, false);
+    createNode('interface', 400, 80, false);
+    const node3 = createNode('class', 260, 280, false);
+    node3.title = 'Controller';
+    node3.stereotype = 'controller';
+    renderAll();
+    saveHistory();
+
+    updateView();
+  </script>
+</body>
+
+</html>

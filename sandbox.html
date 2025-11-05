@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sandbox Éditeur Pro+ Live — Avancé</title>
+
+    <!-- Icons & fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Monaco loader + Emmet + Libraries -->
+    <script>var require = { paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs' } };</script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emmet-monaco-es@latest/dist/emmet-monaco.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.0/dist/jszip.min.js"></script>
+
+    <!-- Theme and Editor Styles -->
+    <link rel="stylesheet" href="thems.css">
+    <link rel="stylesheet" href="monacoEditor.css">
+</head>
+
+<body>
+    <div class="app">
+        <div class="header">
+            <div class="title" role="heading" aria-level="1">
+                <i class="bi bi-terminal-fill" aria-hidden="true"></i> Ump Editor
+            </div>
+            <div class="tools" role="toolbar" aria-label="Editor controls">
+                <button id="projectsBtn" class="btn" title="Gérer les projets" aria-label="Ouvrir la gestion des projets">
+                    <i class="bi bi-folder" aria-hidden="true"></i> Projets
+                </button>
+                <button id="newFileBtn" class="btn" title="Nouveau fichier" aria-label="Créer un nouveau fichier">
+                    <i class="bi bi-file-earmark-plus" aria-hidden="true"></i> Fichier
+                </button>
+                <button id="newFolderBtn" class="btn" title="Nouveau dossier" aria-label="Créer un nouveau dossier">
+                    <i class="bi bi-folder-plus" aria-hidden="true"></i> Dossier
+                </button>
+                <label class="btn" title="Téléverser fichiers" aria-label="Téléverser des fichiers">
+                    <i class="bi bi-upload" aria-hidden="true"></i> Fichiers
+                    <input id="fileInput" type="file" multiple webkitdirectory directory style="display:none">
+                </label>
+                <button id="importZipBtn" class="btn" title="Importer projet (.zip)" aria-label="Importer un projet depuis un fichier ZIP">
+                    <i class="bi bi-folder-arrow-up" aria-hidden="true"></i> Import
+                </button>
+                <button id="downloadZipBtn" class="btn" title="Télécharger projet (.zip)" aria-label="Télécharger le projet sous forme de fichier ZIP">
+                    <i class="bi bi-download" aria-hidden="true"></i> ZIP
+                </button>
+                <button id="clearStorageBtn" class="btn" title="Réinitialiser le stockage" aria-label="Effacer tous les projets du stockage local">
+                    <i class="bi bi-trash" aria-hidden="true"></i> Réinitialiser
+                </button>
+                <button id="undoBtn" class="btn" title="Annuler (Ctrl+Z)" aria-label="Annuler la dernière modification">
+                    <i class="bi bi-arrow-90deg-left" aria-hidden="true"></i> Annuler
+                </button>
+                <button id="toggleThemeBtn" class="btn" title="Basculer le thème" aria-label="Basculer entre les thèmes clair, sombre et système">
+                    <i class="bi bi-sun-fill" aria-hidden="true"></i> Thème
+                </button>
+                <button id="togglePreviewBtn" class="btn" title="Basculer l'aperçu" aria-label="Afficher ou masquer l'aperçu en direct">
+                    <i class="bi bi-eye-slash" aria-hidden="true"></i> Aperçu
+                </button>
+                <button id="snippetsBtn" class="btn" title="Bibliothèque de snippets" aria-label="Ouvrir la bibliothèque de snippets"><i class="bi bi-code-slash" aria-hidden="true"></i> Snippets</button>
+<button id="autoSaveBtn" class="btn" title="Activer/Désactiver l'auto-sauvegarde" aria-label="Basculer l'auto-sauvegarde"><i class="bi bi-save2" aria-hidden="true"></i> Auto-Save</button>
+<button id="findReplaceBtn" class="btn" title="Rechercher et remplacer" aria-label="Ouvrir le panneau de recherche et remplacement"><i class="bi bi-search" aria-hidden="true"></i> Rechercher</button>
+<button id="settingsBtn" class="btn" title="Paramètres de l'éditeur" aria-label="Ouvrir les paramètres de l'éditeur"><i class="bi bi-gear" aria-hidden="true"></i> Paramètres</button>
+                <button id="runBtn" class="btn primary" title="Exécuter (Ctrl+Enter)" aria-label="Exécuter le code (Ctrl+Enter)">
+                    <i class="bi bi-play-fill" aria-hidden="true"></i> Exécuter
+                </button>
+                <button id="toggleFullScreenBtn" class="btn" title="Plein écran" aria-label="Basculer le mode plein écran">
+                    <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+        <div class="main">
+            <div class="explorer">
+                <div class="header">
+                    <div style="font-weight:700">Explorateur</div>
+                    <div style="font-size:.85rem;color:var(--muted)">localStorage</div>
+                </div>
+                <div class="actions">
+                    <button id="expandAll" class="btn" title="Tout développer"><i class="bi bi-arrows-angle-expand"></i></button>
+                    <button id="collapseAll" class="btn" title="Tout réduire"><i class="bi bi-arrows-angle-contract"></i></button>
+                    <div class="search-bar"><input type="text" placeholder="Rechercher un fichier..." aria-label="Rechercher dans l'explorateur"></div>
+                    <!--   <button id="searchBtn" class="btn" title="Rechercher"><i class="bi bi-search"></i></button>-->
+                </div>
+                <div id="fileTree" class="tree"></div>
+            </div>
+            <div class="workspace">
+                <div id="tabs" class="tabs"></div>
+                <div class="split" id="splitContainer">
+                    <div class="editorPanel" id="editorPanel">
+                        <div class="panelHeader">
+                            <div>Éditeur <span id="currentPath" style="font-weight:400;font-size:.85rem;color:var(--muted)"></span></div>
+                            <div>
+                                <button id="formatBtn" class="btn" title="Formater (Ctrl+F)"><i class="bi bi-indent"></i></button>
+                                <button id="saveFileBtn" class="btn" title="Sauvegarder (Ctrl+S)"><i class="bi bi-save"></i></button>
+                                <button id="renameBtn" class="btn" title="Renommer"><i class="bi bi-pencil"></i></button>
+                                <button id="closeTabBtn" class="btn" title="Fermer onglet"><i class="bi bi-x"></i></button>
+                            </div>
+                        </div>
+                        <div id="editorContainer" class="editorContainer"></div>
+                        <div class="status" id="editorStatus">Aucun fichier ouvert</div>
+                    </div>
+                    <div id="resizer" class="resizer"></div>
+                    <div class="previewPanel" id="previewPanel">
+                        <div class="panelHeader">Aperçu Live <button id="refreshPreview" class="btn" style="margin-left:8px" title="Recharger l'aperçu"><i class="bi bi-arrow-clockwise"></i></button></div>
+                        <iframe id="previewFrame" title="Aperçu"></iframe>
+                        <div class="console" id="previewConsole" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="ctx" class="ctx">
+        <button data-act="open">Ouvrir</button>
+        <button data-act="rename">Renommer</button>
+        <button data-act="duplicate">Dupliquer</button>
+        <button data-act="delete">Supprimer</button>
+        <button data-act="download">Télécharger</button>
+    </div>
+    <script src="thems.js"></script>
+    <script src="code.js"></script>
+</body>
+</html>
+
