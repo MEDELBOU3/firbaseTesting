@@ -1049,7 +1049,7 @@
             if (redirectOnLogin === 'true' || redirectOnLogin === null) {
                 // Redirection immédiate si c'est la première fois ou si le drapeau n'est pas configuré
                 localStorage.setItem('fpn_redirect_on_login', 'false'); // Pour éviter la redirection sur rafraîchissement ultérieur de la landing page
-                window.location.href = 'index.html'; // Remplacez par 'app.html' si c'est votre fichier d'application principal
+                window.location.href = 'app.html'; // Remplacez par 'app.html' si c'est votre fichier d'application principal
             } else {
                 // L'utilisateur reste sur la landing page, le bouton Alpine s'affiche.
                 // Nettoyer le drapeau
