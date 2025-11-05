@@ -272,11 +272,24 @@
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-4">
-                    <button @click="document.getElementById('modalAuth').classList.remove('hidden')"
-                        class="btn-primary">
-                        Accès Immédiat →
-                    </button>
-                    <a href="#features" class="btn-secondary">Explorer les Ressources</a>
+                    <template x-if="$store.auth.loggedIn">
+                        <div class="flex flex-col sm:flex-row gap-4 animate-fade-in">
+                            <button @click="$store.auth.redirectToApp()" class="btn-primary">
+                                Aller au Tableau de Bord de <span x-text="$store.auth.userName"></span> →
+                            </button>
+                            <a href="#features" class="btn-secondary">Explorer la Landing Page</a>
+                        </div>
+                    </template>
+
+                    <template x-if="!$store.auth.loggedIn">
+                        <div class="flex flex-col sm:flex-row gap-4 animate-fade-in">
+                            <button @click="document.getElementById('modalAuth').classList.remove('hidden')"
+                                class="btn-primary">
+                                Accès Immédiat →
+                            </button>
+                            <a href="#features" class="btn-secondary">Explorer les Ressources</a>
+                        </div>
+                    </template>
                 </div>
 
                 <!-- Trust Bar -->
@@ -400,8 +413,9 @@
                     </p>
 
                     <!-- Vidéo Démo -->
-                
-                    <div class="mockup-video-wrapper w-full aspect-video rounded-2xl overflow-hidden shadow-xl group relative">
+
+                    <div
+                        class="mockup-video-wrapper w-full aspect-video rounded-2xl overflow-hidden shadow-xl group relative">
                         <!-- YouTube iframe -->
                         <iframe id="demoVideo"
                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 rounded-2xl"
@@ -422,7 +436,7 @@
                         </div>
                     </div>
 
-                  
+
 
                     <!-- CTA Sous la vidéo -->
                     <div class="mt-8 flex flex-wrap gap-4">
@@ -911,6 +925,7 @@
             // detect the logged-in user state.
             alert("Connexion réussie ! L'état de connexion est enregistré localement.");
             document.getElementById('modalAuth').classList.add('hidden');
+            handleSuccessfulLogin(auth.currentUser);
             // Example of a real redirection: window.location.href = '/dashboard.html';
         }
 
@@ -933,13 +948,14 @@
 
         document.getElementById('googleSignIn')?.addEventListener('click', async () => {
             try {
-                // Re-hide previous errors
                 document.getElementById('authError').classList.add('hidden');
+                localStorage.setItem('fpn_redirect_on_login', 'true'); // Définir le drapeau
                 const result = await auth.signInWithPopup(googleProvider);
                 await initializeUserDocument(result.user);
-                redirectToDashboard();
+                handleSuccessfulLogin(result.user); // Appelle la logique de redirection/bouton
             } catch (error) {
                 showAuthError(error.message, 'authError');
+                localStorage.removeItem('fpn_redirect_on_login');
                 console.error("Google Sign-In Error:", error);
             }
         });
@@ -1008,13 +1024,58 @@
             }
         });
 
+        // --- Global State for Login Status ---
+        let userIsLoggedIn = false;
+        let userDisplayName = '';
+
+        function handleSuccessfulLogin(user) {
+            userIsLoggedIn = true;
+            userDisplayName = user.displayName || user.email;
+
+            // 1. Cacher le modal d'authentification
+            document.getElementById('modalAuth').classList.add('hidden');
+
+            // 2. Mettre à jour l'UI pour afficher le bouton de redirection
+            // Cette fonction sera définie dans Alpine.js pour interagir avec le DOM
+            if (window.Alpine) {
+                Alpine.store('auth').loggedIn = true;
+                Alpine.store('auth').userName = userDisplayName;
+            }
+
+            // 3. Rediriger immédiatement si c'est la première connexion, ou afficher le bouton
+            // Nous allons ajouter un paramètre "redirect_on_login" au localStorage pour gérer ça
+            const redirectOnLogin = localStorage.getItem('fpn_redirect_on_login');
+
+            if (redirectOnLogin === 'true' || redirectOnLogin === null) {
+                // Redirection immédiate si c'est la première fois ou si le drapeau n'est pas configuré
+                localStorage.setItem('fpn_redirect_on_login', 'false'); // Pour éviter la redirection sur rafraîchissement ultérieur de la landing page
+                window.location.href = 'index.html'; // Remplacez par 'app.html' si c'est votre fichier d'application principal
+            } else {
+                // L'utilisateur reste sur la landing page, le bouton Alpine s'affiche.
+                // Nettoyer le drapeau
+                localStorage.removeItem('fpn_redirect_on_login');
+            }
+        }
+
         // --- Alpine App Data ---
         function app() {
             return {
                 // Initialisation du mode clair par défaut
                 darkMode: false,
+                // Initialisation des stores Alpine pour l'état d'authentification
+                init() {
+                    // Initialize the store once Alpine is ready
+                    this.$store.auth = {
+                        loggedIn: userIsLoggedIn,
+                        userName: userDisplayName,
+                        redirectToApp: () => {
+                            window.location.href = 'index.html'; // Remplacez par 'app.html'
+                        }
+                    };
+                }
             }
         }
+
     </script>
 
     <!-- Add this <script> block after your section (before </body>) -->
