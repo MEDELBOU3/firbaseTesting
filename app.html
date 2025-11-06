@@ -8,40 +8,32 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
-
-    <!-- Quill CSS -->
-    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
-
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+    <!-- Quill CSS <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet"> <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>-->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
     <!-- Highlight.js CSS (for syntax highlighting in code blocks) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai-sublime.min.css" />
-
-    <!-- Quill JS -->
-    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
-
     <!-- Highlight.js JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-
-
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/emoji-mart.css" />
     <script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser/emoji-mart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/bootstrap5@6.1.11/index.global.min.js"></script>
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-
     <link rel="stylesheet" href="thems.css">
-    <link rel="stylesheet" href="css/style.css" />
-
-
+    <link rel="stylesheet" href="app2.css" />
 </head>
 
 <body data-theme="light">
@@ -760,67 +752,224 @@
         </div>
 
 
-        <!--
-        <div id="aiConversationsSection" class="d-none view-content">
-            <div class="ai-conversations-wrapper d-flex">
-                <div class="ai-conversations-sidebar p-3 border-end">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0"><i class="bi bi-chat-square-text"></i> Conversations</h6>
-                        <button id="newAIConversationBtn" class="btn btn-sm btn-primary">
-                            <i class="bi bi-plus"></i> New
-                        </button>
-                    </div>
-                    <div id="aiConversationList" class="list-group small overflow-auto" style="max-height: 75vh;">
-                    
-                    </div>
+        <!-- ai-chatsSection-->
+        <div id="ai-chatsSection" class="d-none view-content">
+            <!-- Header with Switch Toggle -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 style="color: var(--brand); font-weight: 700">
+                    <i class="bi bi-robot me-2"></i>FPN AI Assistant
+                </h2>
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="aiViewMode" id="aiChatMode" autocomplete="off" checked>
+                    <label class="btn btn-outline-primary" for="aiChatMode">
+                        <i class="bi bi-chat-dots me-2"></i>Chat AI
+                    </label>
+
+                    <input type="radio" class="btn-check" name="aiViewMode" id="aiGuideMode" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="aiGuideMode">
+                        <i class="bi bi-info-circle me-2"></i>Guide
+                    </label>
                 </div>
-                <div class="ai-conversation-main flex-grow-1 p-4">
-                    <div id="aiConversationContent" class="overflow-auto" style="height:75vh;">
-                        <p class="text-muted">Select or start a new AI conversation from the sidebar.</p>
+            </div>
+
+            <!-- AI Chat Container (Keep your existing working chat) -->
+            <div id="aiChatContainer" class="ai-container">
+                <div class="ai-conversations-wrapper d-flex">
+                    <!-- Sidebar -->
+                    <div class="ai-conversations-sidebar p-3 border-end">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0"><i class="bi bi-chat-dots"></i> Conversations</h6>
+                            <button id="newAIConversationBtn" class="btn btn-sm btn-primary">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                        <div id="aiConversationList" class="list-group small overflow-auto" style="max-height: 75vh;">
+                            <!-- Loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Chat area -->
+                    <div class="ai-conversation-main flex-grow-1 d-flex flex-column">
+                        <div id="aiConversationContent" class="flex-grow-1 overflow-auto p-4" style="height: 75vh;">
+                            <p class="text-muted text-center mt-5">Select or start a new conversation to chat with FPN
+                                AI.</p>
+                        </div>
+
+                        <!-- Input box -->
+                        <div class="ai-chat-input border-top p-3 bg-light">
+                            <div class="input-group">
+                                <input id="aiMessageInput" type="text" class="form-control"
+                                    placeholder="Type a message..." />
+                                <button id="sendAIMessageBtn" class="btn btn-success">
+                                    <span class="send-text">Send</span>
+                                    <span class="thinking-text d-none">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                        AI Writing...
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>-->
 
-        <div id="ai-chatsSection" class="d-none view-content">
-            <div class="ai-conversations-wrapper d-flex">
-                <!-- Sidebar -->
-                <div class="ai-conversations-sidebar p-3 border-end">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0"><i class="bi bi-chat-dots"></i> Conversations</h6>
-                        <button id="newAIConversationBtn" class="btn btn-sm btn-primary">
-                            <i class="bi bi-plus-lg"></i>
-                        </button>
-                    </div>
-                    <div id="aiConversationList" class="list-group small overflow-auto" style="max-height: 75vh;">
-                        <!-- Loaded dynamically -->
-                    </div>
-                </div>
+            <!-- NEW: Guide Container (Hidden by default) -->
+            <div id="aiGuideContainer" class="ai-container d-none">
+                <div class="card card-modern">
+                    <div class="card-body p-4">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h4 class="mb-4" style="color: var(--brand);">
+                                    <i class="bi bi-key me-2"></i>Guide de Configuration DeepSeek R1
+                                </h4>
 
-                <!-- Chat area -->
-                <div class="ai-conversation-main flex-grow-1 d-flex flex-column">
-                    <div id="aiConversationContent" class="flex-grow-1 overflow-auto p-4" style="height: 75vh;">
-                        <p class="text-muted text-center mt-5">Select or start a new conversation to chat with FPN AI.
-                        </p>
-                    </div>
+                                <!-- Introduction -->
+                                <div class="mb-5">
+                                    <h5>🤖 À propos de FPN AI Assistant</h5>
+                                    <p class="text-muted">
+                                        Notre assistant IA utilise <strong>DeepSeek R1</strong>, un modèle avancé
+                                        spécialisé dans le raisonnement. Pour l'utiliser, vous devez configurer une clé
+                                        API OpenRouter.
+                                    </p>
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong>DeepSeek R1</strong> est spécialisé dans la résolution de problèmes
+                                        complexes, l'analyse de code, et l'assistance éducative.
+                                    </div>
+                                </div>
 
-                    <!-- Input box -->
-                    <div class="ai-chat-input border-top p-3 bg-light">
-                        <div class="input-group">
-                            <input id="aiMessageInput" type="text" class="form-control"
-                                placeholder="Type a message..." />
-                            <button id="sendAIMessageBtn" class="btn btn-success">
-                                <span class="send-text">Send</span>
-                                <span class="thinking-text d-none">
-                                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                    AI Writing...
-                                </span>
-                            </button>
+                                <!-- Step-by-Step Guide -->
+                                <div class="mb-5">
+                                    <h5>📋 Étapes de Configuration</h5>
+
+                                    <!-- Step 1 -->
+                                    <div class="step-card mb-4">
+                                        <div class="step-header d-flex align-items-center mb-2">
+                                            <span class="step-number">1</span>
+                                            <h6 class="mb-0 ms-3">Créer un compte OpenRouter</h6>
+                                        </div>
+                                        <div class="step-content ps-5">
+                                            <p>Allez sur <a href="https://openrouter.ai" target="_blank"
+                                                    class="text-decoration-none">OpenRouter.ai</a> et créez un compte
+                                                gratuit.</p>
+                                            <div class="alert alert-warning small">
+                                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                                Utilisez une adresse email valide pour la vérification.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 2 -->
+                                    <div class="step-card mb-4">
+                                        <div class="step-header d-flex align-items-center mb-2">
+                                            <span class="step-number">2</span>
+                                            <h6 class="mb-0 ms-3">Générer une clé API</h6>
+                                        </div>
+                                        <div class="step-content ps-5">
+                                            <p>Après connexion :</p>
+                                            <ol class="small">
+                                                <li>Cliquez sur votre profil en haut à droite</li>
+                                                <li>Allez dans <strong>"API Keys"</strong></li>
+                                                <li>Cliquez sur <strong>"Create Key"</strong></li>
+                                                <li>Nommez-la (ex: "FPN Platform")</li>
+                                                <li>Copiez la clé générée</li>
+                                            </ol>
+                                            <div class="code-snippet mt-2">
+                                                <small class="text-muted">Votre clé ressemblera à :</small>
+                                                <code class="d-block mt-1">sk-or-v1-a1b2c3d4e5f6...</code>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 3 -->
+                                    <div class="step-card mb-4">
+                                        <div class="step-header d-flex align-items-center mb-2">
+                                            <span class="step-number">3</span>
+                                            <h6 class="mb-0 ms-3">Configurer dans FPN Platform</h6>
+                                        </div>
+                                        <div class="step-content ps-5">
+                                            <p>Quand vous utilisez l'AI Assistant :</p>
+                                            <ol class="small">
+                                                <li>Une modale s'ouvrira automatiquement</li>
+                                                <li><strong>Collez votre clé API</strong> dans le champ</li>
+                                                <li>Cliquez sur "Save API Key"</li>
+                                                <li>La modale se fermera automatiquement</li>
+                                            </ol>
+                                            <div class="alert alert-success small mt-2">
+                                                <i class="bi bi-check-circle me-2"></i>
+                                                Votre clé est stockée localement et sécurisée.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 4 -->
+                                    <div class="step-card mb-4">
+                                        <div class="step-header d-flex align-items-center mb-2">
+                                            <span class="step-number">4</span>
+                                            <h6 class="mb-0 ms-3">Commencer à utiliser l'IA</h6>
+                                        </div>
+                                        <div class="step-content ps-5">
+                                            <p>Une fois configuré :</p>
+                                            <ul class="small">
+                                                <li>Lancez une nouvelle conversation</li>
+                                                <li>Posez vos questions en français ou anglais</li>
+                                                <li>Utilisez l'IA pour l'aide aux devoirs, le code, l'analyse</li>
+                                                <li>Profitez des réponses avancées de DeepSeek R1</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <!-- Quick Actions Sidebar -->
+                                <div class="sticky-top" style="top: 20px;">
+                                    <!-- API Key Status -->
+                                    <div class="card mb-4">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="bi bi-shield-check me-2"></i>Statut API
+                                            </h6>
+                                            <div id="apiStatus" class="mb-3">
+                                                <span class="badge bg-warning">Non configuré</span>
+                                                <small class="text-muted d-block mt-1">Clé API requise</small>
+                                            </div>
+                                            <button class="btn btn-primary w-100" onclick="openApiKeyModal()">
+                                                <i class="bi bi-key me-2"></i>Configurer l'API Key
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quick Links -->
+                                    <div class="card mb-4">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="bi bi-link-45deg me-2"></i>Liens Rapides
+                                            </h6>
+                                            <div class="d-grid gap-2">
+                                                <a href="https://openrouter.ai" target="_blank"
+                                                    class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-box-arrow-up-right me-2"></i>OpenRouter
+                                                </a>
+                                                <a href="https://deepseek.com" target="_blank"
+                                                    class="btn btn-outline-secondary btn-sm">
+                                                    <i class="bi bi-box-arrow-up-right me-2"></i>DeepSeek
+                                                </a>
+                                                <button class="btn btn-outline-info btn-sm"
+                                                    onclick="testApiConnection()">
+                                                    <i class="bi bi-plug me-2"></i>Tester la connexion
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
 
 
         <!-- ============================================ -->
@@ -1223,8 +1372,7 @@
             </div>
         </div>
 
-
-        <!-- ==== ÉDUCATION & MÉDIAS VIEW (TMDB-Enhanced Advanced) ==== -->
+                <!-- ==== ÉDUCATION & MÉDIAS VIEW (TMDB-Enhanced Advanced) ==== -->
         <div id="edu-mediaView" class="view-content d-none">
             <div class="container-fluid py-4">
                 <!-- Advanced Header with Stats -->
@@ -1397,230 +1545,43 @@
             </div>
         </div>
 
-        <!-- Musique View (index.html) -->
-        <div id="musicView" class="view-content d-none">
-            <div class="music-header d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="fw-bold" style="color: var(--brand)">🎶 Musique & Média Personnel</h2>
-                    <p class="text-muted">Gérez et écoutez vos playlists YouTube et votre historique.</p>
+        <!-- ======================================================= -->
+        <!-- ==== NEW: EDUCATION MEDIA DETAIL VIEW ==== -->
+        <!-- ======================================================= -->
+        <div id="edu-media-detailView" class="view-content d-none">
+            <div class="container-fluid py-4">
+                <!-- Back Button -->
+                <div class="mb-4">
+                    <button class="btn btn-outline-secondary" id="backToEduMedia">
+                        <i class="bi bi-arrow-left me-2"></i>Retour à Éducation & Médias
+                    </button>
                 </div>
-                <button class="btn btn-primary" id="connectYouTubeBtn">
-                    <i class="bi bi-youtube me-2"></i> Connecter mon compte YouTube
-                </button>
-            </div>
 
-            <!-- Barre de recherche -->
-            <div class="input-group mb-4">
-                <input type="text" class="form-control" id="musicSearchInput"
-                    placeholder="Rechercher des playlists, artistes ou vidéos..." />
-                <button class="btn btn-outline-secondary" id="musicSearchBtn">
-                    <i class="bi bi-search"></i>
-                </button>
-            </div>
-
-            <div id="musicContent" class="row g-4">
-                <!-- Contenu initial/playlists -->
-                <div class="col-12 text-center py-5" id="musicInitialMessage">
-                    <i class="bi bi-music-note-beamed fs-1 text-muted d-block mb-3"></i>
-                    <p class="text-muted">Chargement du contenu populaire...</p>
-                </div>
-            </div>
-
-            <!-- Zone pour l'historique de lecture ou les détails de la playlist -->
-            <div id="playlistDetail" class="mt-5 d-none">
-                <button class="btn btn-outline-secondary mb-4" id="backToMusicList"><i
-                        class="bi bi-arrow-left me-2"></i> Retour aux playlists</button>
-                <h3 class="fw-bold mb-4" id="playlistTitle"></h3>
-                <div id="playlistVideosGrid" class="row g-4">
-                    <!-- Les vidéos de la playlist seront affichées ici -->
-                </div>
-            </div>
-        </div>
-
-
-        <!-- La balise du lecteur doit être placée en dehors de #mainContent pour la fixation -->
-        <div id="musicPlayerFixed" class="music-player-fixed" style="display: none;">
-            <!-- Conteneur invisible pour l'API YouTube IFrame Player -->
-            <div id="playerEmbed"
-                style="width: 1px; height: 1px; overflow: hidden; position: absolute; top: 0; left: 0;"></div>
-
-            <div class="player-left d-flex align-items-center gap-3">
-                <img id="trackThumbnail" src="" class="rounded-3 shadow" width="60" height="60" alt=""
-                    onerror="this.style.display='none'">
-                <div>
-                    <div id="trackTitle" class="fw-semibold text-truncate" style="max-width: 150px;">Aucun média chargé
+                <!-- Main Detail Content (will be populated by JS) -->
+                <div id="mediaDetailContent">
+                    <!-- Loader Skeleton -->
+                    <div class="media-detail-skeleton">
+                        <div class="row">
+                            <div class="col-md-4 col-lg-3">
+                                <div class="skeleton-poster"></div>
+                            </div>
+                            <div class="col-md-8 col-lg-9">
+                                <div class="skeleton-line title"></div>
+                                <div class="skeleton-line meta"></div>
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                                <div class="skeleton-actions mt-4">
+                                    <div class="skeleton-button"></div>
+                                    <div class="skeleton-button"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="trackArtist" class="text-muted small text-truncate" style="max-width: 150px;">...</div>
                 </div>
-            </div>
-
-            <div class="player-center d-flex flex-column align-items-center">
-                <div class="player-controls d-flex align-items-center gap-3">
-                    <button class="btn-player" id="btnPrev" title="Piste précédente"><i
-                            class="bi bi-skip-start-fill"></i></button>
-                    <button class="btn-player play" id="btnPlay" title="Lecture / Pause"><i
-                            class="bi bi-play-circle-fill"></i></button>
-                    <button class="btn-player" id="btnNext" title="Piste suivante"><i
-                            class="bi bi-skip-end-fill"></i></button>
-                </div>
-                <div class="progress-container d-flex align-items-center gap-2 mt-2">
-                    <small id="currentTime">0:00</small>
-                    <input type="range" id="progressBar" min="0" max="100" value="0">
-                    <small id="totalTime">0:00</small>
-                </div>
-            </div>
-
-            <div class="player-right d-flex align-items-center gap-2">
-                <button class="btn-player" id="btnVolumeToggle" title="Muet">
-                    <i class="bi bi-volume-up"></i>
-                </button>
-                <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.8" style="width: 80px;">
             </div>
         </div>
 
-        <style>
-            /* ======================================= */
-            /* Styles pour le Lecteur Fixe (Spotify-like) */
-            /* ======================================= */
-
-            .music-player-fixed {
-                /* Fixation au bas de la page */
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                width: 100%;
-                /* Look & Feel (Light/Dark Theme) */
-                background: var(--surface);
-                /* Fond clair par défaut */
-                color: var(--text);
-                border-top: 2px solid var(--border);
-                box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.15);
-
-                /* Layout */
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 10px 25px;
-                z-index: 1050;
-                /* Au-dessus de tous les autres éléments (modals, etc.) */
-                min-height: 80px;
-                transition: background 0.3s, color 0.3s;
-            }
-
-            [data-theme='dark'] .music-player-fixed {
-                background: #121212;
-                color: #fff;
-                border-top: 1px solid #222;
-                box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.4);
-            }
-
-            /* Assurer que le contenu principal laisse de la place */
-            .main-content {
-                padding-bottom: 90px;
-                /* Plus grand que la hauteur du lecteur */
-            }
-
-            /* Boutons de contrôle */
-            .player-controls .btn-player {
-                background: none;
-                border: none;
-                color: var(--text);
-                font-size: 1.4rem;
-                padding: 0 8px;
-                transition: color 0.2s, transform 0.2s;
-            }
-
-            [data-theme='dark'] .player-controls .btn-player {
-                color: #ccc;
-            }
-
-            .player-controls .btn-player:hover {
-                color: var(--accent);
-                transform: scale(1.1);
-            }
-
-            .player-controls .btn-player.play i {
-                font-size: 2.2rem;
-                color: var(--accent);
-            }
-
-            /* Barre de progression et volume */
-            .progress-container {
-                width: 300px;
-            }
-
-            .music-player-fixed #progressBar,
-            .music-player-fixed #volumeControl {
-                -webkit-appearance: none;
-                appearance: none;
-                height: 6px;
-                background: var(--border);
-                border-radius: 3px;
-                cursor: pointer;
-                flex-grow: 1;
-                margin: 0;
-            }
-
-            .music-player-fixed #progressBar::-webkit-slider-thumb,
-            .music-player-fixed #volumeControl::-webkit-slider-thumb {
-                -webkit-appearance: none;
-                appearance: none;
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                background: var(--accent);
-                cursor: pointer;
-                box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-            }
-
-            /* Surcharge de la couleur d'accentuation pour la barre de progression (Chrome/Edge/FF) */
-            .music-player-fixed input[type="range"] {
-                accent-color: var(--accent);
-            }
-
-            /* Le conteneur de l'image pour le player YT */
-            #trackThumbnail {
-                object-fit: cover;
-                border: 1px solid var(--border);
-            }
-
-            /* Styles pour les cartes de playlist */
-            .playlist-card {
-                cursor: pointer;
-                transition: transform 0.2s;
-            }
-
-            .playlist-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            }
-
-            .playlist-card .card-title {
-                min-height: 40px;
-            }
-
-            .playlist-card .card-body {
-                padding: 1rem;
-            }
-
-            /* Vidéo de la playlist */
-            .playlist-video-item {
-                cursor: pointer;
-                padding: 10px;
-                border-radius: 8px;
-                transition: background-color 0.2s;
-            }
-
-            .playlist-video-item:hover {
-                background-color: var(--soft);
-            }
-
-            .playlist-video-item.active {
-                background-color: var(--accent-light);
-                border: 1px solid var(--accent);
-            }
-        </style>
         <!-- Advanced Video/Trailer Modal -->
         <div class="modal fade edu-media-modal" id="eduMediaModal" tabindex="-1">
             <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -1713,34 +1674,73 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div>   
+       
 
-        <!-- Quick View Modal -->
-        <div class="modal fade" id="quickViewModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-body p-4">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <img id="quickViewPoster" src="" alt="" class="img-fluid rounded">
-                            </div>
-                            <div class="col-md-8">
-                                <h4 id="quickViewTitle"></h4>
-                                <p id="quickViewOverview" class="text-muted"></p>
-                                <div class="quick-actions">
-                                    <button class="btn btn-primary btn-sm" onclick="openFullModalFromQuick()">
-                                        <i class="bi bi-play-fill"></i> Voir la bande-annonce
-                                    </button>
-                                    <button class="btn btn-outline-primary btn-sm" onclick="addToWatchlist()">
-                                        <i class="bi bi-bookmark"></i> Watchlist
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+        <!-- ========================== -->
+        <!-- MUSIC VIEW -->
+        <!-- ========================== -->
+        <div id="musicView" class="view-content d-none">
+            <div class="music-header">
+                <input type="text" id="musicSearch" placeholder="Rechercher une musique..." />
+                <select id="musicGenre">
+                    <option value="">Tous les genres</option>
+                    <option value="pop">Pop</option>
+                    <option value="rap">Rap</option>
+                    <option value="rock">Rock</option>
+                    <option value="electronic">Electronic</option>
+                    <option value="jazz">Jazz</option>
+                </select>
+                <button id="searchMusicBtn">Rechercher</button>
+            </div>
+
+            <div id="musicList" class="music-list"></div>
+
+            <!-- Bottom Player -->
+
+            <div id="musicPlayer" class="music-player">
+                <div class="player-info">
+                    <img id="playerThumbnail" src="" alt="thumbnail" />
+                    <div class="player-details">
+                        <div id="playerTitle">Titre</div>
+                        <div id="playerChannel">Chaîne</div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="closeMusicPlayer()"
+                        title="Fermer le lecteur">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+                <div id="youtubePlayer"></div>
+
+                <!-- Optional: Add player controls -->
+                <div class="player-controls">
+                    <button id="shuffleBtn" title="Aléatoire">
+                        <i class="bi bi-shuffle"></i>
+                    </button>
+                    <button id="prevTrackBtn" title="Précédent">
+                        <i class="bi bi-skip-start-fill"></i>
+                    </button>
+                    <button id="playPauseBtn" title="Lecture/Pause">
+                        <i class="bi bi-play-fill"></i>
+                    </button>
+                    <button id="nextTrackBtn" title="Suivant">
+                        <i class="bi bi-skip-end-fill"></i>
+                    </button>
+                    <button id="repeatBtn" title="Répéter">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </button>
+
+                    <div class="volume-control ms-auto">
+                        <i class="bi bi-volume-up"></i>
+                        <input type="range" id="volumeSlider" min="0" max="100" value="50" class="form-range">
                     </div>
                 </div>
+
             </div>
         </div>
+
+
+        
         <!-- Modal for Creating a New Discussion -->
         <div class="modal fade" id="newDiscussionModal" tabindex="-1" aria-labelledby="newDiscussionModalLabel"
             aria-hidden="true">
@@ -2256,7 +2256,13 @@
         console.log("CodeMirror 6 chargé avec succès");
     </script>
 
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
+    <ul id="aiContextMenu" class="ai-context-menu" style="display: none;"></ul>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="js/media.js"></script>
     <script type="module">
 
         //deepSeek R1 api: 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
@@ -2265,9 +2271,6 @@
         const DRIVE_FOLDER_ID = "1rWQnAn8e2fLPpGa-8_GXYHmb0NeTLNH2";
         const YOUTUBE_API_KEY = "AIzaSyBRGvHeOTNPQYhgahGVSeuvsvH2rnUnDF0"; // Remplacer par une clé valide
         const ADMIN_UID = "bM2XwcfzMhXJdzExxFMBJ8mo2612";
-
-        const baseUrl = 'https://www.googleapis.com/youtube/v3';
-
 
 
         const ADMIN_VERIFIED_ICON =
@@ -3221,15 +3224,231 @@
             }
         };
 
+        // AI View Switch Controller - Simple Version
+        window.AIViewController = {
+            currentView: 'chat',
+
+            init: function () {
+                this.attachEventListeners();
+                this.updateApiStatus();
+            },
+
+            attachEventListeners: function () {
+                // View mode switch
+                const chatMode = document.getElementById('aiChatMode');
+                const guideMode = document.getElementById('aiGuideMode');
+
+                if (chatMode) {
+                    chatMode.addEventListener('change', (e) => {
+                        if (e.target.checked) this.switchToChat();
+                    });
+                }
+
+                if (guideMode) {
+                    guideMode.addEventListener('change', (e) => {
+                        if (e.target.checked) this.switchToGuide();
+                    });
+                }
+            },
+
+            switchToChat: function () {
+                document.getElementById('aiChatContainer').classList.remove('d-none');
+                document.getElementById('aiGuideContainer').classList.add('d-none');
+                this.currentView = 'chat';
+            },
+
+            switchToGuide: function () {
+                document.getElementById('aiChatContainer').classList.add('d-none');
+                document.getElementById('aiGuideContainer').classList.remove('d-none');
+                this.currentView = 'guide';
+                this.updateApiStatus();
+            },
+
+            updateApiStatus: function () {
+                const apiStatus = document.getElementById('apiStatus');
+                if (!apiStatus) return;
+
+                const apiKey = localStorage.getItem('deepseekApiKey');
+                if (apiKey) {
+                    apiStatus.innerHTML = `
+                <span class="badge bg-success">Configuré</span>
+                <small class="text-muted d-block mt-1">Clé API présente</small>
+            `;
+                } else {
+                    apiStatus.innerHTML = `
+                <span class="badge bg-warning">Non configuré</span>
+                <small class="text-muted d-block mt-1">Clé API requise</small>
+            `;
+                }
+            }
+        };
+
+        // API Key Modal
+        window.openApiKeyModal = function () {
+            // Check if modal already exists
+            let modal = document.getElementById('apiKeySetupModal');
+
+            if (!modal) {
+                // Create modal HTML
+                const modalHTML = `
+            <div class="modal fade" id="apiKeySetupModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="bi bi-key me-2"></i>Configuration API Key
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Important:</strong> Collez votre clé API OpenRouter pour activer l'AI Assistant DeepSeek R1.
+                            </div>
+                            
+                            <form id="apiKeyForm">
+                                <div class="mb-3">
+                                    <label for="apiKeyInput" class="form-label">Clé API OpenRouter</label>
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="apiKeyInput" 
+                                           placeholder="sk-or-v1-votre-clé-api-ici"
+                                           required>
+                                    <div class="form-text">
+                                        Obtenez votre clé sur <a href="https://openrouter.ai/keys" target="_blank">OpenRouter.ai/keys</a>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="showApiKey">
+                                    <label class="form-check-label" for="showApiKey">
+                                        Afficher la clé
+                                    </label>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" form="apiKeyForm" class="btn btn-primary">Enregistrer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+                modal = document.getElementById('apiKeySetupModal');
+
+                // Attach modal events
+                modal.querySelector('#showApiKey').addEventListener('change', function (e) {
+                    const apiKeyInput = document.getElementById('apiKeyInput');
+                    apiKeyInput.type = e.target.checked ? 'text' : 'password';
+                });
+
+                modal.querySelector('#apiKeyForm').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const apiKey = document.getElementById('apiKeyInput').value.trim();
+
+                    if (!apiKey) {
+                        showToast('Veuillez entrer une clé API', 'danger');
+                        return;
+                    }
+
+                    if (!apiKey.startsWith('sk-or-v1-')) {
+                        showToast('Format invalide. Doit commencer par "sk-or-v1-"', 'warning');
+                        return;
+                    }
+
+                    // Save API key
+                    localStorage.setItem('deepseekApiKey', apiKey);
+
+                    // Close modal
+                    bootstrap.Modal.getInstance(modal).hide();
+
+                    // Update status
+                    if (window.AIViewController) {
+                        AIViewController.updateApiStatus();
+                    }
+
+                    showToast('Clé API enregistrée!', 'success');
+                });
+            }
+
+            // Show modal
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+        };
+
+        // Test API Connection
+        window.testApiConnection = async function () {
+            const apiKey = localStorage.getItem('deepseekApiKey');
+
+            if (!apiKey) {
+                showToast('Configurez votre clé API d\'abord', 'warning');
+                openApiKeyModal();
+                return;
+            }
+
+            showToast('Test de connexion...', 'info');
+
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+
+                if (response.ok) {
+                    showToast('✅ Connexion API réussie!', 'success');
+                } else {
+                    throw new Error('API key invalid');
+                }
+            } catch (error) {
+                showToast('❌ Échec de connexion API', 'danger');
+            }
+        };
 
 
+
+        // In your existing AI configuration, update the apiKeyManager:
+        const apiKeyManager = {
+            get() {
+                return localStorage.getItem('deepseekApiKey');
+            },
+
+            set(key) {
+                localStorage.setItem('deepseekApiKey', key);
+            },
+
+            has() {
+                return !!this.get();
+            },
+
+            validate(key) {
+                return key && key.startsWith('sk-or-v1-');
+            }
+        };
 
         function switchView(view) {
+            // ADD THIS LINE
+            console.log("DEBUG STEP 3: switchView function CALLED with view:", view);
+
             document.querySelectorAll(".view-content").forEach(v => v.classList.add("d-none"));
 
             const viewEl = document.getElementById(view + "View") || document.getElementById(view + "Section");
 
-            if (viewEl) viewEl.classList.remove("d-none");
+            // ADD THIS LINE
+            console.log("DEBUG STEP 4: Searching for element with ID like:", view + "View");
+            console.log("DEBUG STEP 5: Element found:", viewEl);
+
+            if (viewEl) {
+                viewEl.classList.remove("d-none");
+                // ADD THIS LINE
+                console.log("DEBUG STEP 6: 'd-none' class REMOVED from the element. It should be visible.");
+            } else {
+                // ADD THIS LINE
+                console.error("DEBUG FATAL ERROR: The view element was NOT FOUND in the document!");
+            }
+
+
 
             if (view === "videos") {
                 renderVideos();
@@ -3252,46 +3471,47 @@
                 listenForInboxMessages(auth.currentUser.uid);
             }
             if (view === "discussions") showDiscussionsList();
-            if (view === "ai-chats") renderAIConversationsList();
+            //if (view === "ai-chats") renderAIConversationsList();
+            if (view === "ai-chats") {
+                // Initialize AI view controller
+                if (window.AIViewController) {
+                    AIViewController.init();
+                }
+
+                // Check if API key is configured
+                const apiKey = localStorage.getItem('deepseekApiKey');
+                if (!apiKey) {
+                    // Show guide by default if no API key
+                    document.getElementById('aiGuideMode').checked = true;
+                    if (window.AIViewController) {
+                        AIViewController.switchToGuide();
+                    }
+                }
+
+                // Your existing AI chat initialization
+                if (window.renderAIConversationsList) {
+                    renderAIConversationsList();
+                }
+            }
             if (view === "notifications") renderFullNotificationPage();
-            //if (view === "edu-mediaView") initEduMedia(); renderEduMedia() Fresh fetch every time
+
             if (view === "edu-media") {
-                // Check for the API object, not the single function
                 if (window.EduMediaAPI && typeof window.EduMediaAPI.init === 'function') {
-                    // Call the init method via the API
                     window.EduMediaAPI.init();
                 } else {
-                    console.error('EduMediaAPI or its init method not found! Ensure the script is loaded.');
+                    console.error('EduMediaAPI or its init method not found!');
                 }
             }
-
-
-
-            // In your switchView function, update the music case:
-            // In your switchView function
+            if (view === "edu-media-detail") {
+                // This case is intentionally left blank. 
+                // The showDetail() function in media.js handles both switching the view
+                // and populating the content. This just ensures no other logic runs.
+                console.log("Switched to media detail view.");
+            }
             if (view === "music") {
-                // Clear any previous errors
-                const musicContent = document.getElementById('musicContent');
-                if (musicContent) {
-                    musicContent.innerHTML = ''; // Clear any error messages
-                }
-
-                // Initialize music controller
-                if (window.YouTubeMusicController) {
-                    window.YouTubeMusicController.initMusicView();
-                } else {
-                    console.error('YouTubeMusicController not loaded');
-                    musicContent.innerHTML = `
-                        <div class="col-12 text-center py-5">
-                            <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
-                            <p class="mt-2">Module musique non chargé</p>
-                            <button class="btn btn-primary mt-2" onclick="location.reload()">
-                                Recharger la page
-                            </button>
-                        </div>
-                    `;
-                }
+                initMusicView();
             }
+
             if (view === "notes") renderNotes();
             if (view === 'codeeditor-guide') {
                 console.log("Vue Guide affichée.");
@@ -3317,69 +3537,6 @@
         }
 
         // --- FETCH DRIVE FOLDER (FIXED DRIVE ACCESS LOGIC) ---
-        /*async function fetchDriveFolder(folderId) {
-            document.getElementById("loader").style.display = "block";
-            const coursesGrid = document.getElementById("coursesGrid");
-
-            let param = "";
-            if (googleAccessToken) {
-                param = `&access_token=${googleAccessToken}`;
-            } else if (DRIVE_API_KEY) {
-                param = `&key=${DRIVE_API_KEY}`;
-            }
-
-            // Vérification essentielle : Si ni token ni clé, on ne peut pas faire l'appel.
-            if (!param) {
-                document.getElementById("loader").style.display = "none";
-                coursesGrid.innerHTML = `<div class="col-12 text-center text-danger py-5">
-                    <i class="bi bi-exclamation-triangle fs-1"></i>
-                    <p class="mt-2">Erreur: Clé API ou jeton d'accès manquant pour Google Drive.</p>
-                </div>`;
-                return;
-            }
-
-            try {
-                const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name,mimeType,webViewLink,thumbnailLink,iconLink,webContentLink,description,createdTime,modifiedTime)&pageSize=200${param}`;
-
-                const res = await fetch(url);
-
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    let errorMessage = `Erreur HTTP: ${res.status}. ${errorData.error?.message || 'Vérifiez les permissions ou le token.'}`;
-                    if (res.status === 401 || res.status === 403) {
-                        errorMessage = `Accès refusé. Veuillez vérifier votre connexion ou assurez-vous que les fichiers sont publics.`;
-                    }
-                    throw new Error(errorMessage);
-                }
-
-                const json = await res.json();
-
-                if (json.error) {
-                    throw new Error(json.error.message);
-                }
-
-                currentFiles = json.files || [];
-                if (folderId === DRIVE_FOLDER_ID) allFiles = currentFiles;
-                document.getElementById("loader").style.display = "none";
-
-                renderCourses();
-                renderFolderContributed();
-                renderDashboard();
-                updateStats();
-                renderBreadcrumb();
-                populateCourseSelect();
-            } catch (err) {
-                console.error("Erreur de fetch Drive:", err);
-                document.getElementById("loader").style.display = "none";
-                coursesGrid.innerHTML = `<div class="col-12 text-center text-danger py-5"><i
-                    class="bi bi-exclamation-triangle fs-1"></i>
-                    <p class="mt-2">Erreur de chargement des cours : ${err.message}</p>
-                </div>`;
-            }
-        }
-        */
-
-        // Replace the current fetchDriveFolder function with this improved version
         async function fetchDriveFolder(folderId) {
             document.getElementById("loader").style.display = "block";
             const coursesGrid = document.getElementById("coursesGrid");
@@ -3451,6 +3608,7 @@
         `;
             }
         }
+
         function populateCourseSelect() {
             contentCourseSelect.innerHTML =
                 '<option value="">Associé à aucun cours</option>';
@@ -3552,6 +3710,11 @@
                 fetchDriveFolder(currentFolderId || DRIVE_FOLDER_ID);
             };
         });
+
+
+
+
+
 
         function extractVideoId(url) {
             if (!url) return null;
@@ -3872,7 +4035,7 @@
         // QUILL EDITOR INITIALIZATION (FIXED HLJS)
         // ============================
 
-        function imageHandler() {
+        /*function imageHandler() {
             // Demander à l'utilisateur de coller une URL d'image
             const url = prompt('Entrez l\'URL de l\'image (doit être accessible publiquement) :');
             if (url) {
@@ -3911,7 +4074,363 @@
             const quill = new Quill(selector, { theme: "snow", modules: modules });
             container.__quill = quill;
             return quill;
+        }*/
+
+        // Enhanced Quill Editor Configuration
+        function initializeQuill(selector) {
+            const container = document.querySelector(selector);
+            if (!container) {
+                console.warn('Quill container not found:', selector);
+                return null;
+            }
+
+            // Clear existing Quill instance if any
+            if (container.__quill) {
+                container.__quill = null;
+            }
+
+            container.innerHTML = ''; // Clear container
+
+            const codeBlockLanguages = [
+                { name: 'javascript', label: 'JavaScript' },
+                { name: 'python', label: 'Python' },
+                { name: 'java', label: 'Java' },
+                { name: 'cpp', label: 'C++' },
+                { name: 'html', label: 'HTML' },
+                { name: 'css', label: 'CSS' },
+                { name: 'php', label: 'PHP' },
+                { name: 'sql', label: 'SQL' },
+                { name: 'json', label: 'JSON' },
+                { name: 'xml', label: 'XML' },
+                { name: 'bash', label: 'Bash' },
+                { name: 'markdown', label: 'Markdown' }
+            ];
+
+            const modules = {
+                toolbar: {
+                    container: [
+                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        [{ 'font': [] }],
+                        [{ 'size': ['small', false, 'large', 'huge'] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'script': 'sub' }, { 'script': 'super' }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'indent': '-1' }, { 'indent': '+1' }],
+                        [{ 'align': [] }],
+                        ['blockquote', 'code-block'],
+                        ['link', 'image', 'video'],
+                        [{ 'code-language': codeBlockLanguages }],
+                        ['clean']
+                    ],
+                    handlers: {
+                        'image': imageHandler,
+                        'code-language': function (value) {
+                            const quill = this.quill;
+                            const range = quill.getSelection();
+                            if (range) {
+                                quill.formatLine(range.index, range.length, 'code-language', value);
+                            }
+                        }
+                    }
+                },
+                syntax: window.hljs ? {
+                    highlight: function (text, language) {
+                        if (!language) return text;
+                        try {
+                            return window.hljs.highlight(text, {
+                                language: language,
+                                ignoreIllegals: true
+                            }).value;
+                        } catch (e) {
+                            return window.hljs.highlightAuto(text).value;
+                        }
+                    }
+                } : false
+            };
+
+            const quill = new Quill(selector, {
+                theme: 'snow',
+                modules: modules,
+                formats: [
+                    'bold', 'italic', 'underline', 'strike',
+                    'color', 'background',
+                    'header', 'size', 'font',
+                    'code', 'code-block', 'code-language',
+                    'blockquote', 'list', 'bullet', 'indent',
+                    'link', 'image', 'video',
+                    'align', 'script'
+                ]
+            });
+            // Add code block action buttons
+            quill.on('text-change', function () {
+                addCodeBlockActions(quill);
+            });
+
+            container.__quill = quill;
+            return quill;
         }
+
+        // Add action buttons to code blocks
+        function addCodeBlockActions(quill) {
+            const codeBlocks = quill.root.querySelectorAll('.ql-syntax');
+
+            codeBlocks.forEach(block => {
+                if (!block.querySelector('.code-block-actions')) {
+                    const actions = document.createElement('div');
+                    actions.className = 'code-block-actions';
+
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'code-block-btn';
+                    copyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
+                    copyBtn.title = 'Copy Code';
+                    copyBtn.onclick = () => copyCodeToClipboard(block);
+
+                    const runBtn = document.createElement('button');
+                    runBtn.className = 'code-block-btn';
+                    runBtn.innerHTML = '<i class="bi bi-play-fill"></i>';
+                    runBtn.title = 'Run Code';
+                    runBtn.onclick = () => runCode(block);
+
+                    const formatBtn = document.createElement('button');
+                    formatBtn.className = 'code-block-btn';
+                    formatBtn.innerHTML = '<i class="bi bi-code-slash"></i>';
+                    formatBtn.title = 'Format Code';
+                    formatBtn.onclick = () => formatCode(block);
+
+                    actions.appendChild(copyBtn);
+                    actions.appendChild(runBtn);
+                    actions.appendChild(formatBtn);
+                    block.appendChild(actions);
+                }
+            });
+        }
+
+        // Copy code to clipboard
+        function copyCodeToClipboard(codeBlock) {
+            const code = codeBlock.textContent.replace(/Copy CodeRun CodeFormat Code/g, '').trim();
+            navigator.clipboard.writeText(code).then(() => {
+                showToast('Code copied to clipboard!', 'success');
+            }).catch(err => {
+                console.error('Failed to copy code:', err);
+                showToast('Failed to copy code', 'danger');
+            });
+        }
+
+        // Format code (basic indentation)
+        function formatCode(codeBlock) {
+            const code = codeBlock.textContent.replace(/Copy CodeRun CodeFormat Code/g, '').trim();
+
+            // Basic JavaScript formatting
+            try {
+                const formatted = code
+                    .replace(/{/g, '{\n  ')
+                    .replace(/}/g, '\n}')
+                    .replace(/;/g, ';\n  ')
+                    .replace(/\n\s*\n/g, '\n');
+
+                codeBlock.textContent = formatted;
+                showToast('Code formatted!', 'success');
+            } catch (e) {
+                showToast('Formatting failed', 'warning');
+            }
+        }
+
+        // Run code (for supported languages)
+        function runCode(codeBlock) {
+            const code = codeBlock.textContent.replace(/Copy CodeRun CodeFormat Code/g, '').trim();
+            const language = detectLanguage(code);
+
+            showToast(`Running ${language} code...`, 'info');
+
+            switch (language) {
+                case 'javascript':
+                    runJavaScript(code);
+                    break;
+                case 'python':
+                    showToast('Python execution requires server-side support', 'warning');
+                    break;
+                case 'html':
+                    renderHTML(code);
+                    break;
+                case 'css':
+                    renderCSS(code);
+                    break;
+                default:
+                    showToast(`Execution not supported for ${language}`, 'warning');
+            }
+        }
+
+        // Detect code language
+        function detectLanguage(code) {
+            if (code.includes('function') || code.includes('const') || code.includes('let') || code.includes('var')) {
+                return 'javascript';
+            } else if (code.includes('def ') || code.includes('import ') || code.includes('print(')) {
+                return 'python';
+            } else if (code.includes('<html') || code.includes('<div') || code.includes('<p')) {
+                return 'html';
+            } else if (code.includes('{') && code.includes('}') && (code.includes(':') || code.includes(';'))) {
+                return 'css';
+            } else {
+                return 'text';
+            }
+        }
+
+        // Run JavaScript code safely
+        function runJavaScript(code) {
+            try {
+                // Create a safe execution environment
+                const safeCode = `
+            try {
+                ${code}
+            } catch (e) {
+                console.error('Execution error:', e);
+                return 'Error: ' + e.message;
+            }
+        `;
+
+                const result = eval(safeCode);
+                showToast('JavaScript executed successfully!', 'success');
+                console.log('Code result:', result);
+            } catch (e) {
+                showToast('JavaScript execution failed: ' + e.message, 'danger');
+            }
+        }
+
+        // Render HTML code visually
+        function renderHTML(htmlCode) {
+            const preview = createPreviewWindow('HTML Preview');
+            preview.innerHTML = htmlCode;
+        }
+
+        // Render CSS code visually
+        function renderCSS(cssCode) {
+            const preview = createPreviewWindow('CSS Preview');
+            const style = document.createElement('style');
+            style.textContent = cssCode;
+            preview.appendChild(style);
+
+            // Add some sample HTML to see CSS effects
+            const sample = document.createElement('div');
+            sample.innerHTML = `
+        <div class="sample-element" style="padding: 20px; margin: 10px; border: 1px solid #ccc;">
+            <h3>CSS Preview Sample</h3>
+            <p>This is a sample element to demonstrate your CSS styles.</p>
+            <button class="sample-btn">Sample Button</button>
+        </div>
+    `;
+            preview.appendChild(sample);
+        }
+
+        // Create preview window for visual rendering
+        function createPreviewWindow(title) {
+            // Remove existing preview if any
+            const existingPreview = document.getElementById('code-preview-modal');
+            if (existingPreview) {
+                existingPreview.remove();
+            }
+
+            const modalHTML = `
+        <div class="modal fade" id="code-preview-modal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">${title}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="preview-content" style="min-height: 400px;">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            const modal = new bootstrap.Modal(document.getElementById('code-preview-modal'));
+            modal.show();
+
+            return document.getElementById('preview-content');
+        }
+
+        // Enhanced Markdown Parser with Visual Rendering
+        function renderMarkdownToVisual(markdownText) {
+            const preview = createPreviewWindow('Markdown Preview');
+
+            // Convert markdown to HTML
+            const html = marked.parse(markdownText);
+            preview.innerHTML = html;
+
+            // Apply syntax highlighting to code blocks in the preview
+            preview.querySelectorAll('pre code').forEach(block => {
+                if (window.hljs) {
+                    hljs.highlightElement(block);
+                }
+            });
+        }
+
+        // Add Markdown rendering button to code blocks containing markdown
+        function addMarkdownRenderButton(quill) {
+            const codeBlocks = quill.root.querySelectorAll('.ql-syntax');
+
+            codeBlocks.forEach(block => {
+                const code = block.textContent.replace(/Copy CodeRun CodeFormat Code/g, '').trim();
+
+                // Check if content looks like markdown
+                if (isMarkdownContent(code)) {
+                    const actions = block.querySelector('.code-block-actions');
+                    if (actions && !actions.querySelector('.markdown-render-btn')) {
+                        const markdownBtn = document.createElement('button');
+                        markdownBtn.className = 'code-block-btn markdown-render-btn';
+                        markdownBtn.innerHTML = '<i class="bi bi-eye-fill"></i>';
+                        markdownBtn.title = 'Render Markdown';
+                        markdownBtn.onclick = () => renderMarkdownToVisual(code);
+                        actions.appendChild(markdownBtn);
+                    }
+                }
+            });
+        }
+
+        // Check if content is markdown
+        function isMarkdownContent(text) {
+            const markdownPatterns = [
+                /^#+\s+/m,           // Headers
+                /\*\*.+\*\*/,        // Bold
+                /\*.+\*/,            // Italic
+                /\[.+\]\(.+\)/,      // Links
+                /^- /m,              // List items
+                /```[\s\S]*```/,     // Code blocks
+                />\s+.+/m            // Blockquotes
+            ];
+
+            return markdownPatterns.some(pattern => pattern.test(text));
+        }
+
+        // Enhanced image handler
+        function imageHandler() {
+            const url = prompt('Enter image URL (must be publicly accessible):');
+            if (url) {
+                const range = this.quill.getSelection(true);
+
+                // Validate URL
+                if (!isValidImageUrl(url)) {
+                    showToast('Please enter a valid image URL (jpg, png, gif, webp)', 'warning');
+                    return;
+                }
+
+                this.quill.insertEmbed(range.index, 'image', url, Quill.sources.USER);
+                this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
+            }
+        }
+
+        function isValidImageUrl(url) {
+            return /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(url);
+        }
+
+
+
 
         // 1. Add/update these variables at the top of your script
         const historyQueue = document.getElementById("historyQueue");
@@ -8858,6 +9377,14 @@
         });
 
 
+
+        function formatTime(s) {
+            s = Math.floor(s);
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            return `${m}:${String(sec).padStart(2, '0')}`;
+        }
+
         // Helper functions (add if missing)
         function escapeHtml(text) {
             const div = document.createElement('div');
@@ -12788,1707 +13315,6 @@
                 );
             });
 
-        /* ============================================================================
-   EDUCATION MEDIA VIEW - COMPLETE JAVASCRIPT LOGIC
-   Advanced TMDB Integration with Enhanced Features
-   ============================================================================ */
-
-        // ============================================================================
-        // CONFIGURATION & CONSTANTS
-        // ============================================================================
-
-        const TMDB_CONFIG = {
-            API_KEY: '6f66b7643f2f68bc93087a25591ca78a',
-            BASE_URL: 'https://api.themoviedb.org/3',
-            IMAGE_URL: 'https://image.tmdb.org/t/p/',
-            LANGUAGE: 'en-USA',
-            CACHE_DURATION: 5 * 60 * 1000, // 5 minutes
-        };
-
-        // Enhanced Genre Mapping with Educational Focus
-        const SUBJECT_GENRES = {
-            history: {
-                ids: [36, 10752, 99],
-                name: 'Histoire',
-                icon: '📜',
-                description: 'Films historiques et documentaires'
-            },
-            science: {
-                ids: [878, 99],
-                name: 'Sciences',
-                icon: '🔬',
-                description: 'Science-fiction et documentaires scientifiques'
-            },
-            lang: {
-                ids: [10769, 18],
-                name: 'Langues',
-                icon: '🌍',
-                description: 'Contenus pour l\'apprentissage des langues'
-            },
-            tech: {
-                ids: [878, 9648],
-                name: 'Technologie',
-                icon: '💻',
-                description: 'Innovation et technologie'
-            },
-            art: {
-                ids: [10402, 18],
-                name: 'Arts',
-                icon: '🎨',
-                description: 'Arts visuels et créativité'
-            },
-            nature: {
-                ids: [99, 10751],
-                name: 'Nature',
-                icon: '🌿',
-                description: 'Environnement et nature'
-            }
-        };
-
-        const GENRE_MAP = {
-            28: 'Action', 12: 'Aventure', 16: 'Animation', 35: 'Comédie',
-            80: 'Crime', 99: 'Documentaire', 18: 'Drame', 10751: 'Famille',
-            14: 'Fantastique', 36: 'Histoire', 27: 'Horreur', 10402: 'Musique',
-            9648: 'Mystère', 10749: 'Romance', 878: 'Science-Fiction',
-            10770: 'Téléfilm', 53: 'Thriller', 10752: 'Guerre', 37: 'Western'
-        };
-
-        // ============================================================================
-        // STATE MANAGEMENT
-        // ============================================================================
-
-        let eduMediaState = {
-            currentPage: 1,
-            totalPages: 1,
-            currentFilter: '',
-            currentSort: 'popularity',
-            currentSearch: '',
-            currentView: 'grid',
-            allMedia: [],
-            filteredMedia: [],
-            cache: new Map(),
-            watchlist: [],
-            favorites: []
-        };
-
-        // ============================================================================
-        // INITIALIZATION
-        // ============================================================================
-
-        function initEduMedia() {
-            console.log('🎬 Initializing Education Media...');
-
-            // Load saved preferences
-            loadUserPreferences();
-
-            // Setup all event listeners
-            setupEventListeners();
-
-            // Initial render
-            renderEduMedia();
-
-            // Update UI elements
-            updateStatsMedia();
-            updateLastUpdatedTime();
-
-            console.log('✅ Education Media initialized successfully');
-        }
-
-        function loadUserPreferences() {
-            try {
-                const saved = localStorage.getItem('eduMediaPreferences');
-                if (saved) {
-                    const prefs = JSON.parse(saved);
-                    eduMediaState.currentView = prefs.view || 'grid';
-                    eduMediaState.currentSort = prefs.sort || 'popularity';
-                    eduMediaState.watchlist = prefs.watchlist || [];
-                    eduMediaState.favorites = prefs.favorites || [];
-                }
-            } catch (error) {
-                console.warn('Could not load preferences:', error);
-            }
-        }
-
-        function saveUserPreferences() {
-            try {
-                const prefs = {
-                    view: eduMediaState.currentView,
-                    sort: eduMediaState.currentSort,
-                    watchlist: eduMediaState.watchlist,
-                    favorites: eduMediaState.favorites
-                };
-                localStorage.setItem('eduMediaPreferences', JSON.stringify(prefs));
-            } catch (error) {
-                console.warn('Could not save preferences:', error);
-            }
-        }
-
-        // ============================================================================
-        // EVENT LISTENERS SETUP
-        // ============================================================================
-
-        function setupEventListeners() {
-            // Filter dropdown
-            const filterEl = document.getElementById('eduMediaFilter');
-            if (filterEl) {
-                filterEl.addEventListener('change', handleFilterChange);
-            }
-
-            // Sort dropdown
-            const sortEl = document.getElementById('eduMediaSort');
-            if (sortEl) {
-                sortEl.addEventListener('change', handleSortChange);
-            }
-
-            // Search with debounce
-            const searchEl = document.getElementById('eduMediaSearch');
-            if (searchEl) {
-                let searchTimeout;
-                searchEl.addEventListener('input', (e) => {
-                    clearTimeout(searchTimeout);
-                    const clearBtn = document.getElementById('clearSearch');
-                    if (clearBtn) {
-                        clearBtn.style.display = e.target.value ? 'block' : 'none';
-                    }
-                    searchTimeout = setTimeout(() => {
-                        eduMediaState.currentSearch = e.target.value;
-                        eduMediaState.currentPage = 1;
-                        renderEduMedia();
-                    }, 500);
-                });
-            }
-
-            // Clear search button
-            const clearSearchEl = document.getElementById('clearSearch');
-            if (clearSearchEl) {
-                clearSearchEl.addEventListener('click', () => {
-                    const searchInput = document.getElementById('eduMediaSearch');
-                    if (searchInput) {
-                        searchInput.value = '';
-                        eduMediaState.currentSearch = '';
-                        clearSearchEl.style.display = 'none';
-                        renderEduMedia();
-                    }
-                });
-            }
-
-            // View toggle buttons
-            document.querySelectorAll('.view-toggle-buttons button').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.view-toggle-buttons button').forEach(b =>
-                        b.classList.remove('active')
-                    );
-                    e.currentTarget.classList.add('active');
-                    eduMediaState.currentView = e.currentTarget.dataset.view;
-                    saveUserPreferences();
-                    renderCurrentView();
-                });
-            });
-
-            // Action buttons
-            const refreshBtn = document.getElementById('eduMediaRefresh');
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', refreshMedia);
-            }
-
-            const shuffleBtn = document.getElementById('eduMediaShuffle');
-            if (shuffleBtn) {
-                shuffleBtn.addEventListener('click', shuffleMedia);
-            }
-
-            const resetBtn = document.getElementById('resetFilters');
-            if (resetBtn) {
-                resetBtn.addEventListener('click', resetFilters);
-            }
-
-            const loadMoreBtn = document.getElementById('loadMoreMedia');
-            if (loadMoreBtn) {
-                loadMoreBtn.addEventListener('click', loadMoreMedia);
-            }
-
-            // Modal actions
-            setupModalEventListeners();
-        }
-
-        function setupModalEventListeners() {
-            const addToFavBtn = document.getElementById('addToFavorites');
-            if (addToFavBtn) {
-                addToFavBtn.addEventListener('click', handleAddToFavorites);
-            }
-
-            const shareBtn = document.getElementById('shareMedia');
-            if (shareBtn) {
-                shareBtn.addEventListener('click', handleShareMedia);
-            }
-
-            // AI action buttons
-            document.querySelectorAll('[data-ai-action]').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const action = e.currentTarget.dataset.aiAction;
-                    handleAIAction(action);
-                });
-            });
-        }
-
-        // ============================================================================
-        // EVENT HANDLERS
-        // ============================================================================
-
-        function handleFilterChange(e) {
-            eduMediaState.currentFilter = e.target.value;
-            eduMediaState.currentPage = 1;
-            renderEduMedia();
-        }
-
-        function handleSortChange(e) {
-            eduMediaState.currentSort = e.target.value;
-            eduMediaState.currentPage = 1;
-            saveUserPreferences();
-            applyFiltersAndSort();
-            renderCurrentView();
-            updateMediaCount();
-        }
-
-        function handleAddToFavorites() {
-            const modal = document.getElementById('eduMediaModal');
-            if (!modal) return;
-
-            const mediaId = modal.dataset.currentMediaId;
-            const mediaTitle = document.getElementById('eduMediaTitle')?.textContent;
-
-            if (!mediaId) return;
-
-            const index = eduMediaState.favorites.indexOf(mediaId);
-            const btn = document.getElementById('addToFavorites');
-
-            if (index === -1) {
-                eduMediaState.favorites.push(mediaId);
-                if (btn) btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
-                showNotification(`"${mediaTitle}" ajouté aux favoris`, 'success');
-            } else {
-                eduMediaState.favorites.splice(index, 1);
-                if (btn) btn.innerHTML = '<i class="bi bi-heart"></i>';
-                showNotification(`"${mediaTitle}" retiré des favoris`, 'info');
-            }
-
-            saveUserPreferences();
-        }
-
-        function handleShareMedia() {
-            const title = document.getElementById('eduMediaTitle')?.textContent;
-            const modal = document.getElementById('eduMediaModal');
-            const mediaId = modal?.dataset.currentMediaId;
-
-            if (navigator.share && mediaId) {
-                navigator.share({
-                    title: `Découvrez: ${title}`,
-                    text: `Je vous recommande ce contenu éducatif: ${title}`,
-                    url: `https://www.themoviedb.org/movie/${mediaId}`
-                }).catch(err => console.log('Share cancelled:', err));
-            } else {
-                // Fallback: copy to clipboard
-                const url = `https://www.themoviedb.org/movie/${mediaId}`;
-                navigator.clipboard.writeText(url).then(() => {
-                    showNotification('Lien copié dans le presse-papiers', 'success');
-                });
-            }
-        }
-
-        function handleAIAction(action) {
-            const title = document.getElementById('eduMediaTitle')?.textContent;
-            const overview = document.getElementById('eduMediaDesc')?.textContent;
-
-            switch (action) {
-                case 'explain':
-                    showNotification('Génération de l\'explication contextuelle...', 'info');
-                    generateAIExplanation(title, overview);
-                    break;
-                case 'quiz':
-                    showNotification('Création du quiz...', 'info');
-                    generateAIQuiz(title, overview);
-                    break;
-                case 'resources':
-                    showNotification('Recherche de ressources complémentaires...', 'info');
-                    generateAIResources(title, overview);
-                    break;
-            }
-        }
-
-        // ============================================================================
-        // CORE RENDERING FUNCTIONS
-        // ============================================================================
-
-        async function renderEduMedia() {
-            const loader = document.getElementById('eduMediaLoader');
-            const grid = document.getElementById('eduMediaGrid');
-            const list = document.getElementById('eduMediaList');
-            const cards = document.getElementById('eduMediaCards');
-            const empty = document.getElementById('eduMediaEmpty');
-            const loadMore = document.getElementById('loadMoreContainer');
-
-            // Show loader and hide all views
-            if (loader) loader.classList.remove('d-none');
-            if (grid) grid.classList.add('d-none');
-            if (list) list.classList.add('d-none');
-            if (cards) cards.classList.add('d-none');
-            if (empty) empty.classList.add('d-none');
-            if (loadMore) loadMore.classList.add('d-none');
-
-            try {
-                // Fetch media from TMDB
-                const media = await fetchTMDBMedia();
-                eduMediaState.allMedia = media;
-
-                // Apply filters and sorting
-                applyFiltersAndSort();
-
-                if (eduMediaState.filteredMedia.length === 0) {
-                    showEmptyState();
-                    return;
-                }
-
-                // Render based on current view
-                renderCurrentView();
-
-                // Update UI elements
-                updateStatsMedia();
-                updateMediaCount();
-                updateLastUpdatedTime();
-
-                // Show load more button if applicable
-                if (eduMediaState.currentPage < eduMediaState.totalPages && loadMore) {
-                    loadMore.classList.remove('d-none');
-                }
-
-            } catch (error) {
-                console.error('❌ TMDB Fetch Error:', error);
-                showErrorState(error);
-            } finally {
-                if (loader) loader.classList.add('d-none');
-            }
-        }
-
-        async function fetchTMDBMedia() {
-            const { currentFilter, currentSearch, currentPage } = eduMediaState;
-
-            // Check cache first
-            const cacheKey = `${currentFilter}-${currentSearch}-${currentPage}`;
-            const cached = eduMediaState.cache.get(cacheKey);
-
-            if (cached && Date.now() - cached.timestamp < TMDB_CONFIG.CACHE_DURATION) {
-                console.log('📦 Using cached data');
-                eduMediaState.totalPages = cached.totalPages;
-                return cached.data;
-            }
-
-            let endpoint, params;
-
-            if (currentSearch) {
-                endpoint = 'search/movie';
-                params = { query: currentSearch };
-            } else if (currentFilter && SUBJECT_GENRES[currentFilter]) {
-                endpoint = 'discover/movie';
-                params = {
-                    with_genres: SUBJECT_GENRES[currentFilter].ids.join(','),
-                    'vote_count.gte': 100 // Quality filter
-                };
-            } else {
-                endpoint = 'movie/popular';
-                params = {};
-            }
-
-            const queryParams = new URLSearchParams({
-                api_key: TMDB_CONFIG.API_KEY,
-                language: TMDB_CONFIG.LANGUAGE,
-                page: currentPage,
-                ...params,
-                sort_by: getSortParam(eduMediaState.currentSort)
-            });
-
-            const response = await fetch(`${TMDB_CONFIG.BASE_URL}/${endpoint}?${queryParams}`);
-
-            if (!response.ok) {
-                throw new Error(`TMDB API Error: ${response.status} ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            eduMediaState.totalPages = data.total_pages;
-
-            const processedResults = data.results.map(item => ({
-                id: item.id,
-                title: item.title,
-                overview: item.overview || 'Description non disponible',
-                poster_path: item.poster_path,
-                backdrop_path: item.backdrop_path,
-                release_date: item.release_date,
-                vote_average: item.vote_average || 0,
-                vote_count: item.vote_count || 0,
-                genre_ids: item.genre_ids || [],
-                popularity: item.popularity || 0,
-                media_type: 'movie'
-            }));
-
-            // Cache the results
-            eduMediaState.cache.set(cacheKey, {
-                data: processedResults,
-                totalPages: data.total_pages,
-                timestamp: Date.now()
-            });
-
-            return processedResults;
-        }
-
-        function getSortParam(sort) {
-            const sortMap = {
-                popularity: 'popularity.desc',
-                release_date: 'release_date.desc',
-                vote_average: 'vote_average.desc',
-                title: 'title.asc'
-            };
-            return sortMap[sort] || 'popularity.desc';
-        }
-
-        // ============================================================================
-        // FILTER & SORT LOGIC
-        // ============================================================================
-
-        function applyFiltersAndSort() {
-            let filtered = [...eduMediaState.allMedia];
-
-            // Apply subject filter
-            if (eduMediaState.currentFilter && SUBJECT_GENRES[eduMediaState.currentFilter]) {
-                const genreIds = SUBJECT_GENRES[eduMediaState.currentFilter].ids;
-                filtered = filtered.filter(media =>
-                    media.genre_ids.some(id => genreIds.includes(id))
-                );
-            }
-
-            // Apply search filter
-            if (eduMediaState.currentSearch) {
-                const search = eduMediaState.currentSearch.toLowerCase();
-                filtered = filtered.filter(media =>
-                    media.title.toLowerCase().includes(search) ||
-                    media.overview.toLowerCase().includes(search)
-                );
-            }
-
-            // Apply sorting
-            filtered.sort((a, b) => {
-                switch (eduMediaState.currentSort) {
-                    case 'release_date':
-                        return new Date(b.release_date || 0) - new Date(a.release_date || 0);
-                    case 'vote_average':
-                        return (b.vote_average || 0) - (a.vote_average || 0);
-                    case 'title':
-                        return (a.title || '').localeCompare(b.title || '');
-                    default: // popularity
-                        return (b.popularity || 0) - (a.popularity || 0);
-                }
-            });
-
-            eduMediaState.filteredMedia = filtered;
-        }
-
-        // ============================================================================
-        // VIEW RENDERING
-        // ============================================================================
-
-        function renderCurrentView() {
-            const grid = document.getElementById('eduMediaGrid');
-            const list = document.getElementById('eduMediaList');
-            const cards = document.getElementById('eduMediaCards');
-
-            // Hide all views
-            if (grid) grid.classList.add('d-none');
-            if (list) list.classList.add('d-none');
-            if (cards) cards.classList.add('d-none');
-
-            switch (eduMediaState.currentView) {
-                case 'grid':
-                    renderGridView();
-                    break;
-                case 'list':
-                    renderListView();
-                    break;
-                case 'cards':
-                    renderCardsView();
-                    break;
-                default:
-                    renderGridView();
-            }
-        }
-
-        function renderGridView() {
-            const grid = document.getElementById('eduMediaGrid');
-            if (!grid) return;
-
-            grid.innerHTML = eduMediaState.filteredMedia.map(media => `
-                <div class="col-xl-3 col-lg-4 col-md-6">
-                    <div class="edu-media-card" data-id="${media.id}" data-type="${media.media_type}">
-                        <div class="card-image-wrapper">
-                            <img 
-                                src="${getImageUrl(media.poster_path, 'w500')}" 
-                                alt="${escapeHtml(media.title)}" 
-                                class="edu-media-poster"
-                                loading="lazy"
-                                onerror="this.src='https://via.placeholder.com/300x450/333/fff?text=Image+Non+Disponible'"
-                            >
-                            <div class="card-overlay">
-                                <div class="overlay-content">
-                                    <div class="rating-badge">
-                                        <i class="bi bi-star-fill"></i> ${media.vote_average.toFixed(1)}
-                                    </div>
-                                    <button class="btn btn-primary btn-sm quick-view-btn" 
-                                            onclick="event.stopPropagation(); EduMediaAPI.openQuickView(${media.id}, '${media.media_type}')">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="edu-media-info">
-                            <h5 class="edu-media-title-card">${escapeHtml(media.title)}</h5>
-                            <div class="edu-media-meta">
-                                <span class="year">${getYear(media.release_date)}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            attachCardEventListeners();
-            grid.classList.remove('d-none');
-        }
-
-
-        function renderListView() {
-            const list = document.getElementById('eduMediaList');
-            if (!list) return;
-
-            list.innerHTML = eduMediaState.filteredMedia.map(media => `
-        <div class="edu-media-list-item" data-id="${media.id}" data-type="${media.media_type}">
-            <div class="list-item-image">
-                <img src="${getImageUrl(media.poster_path, 'w200')}" 
-                     alt="${escapeHtml(media.title)}" 
-                     loading="lazy"
-                     onerror="this.src='https://via.placeholder.com/200x300/333/fff?text=No+Image'">
-            </div>
-            <div class="list-item-content">
-                <div class="list-item-header">
-                    <h5>${escapeHtml(media.title)}</h5>
-                    <div class="list-item-meta">
-                        <span class="year">${getYear(media.release_date)}</span>
-                        <span class="rating"><i class="bi bi-star-fill"></i> ${media.vote_average.toFixed(1)}</span>
-                        <span class="badge">${getSubjectFromGenres(media.genre_ids)}</span>
-                    </div>
-                </div>
-                <p class="list-item-desc">${truncateText(media.overview, 200)}</p>
-                <div class="list-item-actions">
-                    <button class="btn btn-primary btn-sm" 
-                            onclick="openEduMediaModal(${media.id}, '${media.media_type}', '${escapeHtml(media.title).replace(/'/g, "\\'")}')">
-                        <i class="bi bi-play-fill"></i> Voir la bande-annonce
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm" 
-                            onclick="addToWatchlist(${media.id})">
-                        <i class="bi bi-bookmark"></i> Watchlist
-                    </button>
-                </div>
-            </div>
-        </div>
-    `).join('');
-
-            list.classList.remove('d-none');
-        }
-
-        function renderCardsView() {
-            const cards = document.getElementById('eduMediaCards');
-            if (!cards) return;
-
-            cards.innerHTML = eduMediaState.filteredMedia.map(media => `
-        <div class="col-md-6 col-lg-4">
-            <div class="edu-media-card-large" data-id="${media.id}" data-type="${media.media_type}">
-                <div class="card-large-image" 
-                     style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8)), url('${getImageUrl(media.backdrop_path, 'w780')}')">
-                    <div class="card-large-overlay">
-                        <div class="card-large-content">
-                            <h5>${escapeHtml(media.title)}</h5>
-                            <p>${truncateText(media.overview, 150)}</p>
-                            <div class="card-large-meta">
-                                <span><i class="bi bi-calendar"></i> ${getYear(media.release_date)}</span>
-                                <span><i class="bi bi-star-fill"></i> ${media.vote_average.toFixed(1)}</span>
-                            </div>
-                            <div class="card-large-actions">
-                                <button class="btn btn-primary" 
-                                        onclick="openEduMediaModal(${media.id}, '${media.media_type}', '${escapeHtml(media.title).replace(/'/g, "\\'")}')">
-                                    <i class="bi bi-play-fill"></i> Regarder
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `).join('');
-
-            cards.classList.remove('d-none');
-        }
-
-
-        function attachCardEventListeners() {
-            document.querySelectorAll('.edu-media-card').forEach(card => {
-                card.addEventListener('click', (e) => {
-                    // Don't trigger if clicking quick view button
-                    if (e.target.closest('.quick-view-btn')) return;
-
-                    const id = card.dataset.id;
-                    const type = card.dataset.type;
-                    const title = card.querySelector('.edu-media-title-card')?.textContent || 'Unknown';
-                    //openEduMediaModal(id, type, title);
-                    EduMediaAPI.openModal(id, type, title);
-                });
-            });
-        }
-
-        // ============================================================================
-        // MODAL FUNCTIONALITY
-        // ============================================================================
-
-        async function openEduMediaModal(id, type, title) {
-            const modalEl = document.getElementById('eduMediaModal');
-            if (!modalEl) return;
-
-            // Store current media ID
-            modalEl.dataset.currentMediaId = id;
-            modalEl.dataset.currentMediaType = type;
-
-            const modal = new bootstrap.Modal(modalEl);
-
-            try {
-                // Show loading state
-                showModalLoading(true);
-
-                // Fetch all data in parallel
-                const [details, videos, similar] = await Promise.all([
-                    fetchMediaDetails(id, type),
-                    fetchMediaVideos(id, type),
-                    fetchSimilarMedia(id, type)
-                ]);
-
-                // Populate modal with data
-                populateModalData(details, videos, similar);
-
-                // Update favorites button state
-                updateFavoritesButton(id);
-
-                modal.show();
-
-            } catch (error) {
-                console.error('❌ Error opening modal:', error);
-                showModalError(error);
-            } finally {
-                showModalLoading(false);
-            }
-        }
-
-        async function fetchMediaDetails(id, type) {
-            const response = await fetch(
-                `${TMDB_CONFIG.BASE_URL}/${type}/${id}?api_key=${TMDB_CONFIG.API_KEY}&language=${TMDB_CONFIG.LANGUAGE}&append_to_response=credits`
-            );
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch media details: ${response.status}`);
-            }
-
-            return await response.json();
-        }
-
-        async function fetchMediaVideos(id, type) {
-            const response = await fetch(
-                `${TMDB_CONFIG.BASE_URL}/${type}/${id}/videos?api_key=${TMDB_CONFIG.API_KEY}&language=fr`
-            );
-
-            if (!response.ok) return null;
-
-            const data = await response.json();
-            // Try to find French trailer first, then any trailer
-            return data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube') || null;
-        }
-
-        async function fetchSimilarMedia(id, type) {
-            const response = await fetch(
-                `${TMDB_CONFIG.BASE_URL}/${type}/${id}/similar?api_key=${TMDB_CONFIG.API_KEY}&language=${TMDB_CONFIG.LANGUAGE}&page=1`
-            );
-
-            if (!response.ok) return [];
-
-            const data = await response.json();
-            return data.results.slice(0, 4);
-        }
-
-        function populateModalData(details, trailer, similar) {
-            // Basic info
-            const titleEl = document.getElementById('eduMediaTitle');
-            const yearEl = document.getElementById('eduMediaYear');
-            const ratingEl = document.getElementById('eduMediaRating');
-            const descEl = document.getElementById('eduMediaDesc');
-
-            if (titleEl) titleEl.textContent = details.title || details.name || 'Titre inconnu';
-            if (yearEl) yearEl.textContent = new Date(details.release_date || details.first_air_date).getFullYear() || 'N/A';
-            if (ratingEl) ratingEl.textContent = `${(details.vote_average || 0).toFixed(1)}/10`;
-            if (descEl) descEl.textContent = details.overview || 'Description non disponible';
-
-            // Duration (if available)
-            const durationEl = document.getElementById('eduMediaDuration');
-            if (durationEl && details.runtime) {
-                const hours = Math.floor(details.runtime / 60);
-                const minutes = details.runtime % 60;
-                durationEl.textContent = `${hours}h ${minutes}min`;
-            } else if (durationEl) {
-                durationEl.textContent = '';
-            }
-
-            // Video player
-            const playerEl = document.getElementById('eduMediaPlayer');
-            if (playerEl) {
-                if (trailer) {
-                    playerEl.innerHTML = `
-                <iframe 
-                    src="https://www.youtube.com/embed/${trailer.key}?autoplay=0&rel=0&modestbranding=1" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen
-                    style="width:100%;height:100%;">
-                </iframe>
-            `;
-                } else {
-                    playerEl.innerHTML = `
-                <div class="player-placeholder d-flex flex-column align-items-center justify-content-center h-100 bg-dark">
-                    <i class="bi bi-film" style="font-size: 4rem; color: #666;"></i>
-                    <p class="mt-3 text-muted">Bande-annonce non disponible</p>
-                </div>
-            `;
-                }
-            }
-
-            // Genres
-            const genresEl = document.getElementById('eduMediaGenres');
-            if (genresEl && details.genres) {
-                genresEl.textContent = details.genres.map(g => g.name).join(', ') || 'N/A';
-            }
-
-            // Language
-            const languageEl = document.getElementById('eduMediaLanguage');
-            if (languageEl && details.original_language) {
-                languageEl.textContent = details.original_language.toUpperCase();
-            }
-
-            // Votes
-            const votesEl = document.getElementById('eduMediaVotes');
-            if (votesEl) {
-                votesEl.textContent = `${(details.vote_average || 0).toFixed(1)} (${details.vote_count || 0} votes)`;
-            }
-
-            // Similar media
-            const similarEl = document.getElementById('similarMedia');
-            if (similarEl && similar && similar.length > 0) {
-                similarEl.innerHTML = similar.map(media => `
-            <div class="similar-item" 
-                 onclick="openEduMediaModal(${media.id}, '${media.media_type || 'movie'}', '${escapeHtml(media.title || media.name).replace(/'/g, "\\'")}')">
-                <img src="${getImageUrl(media.poster_path, 'w154')}" 
-                     alt="${escapeHtml(media.title || media.name)}"
-                     onerror="this.src='https://via.placeholder.com/154x231/333/fff?text=No+Image'">
-                <span>${escapeHtml(media.title || media.name)}</span>
-            </div>
-        `).join('');
-            } else if (similarEl) {
-                similarEl.innerHTML = '<p class="text-muted">Aucun contenu similaire trouvé</p>';
-            }
-        }
-
-        function showModalLoading(show) {
-            const playerEl = document.getElementById('eduMediaPlayer');
-            if (!playerEl) return;
-
-            if (show) {
-                playerEl.innerHTML = `
-            <div class="d-flex flex-column align-items-center justify-content-center h-100 bg-dark">
-                <div class="spinner-border text-primary mb-3"></div>
-                <p class="text-muted">Chargement des détails...</p>
-            </div>
-        `;
-            }
-        }
-
-        function showModalError(error) {
-            showNotification(`Erreur: ${error.message}`, 'danger');
-        }
-
-        function updateFavoritesButton(mediaId) {
-            const btn = document.getElementById('addToFavorites');
-            if (!btn) return;
-
-            const isFavorite = eduMediaState.favorites.includes(mediaId);
-            btn.innerHTML = isFavorite ? '<i class="bi bi-heart-fill"></i>' : '<i class="bi bi-heart"></i>';
-        }
-
-        // ============================================================================
-        // QUICK VIEW FUNCTIONALITY
-        // ============================================================================
-
-        function openQuickView(id, type) {
-            const media = eduMediaState.allMedia.find(m => m.id == id);
-            if (!media) return;
-
-            const quickTitleEl = document.getElementById('quickViewTitle');
-            const quickOverviewEl = document.getElementById('quickViewOverview');
-            const quickPosterEl = document.getElementById('quickViewPoster');
-
-            if (quickTitleEl) quickTitleEl.textContent = media.title;
-            if (quickOverviewEl) quickOverviewEl.textContent = truncateText(media.overview, 200);
-            if (quickPosterEl) quickPosterEl.src = getImageUrl(media.poster_path, 'w300');
-
-            const quickModalEl = document.getElementById('quickViewModal');
-            if (quickModalEl) {
-                const quickModal = new bootstrap.Modal(quickModalEl);
-                quickModal.show();
-            }
-        }
-
-        // ============================================================================
-        // WATCHLIST & FAVORITES
-        // ============================================================================
-
-        function addToWatchlist(mediaId) {
-            const index = eduMediaState.watchlist.indexOf(mediaId);
-
-            if (index === -1) {
-                eduMediaState.watchlist.push(mediaId);
-                showNotification('Ajouté à la watchlist', 'success');
-            } else {
-                eduMediaState.watchlist.splice(index, 1);
-                showNotification('Retiré de la watchlist', 'info');
-            }
-
-            saveUserPreferences();
-        }
-
-        // ============================================================================
-        // ACTION HANDLERS
-        // ============================================================================
-
-        async function refreshMedia() {
-            const btn = document.getElementById('eduMediaRefresh');
-            if (btn) {
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i>';
-                btn.disabled = true;
-            }
-
-            // Clear cache
-            eduMediaState.cache.clear();
-            eduMediaState.currentPage = 1;
-
-            await renderEduMedia();
-
-            if (btn) {
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
-            }
-
-            showNotification('Médias actualisés', 'success');
-        }
-
-        function shuffleMedia() {
-            const shuffled = [...eduMediaState.filteredMedia].sort(() => Math.random() - 0.5);
-            eduMediaState.filteredMedia = shuffled;
-            renderCurrentView();
-            showNotification('Médias mélangés aléatoirement !', 'success');
-        }
-
-        function resetFilters() {
-            eduMediaState.currentFilter = '';
-            eduMediaState.currentSearch = '';
-            eduMediaState.currentSort = 'popularity';
-            eduMediaState.currentPage = 1;
-
-            const filterEl = document.getElementById('eduMediaFilter');
-            const searchEl = document.getElementById('eduMediaSearch');
-            const sortEl = document.getElementById('eduMediaSort');
-            const clearSearchEl = document.getElementById('clearSearch');
-
-            if (filterEl) filterEl.value = '';
-            if (searchEl) searchEl.value = '';
-            if (sortEl) sortEl.value = 'popularity';
-            if (clearSearchEl) clearSearchEl.style.display = 'none';
-
-            renderEduMedia();
-            showNotification('Filtres réinitialisés', 'info');
-        }
-
-        async function loadMoreMedia() {
-            const btn = document.getElementById('loadMoreMedia');
-            if (!btn) return;
-
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="bi bi-arrow-repeat spinner"></i> Chargement...';
-            btn.disabled = true;
-
-            try {
-                eduMediaState.currentPage++;
-                const newMedia = await fetchTMDBMedia();
-
-                // Append new media to existing
-                eduMediaState.allMedia = [...eduMediaState.allMedia, ...newMedia];
-                applyFiltersAndSort();
-                renderCurrentView();
-                updateStatsMedia();
-                updateMediaCount();
-
-                // Hide button if no more pages
-                if (eduMediaState.currentPage >= eduMediaState.totalPages) {
-                    const container = document.getElementById('loadMoreContainer');
-                    if (container) container.classList.add('d-none');
-                }
-
-                showNotification(`${newMedia.length} nouveaux médias chargés`, 'success');
-
-            } catch (error) {
-                console.error('Error loading more media:', error);
-                showNotification('Erreur lors du chargement', 'danger');
-                eduMediaState.currentPage--; // Revert page increment
-            } finally {
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
-            }
-        }
-
-        // ============================================================================
-        // AI FEATURES (Placeholder implementations)
-        // ============================================================================
-
-        function generateAIExplanation(title, overview) {
-            // This would integrate with your AI system
-            console.log('AI Explanation requested for:', title);
-            setTimeout(() => {
-                showNotification('Fonction IA à implémenter avec votre système', 'info');
-            }, 1000);
-        }
-
-        function generateAIQuiz(title, overview) {
-            // This would integrate with your AI system
-            console.log('AI Quiz requested for:', title);
-            setTimeout(() => {
-                showNotification('Fonction IA à implémenter avec votre système', 'info');
-            }, 1000);
-        }
-
-        function generateAIResources(title, overview) {
-            // This would integrate with your AI system
-            console.log('AI Resources requested for:', title);
-            setTimeout(() => {
-                showNotification('Fonction IA à implémenter avec votre système', 'info');
-            }, 1000);
-        }
-
-        // ============================================================================
-        // UI UPDATE FUNCTIONS
-        // ============================================================================
-
-        function updateStatsMedia() {
-            const totalEl = document.getElementById('totalMediaCount');
-            const filterEl = document.getElementById('activeFilterCount');
-
-            if (totalEl) totalEl.textContent = eduMediaState.allMedia.length;
-
-            if (filterEl) {
-                if (eduMediaState.currentFilter && SUBJECT_GENRES[eduMediaState.currentFilter]) {
-                    filterEl.textContent = SUBJECT_GENRES[eduMediaState.currentFilter].name;
-                } else {
-                    filterEl.textContent = 'Aucun';
-                }
-            }
-        }
-
-        function updateMediaCount() {
-            const countEl = document.getElementById('mediaCountText');
-            if (!countEl) return;
-
-            const count = eduMediaState.filteredMedia.length;
-            countEl.textContent = `${count} média${count > 1 ? 's' : ''} trouvé${count > 1 ? 's' : ''}`;
-        }
-
-        function updateLastUpdatedTime() {
-            const timeEl = document.getElementById('lastUpdated');
-            if (timeEl) {
-                timeEl.textContent = new Date().toLocaleTimeString('fr-FR');
-            }
-        }
-
-        function updateProgress(percent) {
-            const progressEl = document.getElementById('loadProgress');
-            if (progressEl) {
-                progressEl.style.width = `${percent}%`;
-            }
-        }
-
-        // ============================================================================
-        // STATE DISPLAY FUNCTIONS
-        // ============================================================================
-
-        function showEmptyState() {
-            const emptyEl = document.getElementById('eduMediaEmpty');
-            if (emptyEl) emptyEl.classList.remove('d-none');
-        }
-
-        function showErrorState(error) {
-            const grid = document.getElementById('eduMediaGrid');
-            if (!grid) return;
-
-            grid.innerHTML = `
-        <div class="col-12">
-            <div class="alert alert-danger d-flex align-items-center" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-3" style="font-size: 2rem;"></i>
-                <div>
-                    <h5 class="alert-heading mb-2">Erreur de chargement</h5>
-                    <p class="mb-0">${escapeHtml(error.message)}</p>
-                    <button class="btn btn-sm btn-outline-danger mt-2" onclick="refreshMedia()">
-                        <i class="bi bi-arrow-clockwise"></i> Réessayer
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-            grid.classList.remove('d-none');
-        }
-
-        function showNotification(message, type = 'info') {
-            // Check if Bootstrap toast exists
-            const toastContainer = document.getElementById('toastContainer');
-
-            if (toastContainer) {
-                const toastId = 'toast-' + Date.now();
-                const iconMap = {
-                    success: 'check-circle-fill',
-                    danger: 'exclamation-triangle-fill',
-                    warning: 'exclamation-circle-fill',
-                    info: 'info-circle-fill'
-                };
-
-                const toastHTML = `
-            <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="bi bi-${iconMap[type]} me-2"></i>
-                        ${escapeHtml(message)}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            </div>
-        `;
-
-                toastContainer.insertAdjacentHTML('beforeend', toastHTML);
-                const toastEl = document.getElementById(toastId);
-                const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-                toast.show();
-
-                toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
-            } else {
-                // Fallback to console
-                console.log(`[${type.toUpperCase()}] ${message}`);
-            }
-        }
-
-        // ============================================================================
-        // UTILITY FUNCTIONS
-        // ============================================================================
-
-        function getImageUrl(path, size = 'w500') {
-            if (!path) {
-                return 'https://via.placeholder.com/500x750/1a1a1a/666?text=Image+Non+Disponible';
-            }
-            return `${TMDB_CONFIG.IMAGE_URL}${size}${path}`;
-        }
-
-        function truncateText(text, length) {
-            if (!text) return '';
-            return text.length > length ? text.substring(0, length) + '...' : text;
-        }
-
-
-
-        function getYear(dateString) {
-            if (!dateString) return 'N/A';
-            const year = dateString.substring(0, 4);
-            return year || 'N/A';
-        }
-
-        function getSubjectFromGenres(genreIds) {
-            if (!genreIds || genreIds.length === 0) return 'Général';
-
-            for (const [subject, data] of Object.entries(SUBJECT_GENRES)) {
-                if (genreIds.some(id => data.ids.includes(id))) {
-                    return `${data.icon} ${data.name}`;
-                }
-            }
-            return 'Général';
-        }
-
-        function getGenreName(genreId) {
-            return GENRE_MAP[genreId] || 'Autre';
-        }
-
-        // ============================================================================
-        // INTEGRATION WITH MAIN APP
-        // ============================================================================
-
-        // Function to be called from switchView
-        function switchToEduMediaView() {
-            initEduMedia();
-        }
-
-        // Export functions that need to be called from HTML
-        window.openEduMediaModal = openEduMediaModal;
-        window.openQuickView = openQuickView;
-        window.addToWatchlist = addToWatchlist;
-        window.refreshMedia = refreshMedia;
-
-        // ============================================================================
-        // INITIALIZATION ON DOM READY
-        // ============================================================================
-
-        // Auto-initialize if DOM is already loaded
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                console.log('📚 Education Media module loaded');
-            });
-        } else {
-            console.log('📚 Education Media module loaded');
-        }
-
-        // ============================================================================
-        // ADDITIONAL HELPER FUNCTIONS
-        // ============================================================================
-
-        /**
-         * Debounce function for search input
-         */
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-
-        /**
-         * Format number with commas
-         */
-        function formatNumber(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-        }
-
-        /**
-         * Get rating color based on score
-         */
-        function getRatingColor(rating) {
-            if (rating >= 8) return '#4caf50'; // Green
-            if (rating >= 6) return '#ff9800'; // Orange
-            if (rating >= 4) return '#f44336'; // Red
-            return '#9e9e9e'; // Gray
-        }
-
-        /**
-         * Check if media is in watchlist
-         */
-        function isInWatchlist(mediaId) {
-            return eduMediaState.watchlist.includes(mediaId);
-        }
-
-        /**
-         * Check if media is in favorites
-         */
-        function isInFavorites(mediaId) {
-            return eduMediaState.favorites.includes(mediaId);
-        }
-
-        /**
-         * Get random media from current filtered list
-         */
-        function getRandomMedia() {
-            if (eduMediaState.filteredMedia.length === 0) return null;
-            const randomIndex = Math.floor(Math.random() * eduMediaState.filteredMedia.length);
-            return eduMediaState.filteredMedia[randomIndex];
-        }
-
-        /**
-         * Clear all caches
-         */
-        function clearAllCaches() {
-            eduMediaState.cache.clear();
-            showNotification('Cache vidé avec succès', 'success');
-        }
-
-        /**
-         * Export watchlist/favorites as JSON
-         */
-        function exportUserData() {
-            const data = {
-                watchlist: eduMediaState.watchlist,
-                favorites: eduMediaState.favorites,
-                exportDate: new Date().toISOString()
-            };
-
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `edu-media-data-${Date.now()}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            showNotification('Données exportées avec succès', 'success');
-        }
-
-        /**
-         * Import watchlist/favorites from JSON
-         */
-        function importUserData(file) {
-            const reader = new FileReader();
-
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-
-                    if (data.watchlist) eduMediaState.watchlist = data.watchlist;
-                    if (data.favorites) eduMediaState.favorites = data.favorites;
-
-                    saveUserPreferences();
-                    showNotification('Données importées avec succès', 'success');
-                } catch (error) {
-                    showNotification('Erreur lors de l\'importation: ' + error.message, 'danger');
-                }
-            };
-
-            reader.readAsText(file);
-        }
-
-        // ============================================================================
-        // ADVANCED FEATURES
-        // ============================================================================
-
-        /**
-         * Get media recommendations based on current preferences
-         */
-        async function getRecommendations() {
-            if (eduMediaState.favorites.length === 0) {
-                showNotification('Ajoutez d\'abord des favoris pour obtenir des recommandations', 'info');
-                return;
-            }
-
-            try {
-                // Get recommendations based on first favorite
-                const firstFavorite = eduMediaState.favorites[0];
-                const response = await fetch(
-                    `${TMDB_CONFIG.BASE_URL}/movie/${firstFavorite}/recommendations?api_key=${TMDB_CONFIG.API_KEY}&language=${TMDB_CONFIG.LANGUAGE}`
-                );
-
-                if (!response.ok) throw new Error('Failed to fetch recommendations');
-
-                const data = await response.json();
-
-                if (data.results.length > 0) {
-                    eduMediaState.allMedia = data.results.map(item => ({
-                        id: item.id,
-                        title: item.title,
-                        overview: item.overview || 'Description non disponible',
-                        poster_path: item.poster_path,
-                        backdrop_path: item.backdrop_path,
-                        release_date: item.release_date,
-                        vote_average: item.vote_average || 0,
-                        vote_count: item.vote_count || 0,
-                        genre_ids: item.genre_ids || [],
-                        popularity: item.popularity || 0,
-                        media_type: 'movie'
-                    }));
-
-                    applyFiltersAndSort();
-                    renderCurrentView();
-                    updateStatsMedia();
-                    updateMediaCount();
-
-                    showNotification('Recommandations chargées avec succès', 'success');
-                } else {
-                    showNotification('Aucune recommandation trouvée', 'info');
-                }
-
-            } catch (error) {
-                console.error('Error fetching recommendations:', error);
-                showNotification('Erreur lors du chargement des recommandations', 'danger');
-            }
-        }
-
-        /**
-         * Search for specific actor/director
-         */
-        async function searchByPerson(personName) {
-            try {
-                // First, search for the person
-                const personResponse = await fetch(
-                    `${TMDB_CONFIG.BASE_URL}/search/person?api_key=${TMDB_CONFIG.API_KEY}&query=${encodeURIComponent(personName)}`
-                );
-
-                if (!personResponse.ok) throw new Error('Person search failed');
-
-                const personData = await personResponse.json();
-
-                if (personData.results.length === 0) {
-                    showNotification('Personne non trouvée', 'warning');
-                    return;
-                }
-
-                const personId = personData.results[0].id;
-
-                // Get movies for this person
-                const moviesResponse = await fetch(
-                    `${TMDB_CONFIG.BASE_URL}/discover/movie?api_key=${TMDB_CONFIG.API_KEY}&with_people=${personId}&language=${TMDB_CONFIG.LANGUAGE}`
-                );
-
-                if (!moviesResponse.ok) throw new Error('Movies search failed');
-
-                const moviesData = await moviesResponse.json();
-
-                eduMediaState.allMedia = moviesData.results.map(item => ({
-                    id: item.id,
-                    title: item.title,
-                    overview: item.overview || 'Description non disponible',
-                    poster_path: item.poster_path,
-                    backdrop_path: item.backdrop_path,
-                    release_date: item.release_date,
-                    vote_average: item.vote_average || 0,
-                    vote_count: item.vote_count || 0,
-                    genre_ids: item.genre_ids || [],
-                    popularity: item.popularity || 0,
-                    media_type: 'movie'
-                }));
-
-                applyFiltersAndSort();
-                renderCurrentView();
-                updateStatsMedia();
-                updateMediaCount();
-
-                showNotification(`Films avec ${personData.results[0].name} chargés`, 'success');
-
-            } catch (error) {
-                console.error('Error searching by person:', error);
-                showNotification('Erreur lors de la recherche', 'danger');
-            }
-        }
-
-        /**
-         * Get trending media
-         */
-        async function loadTrending(timeWindow = 'week') {
-            try {
-                const response = await fetch(
-                    `${TMDB_CONFIG.BASE_URL}/trending/movie/${timeWindow}?api_key=${TMDB_CONFIG.API_KEY}&language=${TMDB_CONFIG.LANGUAGE}`
-                );
-
-                if (!response.ok) throw new Error('Failed to fetch trending');
-
-                const data = await response.json();
-
-                eduMediaState.allMedia = data.results.map(item => ({
-                    id: item.id,
-                    title: item.title,
-                    overview: item.overview || 'Description non disponible',
-                    poster_path: item.poster_path,
-                    backdrop_path: item.backdrop_path,
-                    release_date: item.release_date,
-                    vote_average: item.vote_average || 0,
-                    vote_count: item.vote_count || 0,
-                    genre_ids: item.genre_ids || [],
-                    popularity: item.popularity || 0,
-                    media_type: 'movie'
-                }));
-
-                applyFiltersAndSort();
-                renderCurrentView();
-                updateStatsMedia();
-                updateMediaCount();
-
-                showNotification('Tendances chargées avec succès', 'success');
-
-            } catch (error) {
-                console.error('Error loading trending:', error);
-                showNotification('Erreur lors du chargement des tendances', 'danger');
-            }
-        }
-
-        /**
-         * Filter by year range
-         */
-        function filterByYearRange(startYear, endYear) {
-            eduMediaState.filteredMedia = eduMediaState.allMedia.filter(media => {
-                if (!media.release_date) return false;
-                const year = parseInt(media.release_date.substring(0, 4));
-                return year >= startYear && year <= endYear;
-            });
-
-            renderCurrentView();
-            updateMediaCount();
-        }
-
-        /**
-         * Filter by minimum rating
-         */
-        function filterByMinRating(minRating) {
-            eduMediaState.filteredMedia = eduMediaState.allMedia.filter(media => {
-                return media.vote_average >= minRating && media.vote_count >= 50;
-            });
-
-            renderCurrentView();
-            updateMediaCount();
-        }
-
-        // ============================================================================
-        // KEYBOARD SHORTCUTS
-        // ============================================================================
-
-        document.addEventListener('keydown', (e) => {
-            // Only handle shortcuts when modal is not open
-            const modalOpen = document.querySelector('.modal.show');
-            if (modalOpen) return;
-
-            // Check if we're in the edu-media view
-            const eduMediaView = document.getElementById('edu-mediaView');
-            if (!eduMediaView || eduMediaView.classList.contains('d-none')) return;
-
-            switch (e.key) {
-                case 'r':
-                    if (e.ctrlKey || e.metaKey) {
-                        e.preventDefault();
-                        refreshMedia();
-                    }
-                    break;
-                case 's':
-                    if (e.ctrlKey || e.metaKey) {
-                        e.preventDefault();
-                        document.getElementById('eduMediaSearch')?.focus();
-                    }
-                    break;
-                case 'Escape':
-                    const searchEl = document.getElementById('eduMediaSearch');
-                    if (searchEl && searchEl.value) {
-                        searchEl.value = '';
-                        eduMediaState.currentSearch = '';
-                        renderEduMedia();
-                    }
-                    break;
-            }
-        });
-
-        // ============================================================================
-        // PERFORMANCE MONITORING
-        // ============================================================================
-
-        let performanceMetrics = {
-            lastFetchTime: 0,
-            averageFetchTime: 0,
-            fetchCount: 0
-        };
-
-        function trackPerformance(operation, duration) {
-            performanceMetrics.lastFetchTime = duration;
-            performanceMetrics.fetchCount++;
-            performanceMetrics.averageFetchTime =
-                ((performanceMetrics.averageFetchTime * (performanceMetrics.fetchCount - 1)) + duration)
-                / performanceMetrics.fetchCount;
-
-            console.log(`⚡ ${operation} completed in ${duration}ms`);
-        }
-
-        // ============================================================================
-        // ERROR RECOVERY
-        // ============================================================================
-
-        let retryCount = 0;
-        const MAX_RETRIES = 3;
-
-        async function fetchWithRetry(url, options = {}, retries = MAX_RETRIES) {
-            try {
-                const response = await fetch(url, options);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                retryCount = 0; // Reset on success
-                return response;
-            } catch (error) {
-                if (retries > 0) {
-                    console.warn(`Retry attempt ${MAX_RETRIES - retries + 1}/${MAX_RETRIES}`);
-                    await new Promise(resolve => setTimeout(resolve, 1000 * (MAX_RETRIES - retries + 1)));
-                    return fetchWithRetry(url, options, retries - 1);
-                }
-                throw error;
-            }
-        }
-
-        // ============================================================================
-        // ANALYTICS (Optional - for tracking usage)
-        // ============================================================================
-
-        function trackEvent(eventName, eventData = {}) {
-            console.log(`📊 Event: ${eventName}`, eventData);
-            // Here you could send to your analytics service
-        }
-
-        // Track view changes
-        const originalRenderCurrentView = renderCurrentView;
-        renderCurrentView = function () {
-            trackEvent('view_change', { view: eduMediaState.currentView });
-            return originalRenderCurrentView.apply(this, arguments);
-        };
-
-        // Track modal opens
-        const originalOpenModal = openEduMediaModal;
-        openEduMediaModal = function (id, type, title) {
-            trackEvent('modal_open', { mediaId: id, mediaType: type, title });
-            return originalOpenModal.apply(this, arguments);
-        };
-
-        // ============================================================================
-        // ACCESSIBILITY IMPROVEMENTS
-        // ============================================================================
-
-        /**
-         * Announce changes to screen readers
-         */
-        function announceToScreenReader(message) {
-            const announcement = document.createElement('div');
-            announcement.setAttribute('role', 'status');
-            announcement.setAttribute('aria-live', 'polite');
-            announcement.setAttribute('aria-atomic', 'true');
-            announcement.className = 'sr-only';
-            announcement.textContent = message;
-
-            document.body.appendChild(announcement);
-
-            setTimeout(() => {
-                document.body.removeChild(announcement);
-            }, 1000);
-        }
-
-        // Update announcements on state changes
-        const originalUpdateMediaCount = updateMediaCount;
-        updateMediaCount = function () {
-            const result = originalUpdateMediaCount.apply(this, arguments);
-            const count = eduMediaState.filteredMedia.length;
-            announceToScreenReader(`${count} média${count > 1 ? 's' : ''} trouvé${count > 1 ? 's' : ''}`);
-            return result;
-        };
-
-        // ============================================================================
-        // CLEANUP & MEMORY MANAGEMENT
-        // ============================================================================
-
-        /**
-         * Clean up old cache entries
-         */
-        function cleanupCache() {
-            const now = Date.now();
-            const entriesToDelete = [];
-
-            for (const [key, value] of eduMediaState.cache.entries()) {
-                if (now - value.timestamp > TMDB_CONFIG.CACHE_DURATION) {
-                    entriesToDelete.push(key);
-                }
-            }
-
-            entriesToDelete.forEach(key => eduMediaState.cache.delete(key));
-
-            if (entriesToDelete.length > 0) {
-                console.log(`🧹 Cleaned up ${entriesToDelete.length} cache entries`);
-            }
-        }
-
-        // Run cleanup every 5 minutes
-        setInterval(cleanupCache, 5 * 60 * 1000);
-
-        /**
-         * Cleanup function to call when leaving the view
-         */
-        function cleanupEduMedia() {
-            console.log('🧹 Cleaning up Education Media view');
-
-            // Clear any active intervals or timeouts
-            // Close any open modals
-            const modalEl = document.getElementById('eduMediaModal');
-            if (modalEl) {
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) modal.hide();
-            }
-
-            // Clear video players to stop playback
-            const playerEl = document.getElementById('eduMediaPlayer');
-            if (playerEl) {
-                playerEl.innerHTML = '';
-            }
-        }
-
-        // ============================================================================
-        // EXPORT PUBLIC API
-        // ============================================================================
-
-        /*const EduMediaAPI = {
-            init: initEduMedia,
-            refresh: refreshMedia,
-            shuffle: shuffleMedia,
-            reset: resetFilters,
-            loadMore: loadMoreMedia,
-            openModal: openEduMediaModal,
-            addToWatchlist: addToWatchlist,
-            getRecommendations: getRecommendations,
-            searchByPerson: searchByPerson,
-            loadTrending: loadTrending,
-            filterByYearRange: filterByYearRange,
-            filterByMinRating: filterByMinRating,
-            exportData: exportUserData,
-            importData: importUserData,
-            clearCache: clearAllCaches,
-            cleanup: cleanupEduMedia,
-            getState: () => ({ ...eduMediaState })
-        };*/
-
-        const EduMediaAPI = {
-            init: initEduMedia,
-            openModal: openEduMediaModal,
-            openQuickView: openQuickView,
-            addToWatchlist: addToWatchlist,
-            refresh: refreshMedia,
-            shuffle: shuffleMedia,
-            reset: resetFilters,
-            loadMore: loadMoreMedia,
-            getRecommendations: getRecommendations,
-            searchByPerson: searchByPerson,
-            loadTrending: loadTrending,
-            filterByYearRange: filterByYearRange,
-            filterByMinRating: filterByMinRating,
-            exportData: exportUserData,
-            importData: importUserData,
-            clearCache: clearAllCaches,
-            cleanup: cleanupEduMedia,
-            getState: () => ({ ...eduMediaState }) // Expose state safely
-        };
-
-
-
-        // Make API available globally
-        window.EduMediaAPI = EduMediaAPI;
-
-        console.log('✅ Education Media module fully loaded and ready');
-        console.log('📚 Available functions:', Object.keys(EduMediaAPI));
 
 
         // Fonction pour mettre à jour la progression dans Firestore
@@ -14642,723 +13468,209 @@
             setTheme(theme);
             loadBackgroundImage();
         }
+    </script>
 
+    <script>
 
-        // ====================================================================
-        // YOUTUBE MUSIC INTEGRATION (V7.0 - Version Corrigée et Optimisée)
-        // ====================================================================
-        // YouTube Music Controller with Real YouTube API Integration
-        window.YouTubeMusicController = {
-            isInitialized: false,
-            currentPlaylist: null,
-            searchResults: [],
-            player: null,
-            apiKey: YOUTUBE_API_KEY, // Use the same API key from your constants
+        window.currentPlaylist = [];
+        window.currentTrackIndex = -1;
+        window.currentMusicPlayer = null;
+        window.YOUTUBE_API_KEY = 'AIzaSyBRGvHeOTNPQYhgahGVSeuvsvH2rnUnDF0'; // 100% fonctionnelle
 
-            initMusicView: function () {
-                console.log("Initializing Music View with YouTube API...");
+        (function () {
+            let youtubeAPILoaded = false;
+            let currentTrackIndex = -1;
+            let currentPlaylist = [];
+            let currentMusicPlayer = null;
+            let isRepeatMode = false;
+            let isShuffleMode = false;
 
-                if (!this.apiKey) {
-                    this.showApiKeyError();
-                    return;
+            // ======================== LOAD YOUTUBE API ========================
+            function loadYouTubeAPI() {
+                if (youtubeAPILoaded) return;
+                const tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                document.head.appendChild(tag);
+                youtubeAPILoaded = true;
+            }
+
+            window.onYouTubeIframeAPIReady = function () {
+                console.log("YouTube API ready");
+            };
+
+            // ======================== INIT VIEW ========================
+            window.initMusicView = function () {
+                const view = document.getElementById('musicView');
+                if (view) view.classList.remove('d-none');
+                loadYouTubeAPI();
+
+                const searchBtn = document.getElementById('searchMusicBtn');
+                const searchInput = document.getElementById('musicSearch');
+                if (searchBtn) searchBtn.addEventListener('click', searchMusic);
+                if (searchInput) searchInput.addEventListener('keypress', e => {
+                    if (e.key === 'Enter') searchMusic();
+                });
+
+                if (searchInput && !searchInput.value) {
+                    searchInput.value = 'musique chill maroc 2025';
+                    searchMusic();
                 }
+            };
 
-                this.renderInitialContent();
-                this.attachEventListeners();
-                this.isInitialized = true;
-                this.loadPopularContent();
-            },
+            // ======================== SEARCH ========================
+            async function searchMusic() {
+                const query = document.getElementById('musicSearch').value.trim();
+                const genre = document.getElementById('musicGenre')?.value || '';
+                const list = document.getElementById('musicList');
+                const btn = document.getElementById('searchMusicBtn');
 
-            showApiKeyError: function () {
-                const musicContent = document.getElementById('musicContent');
-                if (musicContent) {
-                    musicContent.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
-                    <h4 class="mt-3">Clé API YouTube manquante</h4>
-                    <p class="text-muted">La clé API YouTube n'est pas configurée. Impossible de charger le contenu musical.</p>
-                    <div class="mt-4">
-                        <button class="btn btn-primary me-2" onclick="location.reload()">
-                            <i class="bi bi-arrow-clockwise"></i> Réessayer
-                        </button>
-                        <button class="btn btn-outline-secondary" onclick="switchView('settings')">
-                            <i class="bi bi-gear"></i> Paramètres
-                        </button>
-                    </div>
-                </div>
-            `;
-                }
-            },
+                if (!query) return alert("Entre un mot-clé pour chercher !");
 
-            attachEventListeners: function () {
-                // Search functionality
-                const searchInput = document.getElementById('musicSearchInput');
-                const searchBtn = document.getElementById('musicSearchBtn');
-                const backBtn = document.getElementById('backToMusicList');
-                const connectBtn = document.getElementById('connectYouTubeBtn');
-
-                if (searchInput) {
-                    searchInput.addEventListener('input', (e) => {
-                        this.debouncedSearch(e.target.value);
-                    });
-                    searchInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            this.searchMusic(e.target.value);
-                        }
-                    });
-                }
-
-                if (searchBtn) {
-                    searchBtn.addEventListener('click', () => {
-                        this.searchMusic(searchInput?.value || '');
-                    });
-                }
-
-                if (backBtn) {
-                    backBtn.addEventListener('click', () => {
-                        this.showMainView();
-                    });
-                }
-
-                if (connectBtn) {
-                    connectBtn.addEventListener('click', () => {
-                        this.connectYouTubeAccount();
-                    });
-                }
-            },
-
-            debouncedSearch: function (query) {
-                clearTimeout(this.debounceTimer);
-                this.debounceTimer = setTimeout(() => {
-                    if (query && query.length > 2) {
-                        this.searchMusic(query);
-                    } else if (!query || query.length === 0) {
-                        this.loadPopularContent();
-                    }
-                }, 800);
-            },
-
-            renderInitialContent: function () {
-                const musicContent = document.getElementById('musicContent');
-                if (!musicContent) return;
-
-                musicContent.innerHTML = `
-            <div class="col-12">
-                <div class="row g-4" id="musicPlaylistsGrid">
-                    <div class="col-12 text-center py-5">
-                        <div class="spinner-border text-primary"></div>
-                        <p class="mt-2">Chargement du contenu musical...</p>
-                    </div>
-                </div>
-            </div>
-        `;
-            },
-
-            // REAL YOUTUBE API CALLS
-            async makeYouTubeAPIRequest(endpoint, params = {}) {
-                const baseUrl = 'https://www.googleapis.com/youtube/v3';
-                const defaultParams = {
-                    key: this.apiKey,
-                    part: 'snippet,contentDetails',
-                    maxResults: 20
-                };
-
-                const allParams = { ...defaultParams, ...params };
-                const queryString = new URLSearchParams(allParams).toString();
+                list.innerHTML = '<div class="loading">Recherche en cours...</div>';
+                btn.classList.add('loading');
+                btn.disabled = true;
 
                 try {
-                    const response = await fetch(`${baseUrl}/${endpoint}?${queryString}`);
+                    const q = genre ? `${query} ${genre} music` : `${query} music`;
+                    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=20&q=${encodeURIComponent(q)}&type=video&videoCategoryId=10&key=${window.YOUTUBE_API_KEY}`;
+                    const res = await fetch(url);
+                    const data = await res.json();
 
-                    if (!response.ok) {
-                        throw new Error(`YouTube API error: ${response.status} ${response.statusText}`);
-                    }
-
-                    return await response.json();
-                } catch (error) {
-                    console.error('YouTube API request failed:', error);
-                    throw error;
-                }
-            },
-
-            async loadPopularContent() {
-                const grid = document.getElementById('musicPlaylistsGrid');
-                if (!grid) return;
-
-                try {
-                    // Get popular music playlists
-                    const playlistsData = await this.makeYouTubeAPIRequest('search', {
-                        q: 'music study focus programming lofi chill',
-                        type: 'playlist',
-                        order: 'viewCount'
-                    });
-
-                    if (!playlistsData.items || playlistsData.items.length === 0) {
-                        this.showFallbackContent();
+                    if (!data.items || !data.items.length) {
+                        list.innerHTML = '<div class="empty-state"><p>Aucun résultat trouvé.</p></div>';
                         return;
                     }
 
-                    // Get details for each playlist
-                    const playlistsWithDetails = await Promise.all(
-                        playlistsData.items.slice(0, 8).map(async (item) => {
-                            try {
-                                const playlistDetails = await this.makeYouTubeAPIRequest('playlists', {
-                                    id: item.id.playlistId
-                                });
+                    currentPlaylist = data.items.map(item => ({
+                        videoId: item.id.videoId,
+                        title: item.snippet.title,
+                        channel: item.snippet.channelTitle,
+                        thumbnail: item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default.url
+                    }));
 
-                                return {
-                                    id: item.id.playlistId,
-                                    title: item.snippet.title,
-                                    description: item.snippet.description,
-                                    thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url,
-                                    channel: item.snippet.channelTitle,
-                                    videoCount: playlistDetails.items[0]?.contentDetails?.itemCount || 'N/A'
-                                };
-                            } catch (error) {
-                                console.error('Error fetching playlist details:', error);
-                                return null;
-                            }
-                        })
-                    );
+                    displayResults(currentPlaylist);
 
-                    const validPlaylists = playlistsWithDetails.filter(p => p !== null);
-
-                    if (validPlaylists.length === 0) {
-                        this.showFallbackContent();
-                        return;
-                    }
-
-                    this.displayPopularPlaylists(validPlaylists);
-                    this.showRecentHistory();
-
-                } catch (error) {
-                    console.error('Error loading popular content:', error);
-                    this.showError('Erreur de chargement du contenu populaire', error);
+                } catch (err) {
+                    console.error(err);
+                    list.innerHTML = `<div class="error-state"><p>Erreur de connexion YouTube</p></div>`;
+                } finally {
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
                 }
-            },
+            }
 
-            displayPopularPlaylists: function (playlists) {
-                const grid = document.getElementById('musicPlaylistsGrid');
-                if (!grid) return;
-
-                grid.innerHTML = playlists.map(playlist => `
-            <div class="col-xl-3 col-lg-4 col-md-6">
-                <div class="card card-modern playlist-card h-100" 
-                     onclick="YouTubeMusicController.openPlaylist('${playlist.id}', '${this.escapeString(playlist.title)}')">
-                    <img src="${playlist.thumbnail}" 
-                         class="card-img-top" 
-                         alt="${this.escapeString(playlist.title)}" 
-                         style="height: 200px; object-fit: cover;"
-                         onerror="this.src='https://via.placeholder.com/300x200/6c757d/ffffff?text=Image+Non+Disponible'">
-                    <div class="card-body d-flex flex-column">
-                        <h6 class="card-title" title="${this.escapeString(playlist.title)}">
-                            ${this.truncateText(playlist.title, 50)}
-                        </h6>
-                        <p class="card-text text-muted small flex-grow-1">
-                            ${this.truncateText(playlist.description, 80)}
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center mt-auto">
-                            <small class="text-muted">
-                                <i class="bi bi-music-note-list"></i> 
-                                ${playlist.videoCount} vidéos
-                            </small>
-                            <small class="text-muted" title="${playlist.channel}">
-                                <i class="bi bi-person"></i> 
-                                ${this.truncateText(playlist.channel, 15)}
-                            </small>
-                        </div>
-                    </div>
+            // ======================== DISPLAY RESULTS ========================
+            function displayResults(playlist) {
+                const list = document.getElementById('musicList');
+                list.innerHTML = playlist.map((t, i) => `
+            <div class="music-item" data-index="${i}" data-video-id="${t.videoId}" onclick="playMusicByIndex(${i})">
+                <img src="${t.thumbnail}" alt="${t.title}" loading="lazy">
+                <div class="music-info">
+                    <div class="music-title">${t.title}</div>
+                    <div class="music-channel">${t.channel}</div>
                 </div>
+                <button class="play-btn" onclick="event.stopPropagation(); playMusicByIndex(${i})">
+                    <i class="bi bi-play-fill"></i>
+                </button>
             </div>
         `).join('');
-            },
+            }
 
-            async searchMusic(query) {
-                if (!query || query.trim().length < 2) {
-                    this.loadPopularContent();
-                    return;
-                }
+            // ======================== PLAY BY INDEX ========================
+            window.playMusicByIndex = function (index) {
+                if (index < 0 || index >= currentPlaylist.length) return;
+                currentTrackIndex = index;
+                const track = currentPlaylist[index];
+                playMusic(track.videoId, track.title, track.channel, track.thumbnail);
+                updatePlayingState();
+            };
 
-                const musicContent = document.getElementById('musicContent');
-                if (!musicContent) return;
+            // ======================== PLAY MUSIC ========================
+            function playMusic(videoId, title, channel, thumbnail) {
+                const container = document.getElementById('youtubePlayer');
+                const playerEl = document.getElementById('musicPlayer');
 
-                musicContent.innerHTML = `
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5>Résultats pour: "${query}"</h5>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="YouTubeMusicController.loadPopularContent()">
-                        <i class="bi bi-arrow-left"></i> Retour
-                    </button>
-                </div>
-                <div class="row g-4" id="searchResultsGrid">
-                    <div class="col-12 text-center py-4">
-                        <div class="spinner-border text-primary"></div>
-                        <p class="mt-2">Recherche de "${query}"...</p>
-                    </div>
-                </div>
-            </div>
-        `;
+                document.getElementById('playerTitle').textContent = title;
+                document.getElementById('playerChannel').textContent = channel;
+                document.getElementById('playerThumbnail').src = thumbnail;
+                playerEl.classList.add('active');
 
-                try {
-                    // Search for both playlists and videos
-                    const [playlistsData, videosData] = await Promise.all([
-                        this.makeYouTubeAPIRequest('search', {
-                            q: query + ' music playlist',
-                            type: 'playlist',
-                            videoCategoryId: '10'
-                        }),
-                        this.makeYouTubeAPIRequest('search', {
-                            q: query + ' music',
-                            type: 'video',
-                            videoCategoryId: '10'
-                        })
-                    ]);
-
-                    const results = [];
-
-                    // Process playlists
-                    if (playlistsData.items) {
-                        for (const item of playlistsData.items.slice(0, 6)) {
-                            try {
-                                const playlistDetails = await this.makeYouTubeAPIRequest('playlists', {
-                                    id: item.id.playlistId
-                                });
-
-                                results.push({
-                                    type: 'playlist',
-                                    id: item.id.playlistId,
-                                    title: item.snippet.title,
-                                    description: item.snippet.description,
-                                    thumbnail: item.snippet.thumbnails?.medium?.url,
-                                    channel: item.snippet.channelTitle,
-                                    videoCount: playlistDetails.items[0]?.contentDetails?.itemCount || 'N/A'
-                                });
-                            } catch (error) {
-                                console.error('Error fetching playlist details:', error);
-                            }
-                        }
-                    }
-
-                    // Process videos
-                    if (videosData.items) {
-                        videosData.items.slice(0, 6).forEach(item => {
-                            results.push({
-                                type: 'video',
-                                id: item.id.videoId,
-                                title: item.snippet.title,
-                                description: item.snippet.description,
-                                thumbnail: item.snippet.thumbnails?.medium?.url,
-                                channel: item.snippet.channelTitle,
-                                duration: 'Video' // You can get duration from video details API if needed
-                            });
-                        });
-                    }
-
-                    this.displaySearchResults(results, query);
-
-                } catch (error) {
-                    console.error('Search error:', error);
-                    this.showError('Erreur de recherche', error);
-                }
-            },
-
-            displaySearchResults: function (results, query) {
-                const grid = document.getElementById('searchResultsGrid');
-                if (!grid) return;
-
-                if (results.length === 0) {
-                    grid.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <i class="bi bi-search fs-1 text-muted"></i>
-                    <h5 class="mt-3">Aucun résultat trouvé</h5>
-                    <p class="text-muted">Aucun contenu trouvé pour "${query}"</p>
-                    <button class="btn btn-primary mt-2" onclick="YouTubeMusicController.loadPopularContent()">
-                        Voir le contenu populaire
-                    </button>
-                </div>
-            `;
-                    return;
-                }
-
-                grid.innerHTML = results.map(item => {
-                    const escapedTitle = this.escapeString(item.title);
-                    const truncatedTitle = this.truncateText(item.title, 60);
-                    const truncatedDesc = this.truncateText(item.description, 100);
-
-                    if (item.type === 'playlist') {
-                        return `
-                    <div class="col-xl-4 col-lg-6">
-                        <div class="card card-modern playlist-card h-100" 
-                             onclick="YouTubeMusicController.openPlaylist('${item.id}', '${escapedTitle}')">
-                            <img src="${item.thumbnail}" 
-                                 class="card-img-top" 
-                                 alt="${escapedTitle}"
-                                 style="height: 200px; object-fit: cover;"
-                                 onerror="this.src='https://via.placeholder.com/300x200/6c757d/ffffff?text=Playlist'">
-                            <div class="card-body d-flex flex-column">
-                                <h6 class="card-title">
-                                    <i class="bi bi-music-note-list text-primary me-2"></i>
-                                    ${truncatedTitle}
-                                </h6>
-                                <p class="card-text text-muted small flex-grow-1">
-                                    ${truncatedDesc}
-                                </p>
-                                <div class="d-flex justify-content-between align-items-center mt-auto">
-                                    <small class="text-muted">
-                                        <i class="bi bi-collection-play"></i> 
-                                        ${item.videoCount} vidéos
-                                    </small>
-                                    <small class="text-muted" title="${item.channel}">
-                                        ${this.truncateText(item.channel, 20)}
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                    } else {
-                        return `
-                    <div class="col-xl-4 col-lg-6">
-                        <div class="card card-modern h-100" 
-                             onclick="YouTubeMusicController.playVideo('${item.id}', '${escapedTitle}')">
-                            <img src="${item.thumbnail}" 
-                                 class="card-img-top" 
-                                 alt="${escapedTitle}"
-                                 style="height: 200px; object-fit: cover;"
-                                 onerror="this.src='https://via.placeholder.com/300x200/6c757d/ffffff?text=Video'">
-                            <div class="card-body d-flex flex-column">
-                                <h6 class="card-title">
-                                    <i class="bi bi-play-btn text-danger me-2"></i>
-                                    ${truncatedTitle}
-                                </h6>
-                                <p class="card-text text-muted small flex-grow-1">
-                                    ${truncatedDesc}
-                                </p>
-                                <div class="d-flex justify-content-between align-items-center mt-auto">
-                                    <small class="text-muted">
-                                        <i class="bi bi-play-circle"></i> Vidéo
-                                    </small>
-                                    <small class="text-muted" title="${item.channel}">
-                                        ${this.truncateText(item.channel, 20)}
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                    }
-                }).join('');
-            },
-
-            async openPlaylist(playlistId, playlistTitle) {
-                this.currentPlaylist = { id: playlistId, title: playlistTitle };
-
-                document.getElementById('musicContent').classList.add('d-none');
-                document.getElementById('playlistDetail').classList.remove('d-none');
-                document.getElementById('playlistTitle').textContent = playlistTitle;
-
-                await this.loadPlaylistVideos(playlistId);
-            },
-
-            async loadPlaylistVideos(playlistId) {
-                const grid = document.getElementById('playlistVideosGrid');
-                if (!grid) return;
-
-                grid.innerHTML = `
-            <div class="col-12 text-center py-4">
-                <div class="spinner-border text-primary"></div>
-                <p class="mt-2">Chargement des vidéos de la playlist...</p>
-            </div>
-        `;
-
-                try {
-                    const playlistItems = await this.makeYouTubeAPIRequest('playlistItems', {
-                        playlistId: playlistId,
-                        maxResults: 50
-                    });
-
-                    if (!playlistItems.items || playlistItems.items.length === 0) {
-                        grid.innerHTML = `
-                    <div class="col-12 text-center py-5">
-                        <i class="bi bi-music-note-list fs-1 text-muted"></i>
-                        <p class="mt-2">Cette playlist est vide</p>
-                    </div>
-                `;
-                        return;
-                    }
-
-                    this.displayPlaylistVideos(playlistItems.items);
-
-                } catch (error) {
-                    console.error('Playlist load error:', error);
-                    grid.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
-                    <p class="mt-2">Erreur de chargement de la playlist</p>
-                    <button class="btn btn-outline-primary mt-2" onclick="YouTubeMusicController.loadPlaylistVideos('${playlistId}')">
-                        <i class="bi bi-arrow-clockwise"></i> Réessayer
-                    </button>
-                </div>
-            `;
-                }
-            },
-
-            displayPlaylistVideos: function (videos) {
-                const grid = document.getElementById('playlistVideosGrid');
-                if (!grid) return;
-
-                grid.innerHTML = videos.map(item => {
-                    const video = item.snippet;
-                    const escapedTitle = this.escapeString(video.title);
-                    const truncatedTitle = this.truncateText(video.title, 70);
-
-                    return `
-                <div class="col-lg-6">
-                    <div class="playlist-video-item card card-modern" 
-                         onclick="YouTubeMusicController.playVideo('${video.resourceId.videoId}', '${escapedTitle}')">
-                        <div class="card-body d-flex align-items-center">
-                            <img src="${video.thumbnails?.default?.url}" 
-                                 alt="${escapedTitle}"
-                                 style="width: 80px; height: 60px; object-fit: cover; border-radius: 6px;"
-                                 onerror="this.src='https://via.placeholder.com/80x60/6c757d/ffffff?text=Video'">
-                            <div class="ms-3 flex-grow-1">
-                                <h6 class="mb-1 small" title="${escapedTitle}">
-                                    ${truncatedTitle}
-                                </h6>
-                                <small class="text-muted">
-                                    <i class="bi bi-person"></i> ${video.channelTitle}
-                                </small>
-                            </div>
-                            <i class="bi bi-play-circle fs-4 text-primary"></i>
-                        </div>
-                    </div>
-                </div>
-            `;
-                }).join('');
-            },
-
-            playVideo: function (videoId, title) {
-                // Add to play history
-                this.addToPlayHistory({
-                    videoId: videoId,
-                    title: title,
-                    thumbnail: `https://img.youtube.com/vi/${videoId}/default.jpg`,
-                    timestamp: new Date().toISOString()
-                });
-
-                // Initialize music player
-                this.initializeMusicPlayer();
-
-                // Load and play the video
-                this.loadVideoInPlayer(videoId, title);
-
-                // Show notification
-                showToast(`🎵 Lecture: ${this.truncateText(title, 40)}`, 'success');
-            },
-
-            initializeMusicPlayer: function () {
-                const playerFixed = document.getElementById('musicPlayerFixed');
-                if (playerFixed) {
-                    playerFixed.style.display = 'flex';
-                }
-                this.attachPlayerControls();
-            },
-
-            loadVideoInPlayer: function (videoId, title) {
-                document.getElementById('trackTitle').textContent = title;
-                document.getElementById('trackArtist').textContent = 'YouTube Music';
-
-                const thumbnail = document.getElementById('trackThumbnail');
-                thumbnail.src = `https://img.youtube.com/vi/${videoId}/default.jpg`;
-                thumbnail.style.display = 'block';
-                thumbnail.onerror = function () {
-                    this.style.display = 'none';
-                };
-
-                // Initialize YouTube IFrame Player API
-                if (!this.player) {
-                    this.player = new YT.Player('playerEmbed', {
-                        height: '0',
-                        width: '0',
-                        videoId: videoId,
-                        events: {
-                            onReady: (event) => event.target.playVideo()
-                        }
-                    });
+                if (currentMusicPlayer) {
+                    currentMusicPlayer.loadVideoById(videoId);
                 } else {
-                    this.player.loadVideoById(videoId);
+                    currentMusicPlayer = new YT.Player('youtubePlayer', {
+                        height: '230',
+                        width: '100%',
+                        videoId: videoId,
+                        playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1 },
+                        events: { onStateChange: onPlayerStateChange }
+                    });
                 }
-            },
+            }
 
+            function onPlayerStateChange(event) {
+                const isPlaying = event.data === YT.PlayerState.PLAYING;
+                const ended = event.data === YT.PlayerState.ENDED;
 
-            showMainView: function () {
-                document.getElementById('playlistDetail').classList.add('d-none');
-                document.getElementById('musicContent').classList.remove('d-none');
-                this.currentPlaylist = null;
-                this.loadPopularContent();
-            },
+                const icon = document.querySelector('#playPauseBtn i');
+                if (icon) icon.className = isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill';
 
-            connectYouTubeAccount: function () {
-                showToast('Fonctionnalité de connexion YouTube à venir...', 'info');
-                // Future implementation for OAuth
-            },
-
-            // Utility functions
-            escapeString: function (str) {
-                return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
-            },
-
-            truncateText: function (text, maxLength) {
-                if (text.length <= maxLength) return text;
-                return text.substring(0, maxLength) + '...';
-            },
-
-            showError: function (message, error) {
-                const grid = document.getElementById('searchResultsGrid') || document.getElementById('musicPlaylistsGrid');
-                if (grid) {
-                    grid.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
-                    <h5 class="mt-3">${message}</h5>
-                    <p class="text-muted">${error.message}</p>
-                    <button class="btn btn-outline-primary mt-2" onclick="YouTubeMusicController.loadPopularContent()">
-                        <i class="bi bi-arrow-clockwise"></i> Réessayer
-                    </button>
-                </div>
-            `;
+                if (ended) {
+                    if (isRepeatMode) currentMusicPlayer.playVideo();
+                    else playNextTrack();
                 }
-            },
+            }
 
-            showFallbackContent: function () {
-                const grid = document.getElementById('musicPlaylistsGrid');
-                if (grid) {
-                    grid.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <i class="bi bi-music-note-beamed fs-1 text-muted"></i>
-                    <h5 class="mt-3">Contenu musical non disponible</h5>
-                    <p class="text-muted">Impossible de charger les playlists pour le moment.</p>
-                    <button class="btn btn-primary mt-2" onclick="YouTubeMusicController.loadPopularContent()">
-                        <i class="bi bi-arrow-clockwise"></i> Réessayer
-                    </button>
-                </div>
-            `;
-                }
-            },
+            // ======================== NEXT / PREV ========================
+            function playNextTrack() {
+                let next = isShuffleMode
+                    ? Math.floor(Math.random() * currentPlaylist.length)
+                    : (currentTrackIndex + 1) % currentPlaylist.length;
+                playMusicByIndex(next);
+            }
 
-            showRecentHistory: function () {
-                const history = this.getPlayHistory();
-                if (history.length > 0) {
-                    const grid = document.getElementById('musicPlaylistsGrid');
-                    if (grid) {
-                        grid.innerHTML += `
-                    <div class="col-12 mt-5">
-                        <h5 class="mb-3 border-bottom pb-2">
-                            <i class="bi bi-clock-history text-primary me-2"></i>
-                            Récemment écouté
-                        </h5>
-                        <div class="row g-3">
-                            ${history.slice(0, 6).map(item => `
-                                <div class="col-lg-4 col-md-6">
-                                    <div class="card card-modern hover-lift" 
-                                         onclick="YouTubeMusicController.playVideoFromHistory('${item.videoId}', '${this.escapeString(item.title)}')">
-                                        <div class="card-body d-flex align-items-center">
-                                            <img src="${item.thumbnail}" 
-                                                 alt="${this.escapeString(item.title)}"
-                                                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;"
-                                                 onerror="this.style.display='none'">
-                                            <div class="ms-3 flex-grow-1">
-                                                <h6 class="mb-0 small" title="${this.escapeString(item.title)}">
-                                                    ${this.truncateText(item.title, 40)}
-                                                </h6>
-                                                <small class="text-muted">${this.formatTimeAgo(item.timestamp)}</small>
-                                            </div>
-                                            <i class="bi bi-play-circle text-primary fs-5"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-                    }
-                }
-            },
+            function playPrevTrack() {
+                let prev = isShuffleMode
+                    ? Math.floor(Math.random() * currentPlaylist.length)
+                    : (currentTrackIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
+                playMusicByIndex(prev);
+            }
 
-            playVideoFromHistory: function (videoId, title) {
-                this.playVideo(videoId, title);
-            },
-
-            // Player controls (simplified for demo)
-            togglePlayPause: function () {
-                const btn = document.getElementById('btnPlay');
-                if (btn) {
-                    const isPlaying = btn.classList.contains('playing');
-                    if (isPlaying) {
-                        btn.innerHTML = '<i class="bi bi-play-circle-fill"></i>';
-                        btn.classList.remove('playing');
-                    } else {
-                        btn.innerHTML = '<i class="bi bi-pause-circle-fill"></i>';
-                        btn.classList.add('playing');
-                    }
-                }
-            },
-
-            // History management
-            addToPlayHistory: function (item) {
-                let history = this.getPlayHistory();
-                history = history.filter(h => h.videoId !== item.videoId);
-                history.unshift(item);
-
-                if (history.length > 50) history = history.slice(0, 50);
-                localStorage.setItem('youtubeMusicHistory', JSON.stringify(history));
-            },
-
-            getPlayHistory: function () {
-                try {
-                    return JSON.parse(localStorage.getItem('youtubeMusicHistory')) || [];
-                } catch {
-                    return [];
-                }
-            },
-
-            formatTimeAgo: function (timestamp) {
-                const now = new Date();
-                const time = new Date(timestamp);
-                const diff = now - time;
-
-                const minutes = Math.floor(diff / 60000);
-                const hours = Math.floor(diff / 3600000);
-                const days = Math.floor(diff / 86400000);
-
-                if (minutes < 60) return `il y a ${minutes} min`;
-                if (hours < 24) return `il y a ${hours} h`;
-                return `il y a ${days} j`;
-            },
-
-            // Simple player controls
-            attachPlayerControls: function () {
-                // These would be connected to YouTube IFrame Player API in production
-                document.getElementById('btnPlay')?.addEventListener('click', () => this.togglePlayPause());
-                document.getElementById('btnPrev')?.addEventListener('click', () => showToast('Précédent', 'info'));
-                document.getElementById('btnNext')?.addEventListener('click', () => showToast('Suivant', 'info'));
-                document.getElementById('volumeControl')?.addEventListener('input', (e) => {
-                    console.log('Volume:', e.target.value);
-                });
-                document.getElementById('btnVolumeToggle')?.addEventListener('click', () => {
-                    const btn = document.getElementById('btnVolumeToggle');
-                    const isMuted = btn.classList.contains('muted');
-                    btn.innerHTML = isMuted ? '<i class="bi bi-volume-up"></i>' : '<i class="bi bi-volume-mute"></i>';
-                    btn.classList.toggle('muted');
+            // ======================== UPDATE UI ========================
+            function updatePlayingState() {
+                document.querySelectorAll('.music-item').forEach((el, i) => {
+                    const isPlaying = i === currentTrackIndex;
+                    el.classList.toggle('playing', isPlaying);
+                    const icon = el.querySelector('.play-btn i');
+                    if (icon) icon.className = isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill';
                 });
             }
-        };
 
+            // ======================== PLAYER CONTROLS ========================
+            document.getElementById('playPauseBtn').onclick = () => {
+                if (!currentMusicPlayer) return;
+                const state = currentMusicPlayer.getPlayerState();
+                state === YT.PlayerState.PLAYING ? currentMusicPlayer.pauseVideo() : currentMusicPlayer.playVideo();
+            };
+
+            document.getElementById('nextTrackBtn').onclick = playNextTrack;
+            document.getElementById('prevTrackBtn').onclick = playPrevTrack;
+            document.getElementById('shuffleBtn').onclick = () => isShuffleMode = !isShuffleMode;
+            document.getElementById('repeatBtn').onclick = () => isRepeatMode = !isRepeatMode;
+            document.getElementById('volumeSlider').oninput = (e) => {
+                if (currentMusicPlayer) currentMusicPlayer.setVolume(e.target.value);
+            };
+
+            window.closeMusicPlayer = function () {
+                if (currentMusicPlayer) currentMusicPlayer.stopVideo();
+                document.getElementById('musicPlayer').classList.remove('active');
+                currentTrackIndex = -1;
+                updatePlayingState();
+            };
+
+        })();
 
     </script>
-    <ul id="aiContextMenu" class="ai-context-menu" style="display: none;"></ul>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </body>
 
 </html>
