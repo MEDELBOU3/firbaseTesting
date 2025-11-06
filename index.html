@@ -1097,11 +1097,11 @@
             Alpine.store('auth').loggedIn = true;
             Alpine.store('auth').userName = user.displayName || user.email.split('@')[0];
 
-            // 2. Set Redirection Flag (Used by index.html)
+            // 2. Redirection Flag (Used by app.html)
             localStorage.setItem('fpn_just_logged_in', 'true');
 
             // 3. Rediriger immédiatement
-            window.location.href = 'index.html';
+            window.location.href = 'app.html';
         }
 
         // --- Core Authentication Check ---
