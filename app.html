@@ -1437,7 +1437,7 @@
             </div>
         </div>
 
-        <!-- 🎶 LECTEUR FIXE (Fixed Player) -->
+
         <!-- La balise du lecteur doit être placée en dehors de #mainContent pour la fixation -->
         <div id="musicPlayerFixed" class="music-player-fixed" style="display: none;">
             <!-- Conteneur invisible pour l'API YouTube IFrame Player -->
@@ -2261,18 +2261,18 @@
 
         //deepSeek R1 api: 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
 
-        const DRIVE_API_KEY = "AIzaSyBO79lv483MQzm7sy1WwAdbpixDzoeOvZM"
-        //const DRIVE_API_KEY = "AIzaSyAcOuFc10xwtujaClC_TZckrGkKx3h0iNI";
+        const DRIVE_API_KEY = "AIzaSyAFXqNypTEWBX7Wbs7hVr_FFvuItxB1fGI"
         const DRIVE_FOLDER_ID = "1rWQnAn8e2fLPpGa-8_GXYHmb0NeTLNH2";
-        //const YOUTUBE_API_KEY = "AIzaSyBAdEcJt_IirVmn-NigdC4O4wMbrkvmR7k";
-        const YOUTUBE_API_KEY = "AIzaSyBAdEcJt_IirVmn-NigdC4O4wMbrkvmR7k"; // Remplacer par une clé valide
-        //AIzaSyCy_E6wle8asGyXeFMO9PQTW6SYHhaIMw4
+        const YOUTUBE_API_KEY = "AIzaSyBRGvHeOTNPQYhgahGVSeuvsvH2rnUnDF0"; // Remplacer par une clé valide
         const ADMIN_UID = "bM2XwcfzMhXJdzExxFMBJ8mo2612";
+
+        const baseUrl = 'https://www.googleapis.com/youtube/v3';
 
 
 
         const ADMIN_VERIFIED_ICON =
             '<i class="bi bi-patch-check-fill admin-verified" title="Administrateur vérifié"></i>';
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
         import {
             getAuth,
@@ -3265,8 +3265,32 @@
                 }
             }
 
+
+
+            // In your switchView function, update the music case:
+            // In your switchView function
             if (view === "music") {
-                window.YouTubeMusicController.initMusicView();
+                // Clear any previous errors
+                const musicContent = document.getElementById('musicContent');
+                if (musicContent) {
+                    musicContent.innerHTML = ''; // Clear any error messages
+                }
+
+                // Initialize music controller
+                if (window.YouTubeMusicController) {
+                    window.YouTubeMusicController.initMusicView();
+                } else {
+                    console.error('YouTubeMusicController not loaded');
+                    musicContent.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
+                            <p class="mt-2">Module musique non chargé</p>
+                            <button class="btn btn-primary mt-2" onclick="location.reload()">
+                                Recharger la page
+                            </button>
+                        </div>
+                    `;
+                }
             }
             if (view === "notes") renderNotes();
             if (view === 'codeeditor-guide') {
@@ -3293,7 +3317,7 @@
         }
 
         // --- FETCH DRIVE FOLDER (FIXED DRIVE ACCESS LOGIC) ---
-        async function fetchDriveFolder(folderId) {
+        /*async function fetchDriveFolder(folderId) {
             document.getElementById("loader").style.display = "block";
             const coursesGrid = document.getElementById("coursesGrid");
 
@@ -3353,7 +3377,80 @@
                 </div>`;
             }
         }
+        */
 
+        // Replace the current fetchDriveFolder function with this improved version
+        async function fetchDriveFolder(folderId) {
+            document.getElementById("loader").style.display = "block";
+            const coursesGrid = document.getElementById("coursesGrid");
+
+            try {
+                // Multiple fallback methods for Drive access
+                let url;
+
+                // Method 1: Try with API key first (most reliable for public files)
+                if (DRIVE_API_KEY) {
+                    url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name,mimeType,webViewLink,thumbnailLink,iconLink,webContentLink,description,createdTime,modifiedTime)&pageSize=200&key=${DRIVE_API_KEY}`;
+                }
+                // Method 2: Try with access token if available
+                else if (googleAccessToken) {
+                    url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name,mimeType,webViewLink,thumbnailLink,iconLink,webContentLink,description,createdTime,modifiedTime)&pageSize=200&access_token=${googleAccessToken}`;
+                } else {
+                    throw new Error("No Drive API access configured");
+                }
+
+                const res = await fetch(url);
+
+                if (!res.ok) {
+                    // If first method fails, try alternative approach for public files
+                    if (res.status === 403 || res.status === 401) {
+                        url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name,mimeType,webViewLink,thumbnailLink,iconLink)&pageSize=100&key=${DRIVE_API_KEY}`;
+                        const fallbackRes = await fetch(url);
+                        if (!fallbackRes.ok) throw new Error("Drive access denied");
+                        const json = await fallbackRes.json();
+                        currentFiles = json.files || [];
+                    } else {
+                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    }
+                } else {
+                    const json = await res.json();
+                    currentFiles = json.files || [];
+                }
+
+                document.getElementById("loader").style.display = "none";
+
+                if (currentFiles.length === 0) {
+                    coursesGrid.innerHTML = `
+                <div class="col-12 text-center text-muted py-5">
+                    <i class="bi bi-folder-x fs-1"></i>
+                    <p class="mt-2">Aucun contenu trouvé dans ce dossier.</p>
+                    <small class="text-muted">Assurez-vous que les fichiers sont partagés publiquement</small>
+                </div>
+            `;
+                    return;
+                }
+
+                renderCourses();
+                renderFolderContributed();
+                renderDashboard();
+                updateStats();
+                renderBreadcrumb();
+                populateCourseSelect();
+
+            } catch (err) {
+                console.error("Erreur de fetch Drive:", err);
+                document.getElementById("loader").style.display = "none";
+                coursesGrid.innerHTML = `
+            <div class="col-12 text-center text-danger py-5">
+                <i class="bi bi-exclamation-triangle fs-1"></i>
+                <p class="mt-2">Erreur de chargement: ${err.message}</p>
+                <button class="btn btn-outline-primary mt-2" onclick="fetchDriveFolder('${folderId}')">
+                    <i class="bi bi-arrow-clockwise"></i> Réessayer
+                </button>
+            </div>
+        `;
+            }
+        }
         function populateCourseSelect() {
             contentCourseSelect.innerHTML =
                 '<option value="">Associé à aucun cours</option>';
@@ -3378,63 +3475,83 @@
         }
 
         function getFileMeta(mime) {
-            if (!mime)
-                return {
-                    kind: "file",
-                    icon: "bi-file-earmark-text",
-                    label: "Fichier",
-                    color: "#6c757d",
-                };
-            if (mime === "application/vnd.google-apps.folder")
-                return {
+            if (!mime) return {
+                kind: "file",
+                icon: "bi-file-earmark-text",
+                label: "Fichier",
+                color: "#6c757d"
+            };
+
+            const mimeTypes = {
+                'application/vnd.google-apps.folder': {
                     kind: "folder",
                     icon: "bi-folder-fill",
                     label: "Dossier",
-                    color: "#ffc107",
-                };
-            if (mime.startsWith("video/"))
-                return {
+                    color: "#ffc107"
+                },
+                'video/': {
                     kind: "video",
                     icon: "bi-camera-video-fill",
                     label: "Vidéo",
-                    color: "#dc3545",
-                };
-            if (mime === "application/pdf")
-                return {
+                    color: "#dc3545"
+                },
+                'application/pdf': {
                     kind: "document",
                     icon: "bi-file-earmark-pdf-fill",
                     label: "PDF",
-                    color: "#0d6efd",
-                };
-            if (mime.includes("document"))
-                return {
+                    color: "#0d6efd"
+                },
+                'application/vnd.google-apps.document': {
                     kind: "document",
                     icon: "bi-file-earmark-text-fill",
                     label: "Document",
-                    color: "#0d6efd",
-                };
-            if (mime.includes("spreadsheet"))
-                return {
+                    color: "#0d6efd"
+                },
+                'application/vnd.google-apps.spreadsheet': {
                     kind: "document",
                     icon: "bi-file-earmark-spreadsheet",
                     label: "Tableur",
-                    color: "#198754",
-                };
-            if (mime.includes("presentation"))
-                return {
+                    color: "#198754"
+                },
+                'application/vnd.google-apps.presentation': {
                     kind: "document",
                     icon: "bi-file-earmark-slides",
                     label: "Présentation",
-                    color: "#fd7e14",
-                };
+                    color: "#fd7e14"
+                }
+            };
+
+            for (const [key, value] of Object.entries(mimeTypes)) {
+                if (mime.includes(key.replace('*', ''))) {
+                    return value;
+                }
+            }
+
             return {
                 kind: "file",
                 icon: "bi-file-earmark",
                 label: "Fichier",
-                color: "#6c757d",
+                color: "#6c757d"
             };
         }
 
+
+
+        // Initialize the platform when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            // Load initial content
+            if (auth.currentUser) {
+                fetchDriveFolder(DRIVE_FOLDER_ID);
+                setTimeout(() => {
+                    fetchYoutubeTutorials();
+                }, 1000);
+            }
+
+            // Add retry mechanism for failed loads
+            window.retryDriveLoad = function () {
+                fetchDriveFolder(currentFolderId || DRIVE_FOLDER_ID);
+            };
+        });
 
         function extractVideoId(url) {
             if (!url) return null;
@@ -3476,6 +3593,12 @@
                 })
                 .join(' <i class="bi bi-chevron-right text-muted mx-1"></i> ');
         }
+
+        /*window.navigateToFolder = function (folderId, index) {
+            folderPath = folderPath.slice(0, index + 1);
+            currentFolderId = folderId;
+            fetchDriveFolder(folderId);
+        };*/
 
         window.navigateToFolder = function (folderId, index) {
             folderPath = folderPath.slice(0, index + 1);
@@ -6633,7 +6756,7 @@
 
 
         // --- FETCH YOUTUBE TUTORIALS (FIXED API KEY USAGE) ---
-        async function fetchYoutubeTutorials() {
+        /*async function fetchYoutubeTutorials() {
             const grid = document.getElementById("youtubeVideosGrid");
             if (!grid) return;
 
@@ -6700,6 +6823,116 @@
             </div>`;
             }
         }
+        */
+        async function fetchYoutubeTutorials() {
+            const youtubeGrid = document.getElementById("youtubeVideosGrid");
+
+            if (!YOUTUBE_API_KEY) {
+                youtubeGrid.innerHTML = `
+                <div class="col-12 text-center text-muted py-3">
+                    <i class="bi bi-youtube text-danger fs-1"></i>
+                    <p class="mt-2">Clé API YouTube non configurée</p>
+                </div>
+               `;
+                return;
+            }
+
+            try {
+                // Search for programming/education tutorials
+                const searchQueries = [
+                    'programming tutorials french',
+                    'computer science courses',
+                    'web development tutorials',
+                    'python programming',
+                    'javascript tutorial'
+                ];
+
+                const randomQuery = searchQueries[Math.floor(Math.random() * searchQueries.length)];
+                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(randomQuery)}&type=video&maxResults=12&key=${YOUTUBE_API_KEY}`;
+
+                const res = await fetch(url);
+
+                if (!res.ok) {
+                    throw new Error(`YouTube API error: ${res.status}`);
+                }
+
+                const data = await res.json();
+
+                if (!data.items || data.items.length === 0) {
+                    youtubeGrid.innerHTML = `
+                <div class="col-12 text-center text-muted py-3">
+                    <i class="bi bi-youtube text-danger fs-1"></i>
+                    <p class="mt-2">Aucun tutoriel YouTube trouvé</p>
+                </div>
+            `;
+                    return;
+                }
+
+                youtubeGrid.innerHTML = data.items.map(video => {
+                    const videoId = video.id.videoId;
+                    const thumb = video.snippet.thumbnails.medium.url;
+                    const title = video.snippet.title;
+                    const channel = video.snippet.channelTitle;
+
+                    return `
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="video-card h-100 fade-in" onclick="playYouTubeVideo('${videoId}', '${title.replace(/'/g, "\\'")}')">
+                        <div class="video-thumb">
+                            <img src="${thumb}" alt="${title}" class="video-thumb-img">
+                            <div class="video-overlay">
+                                <i class="bi bi-play-fill play-icon"></i>
+                            </div>
+                            <span class="video-badge">YouTube</span>
+                        </div>
+                        <div class="video-body d-flex flex-column">
+                            <h6 class="video-title" title="${title}">
+                                <i class="bi bi-youtube text-danger me-2"></i>${title}
+                            </h6>
+                            <p class="video-author mt-auto">
+                                <i class="bi bi-person-circle me-1"></i>${channel}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+                }).join('');
+
+            } catch (err) {
+                console.error("Error fetching YouTube tutorials:", err);
+                youtubeGrid.innerHTML = `
+            <div class="col-12 text-center text-danger py-3">
+                <i class="bi bi-exclamation-triangle fs-1"></i>
+                <p class="mt-2">Erreur de chargement YouTube: ${err.message}</p>
+            </div>
+        `;
+            }
+        }
+
+        window.playYouTubeVideo = function (videoId, title) {
+            const container = document.getElementById("videoContainer");
+            container.innerHTML = `
+        <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+        </iframe>
+    `;
+
+            document.getElementById("videoTitle").textContent = title;
+
+            // Add to history
+            addVideoToHistory({
+                videoId: videoId,
+                title: title,
+                thumbnailUrl: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
+            });
+
+            // Show playlist panel
+            document.getElementById("playlistPanel").classList.remove("d-none");
+            document.getElementById("playlistPanel").classList.add("d-flex");
+
+            videoModal.show();
+        };
 
         // Add this NEW helper function somewhere in your script
         async function getYoutubeSearchQueries() {
@@ -12134,12 +12367,18 @@
             }
         };
 
-        window.openFolder = function (folderId, name) {
+        /*window.openFolder = function (folderId, name) {
             if (!folderId) {
                 showToast("ID de dossier invalide.", "danger");
                 return;
             }
             folderPath.push({ id: folderId, name: name });
+            currentFolderId = folderId;
+            fetchDriveFolder(folderId);
+        };*/
+
+        window.openFolder = function (folderId, folderName) {
+            folderPath.push({ id: folderId, name: folderName });
             currentFolderId = folderId;
             fetchDriveFolder(folderId);
         };
@@ -14408,643 +14647,710 @@
         // ====================================================================
         // YOUTUBE MUSIC INTEGRATION (V7.0 - Version Corrigée et Optimisée)
         // ====================================================================
+        // YouTube Music Controller with Real YouTube API Integration
+        window.YouTubeMusicController = {
+            isInitialized: false,
+            currentPlaylist: null,
+            searchResults: [],
+            player: null,
+            apiKey: YOUTUBE_API_KEY, // Use the same API key from your constants
 
-        class YouTubeMusicPlayer {
-            constructor() {
-                this.YOUTUBE_CLIENT_ID = "746733727875-0mf9e3aq0kcrujg5iev7fdqci7p7pcig.apps.googleusercontent.com";
-                this.MUSIC_PLAYER_FIXED_EL = document.getElementById('musicPlayerFixed');
-                this.MUSIC_CONTENT_EL = document.getElementById('musicContent');
-                this.PLAYER_EMBED_DIV = 'playerEmbed';
-                this.MUSIC_SEARCH_INPUT = document.getElementById('musicSearchInput');
-                this.CONNECT_YOUTUBE_BTN = document.getElementById('connectYouTubeBtn');
+            initMusicView: function () {
+                console.log("Initializing Music View with YouTube API...");
 
-                this.DEFAULT_CONTENT_MUSIC = [
-                    { id: 'PLZH_X_eYn2l93b0N83B20P-N8aJ-jD93P', title: 'Cours de Programmation Avancée', searchKeyword: 'advanced programming course', source: 'playlist' },
-                    { id: 'PLYG0V2jV6n39kXmJ0G6m7kG8uJ2m-9pP8', title: 'Focus & Study Music (Lofi)', searchKeyword: 'lofi study beats', source: 'playlist' },
-                    { id: 'PLWk6tqE9kSj4x_TzS3-1qR1o1T3m7248C', title: 'Histoire de la Science', searchKeyword: 'history of science documentaries', source: 'playlist' },
-                    { id: 'lofi_search', title: 'Lofi Hip Hop Study', searchKeyword: 'lofi hip hop study music', source: 'search' },
-                    { id: 'classical_search', title: 'Musique Classique pour la Concentration', searchKeyword: 'classical music for concentration', source: 'search' },
-                    { id: 'space_search', title: 'Sons de l\'Espace & Ambiance', searchKeyword: 'space ambient music', source: 'search' },
-                ];
+                if (!this.apiKey) {
+                    this.showApiKeyError();
+                    return;
+                }
 
-                this.player = null;
-                this.currentPlaylist = [];
-                this.currentTrackIndex = 0;
-                this.youtubeAccessToken = localStorage.getItem('youtubeAccessToken') || null;
-                this.intervalProgress = null;
-                this.isSearchMode = false;
-                this.currentPlaylistId = null;
+                this.renderInitialContent();
+                this.attachEventListeners();
+                this.isInitialized = true;
+                this.loadPopularContent();
+            },
 
-                this.playerState = {
-                    isMuted: false,
-                    volume: parseFloat(localStorage.getItem('playerVolume') || '0.8')
+            showApiKeyError: function () {
+                const musicContent = document.getElementById('musicContent');
+                if (musicContent) {
+                    musicContent.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
+                    <h4 class="mt-3">Clé API YouTube manquante</h4>
+                    <p class="text-muted">La clé API YouTube n'est pas configurée. Impossible de charger le contenu musical.</p>
+                    <div class="mt-4">
+                        <button class="btn btn-primary me-2" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise"></i> Réessayer
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="switchView('settings')">
+                            <i class="bi bi-gear"></i> Paramètres
+                        </button>
+                    </div>
+                </div>
+            `;
+                }
+            },
+
+            attachEventListeners: function () {
+                // Search functionality
+                const searchInput = document.getElementById('musicSearchInput');
+                const searchBtn = document.getElementById('musicSearchBtn');
+                const backBtn = document.getElementById('backToMusicList');
+                const connectBtn = document.getElementById('connectYouTubeBtn');
+
+                if (searchInput) {
+                    searchInput.addEventListener('input', (e) => {
+                        this.debouncedSearch(e.target.value);
+                    });
+                    searchInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            this.searchMusic(e.target.value);
+                        }
+                    });
+                }
+
+                if (searchBtn) {
+                    searchBtn.addEventListener('click', () => {
+                        this.searchMusic(searchInput?.value || '');
+                    });
+                }
+
+                if (backBtn) {
+                    backBtn.addEventListener('click', () => {
+                        this.showMainView();
+                    });
+                }
+
+                if (connectBtn) {
+                    connectBtn.addEventListener('click', () => {
+                        this.connectYouTubeAccount();
+                    });
+                }
+            },
+
+            debouncedSearch: function (query) {
+                clearTimeout(this.debounceTimer);
+                this.debounceTimer = setTimeout(() => {
+                    if (query && query.length > 2) {
+                        this.searchMusic(query);
+                    } else if (!query || query.length === 0) {
+                        this.loadPopularContent();
+                    }
+                }, 800);
+            },
+
+            renderInitialContent: function () {
+                const musicContent = document.getElementById('musicContent');
+                if (!musicContent) return;
+
+                musicContent.innerHTML = `
+            <div class="col-12">
+                <div class="row g-4" id="musicPlaylistsGrid">
+                    <div class="col-12 text-center py-5">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2">Chargement du contenu musical...</p>
+                    </div>
+                </div>
+            </div>
+        `;
+            },
+
+            // REAL YOUTUBE API CALLS
+            async makeYouTubeAPIRequest(endpoint, params = {}) {
+                const baseUrl = 'https://www.googleapis.com/youtube/v3';
+                const defaultParams = {
+                    key: this.apiKey,
+                    part: 'snippet,contentDetails',
+                    maxResults: 20
                 };
 
-                this.init();
-            }
+                const allParams = { ...defaultParams, ...params };
+                const queryString = new URLSearchParams(allParams).toString();
 
-            init() {
-                this.loadYouTubeAPI();
-                this.bindEvents();
-                console.log("🎵 YouTube Music Player initialisé");
-            }
+                try {
+                    const response = await fetch(`${baseUrl}/${endpoint}?${queryString}`);
 
-            loadYouTubeAPI() {
-                if (!window.YT) {
-                    const tag = document.createElement('script');
-                    tag.src = "https://www.youtube.com/iframe_api";
-                    const firstScriptTag = document.getElementsByTagName('script')[0];
-                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-                }
-            }
-
-            bindEvents() {
-                // Authentification YouTube
-                this.CONNECT_YOUTUBE_BTN?.addEventListener("click", () => this.authenticateYouTube());
-
-                // Recherche
-                this.MUSIC_SEARCH_INPUT?.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.performMusicSearch(this.MUSIC_SEARCH_INPUT.value.trim());
-                });
-
-                document.getElementById('musicSearchBtn')?.addEventListener('click', () => {
-                    this.performMusicSearch(this.MUSIC_SEARCH_INPUT.value.trim());
-                });
-
-                // Contrôles du player
-                document.getElementById('btnPlay')?.addEventListener('click', () => this.togglePlayPause());
-                document.getElementById('btnNext')?.addEventListener('click', () => this.playNextTrack());
-                document.getElementById('btnPrev')?.addEventListener('click', () => this.playPrevTrack());
-                document.getElementById('volumeControl')?.addEventListener('input', (e) => this.handleVolumeChange(e));
-                document.getElementById('btnVolumeToggle')?.addEventListener('click', () => this.toggleMute());
-                document.getElementById('progressBar')?.addEventListener('input', (e) => this.handleSeek(e));
-                document.getElementById('backToMusicList')?.addEventListener('click', () => this.initMusicView());
-
-                // Gestionnaire global pour les clics sur les playlists
-                document.addEventListener('click', (e) => {
-                    const playlistCard = e.target.closest('.playlist-card');
-                    if (playlistCard) {
-                        const playlistId = playlistCard.dataset.playlistId;
-                        const playlistTitle = playlistCard.dataset.playlistTitle;
-                        const playlistType = playlistCard.dataset.playlistType;
-                        if (playlistId && playlistTitle) {
-                            this.loadPlaylistDetails(playlistId, playlistTitle, playlistType);
-                        }
+                    if (!response.ok) {
+                        throw new Error(`YouTube API error: ${response.status} ${response.statusText}`);
                     }
 
-                    const videoItem = e.target.closest('.playlist-video-item');
-                    if (videoItem) {
-                        const index = parseInt(videoItem.dataset.index);
-                        if (!isNaN(index)) this.playTrack(index);
+                    return await response.json();
+                } catch (error) {
+                    console.error('YouTube API request failed:', error);
+                    throw error;
+                }
+            },
+
+            async loadPopularContent() {
+                const grid = document.getElementById('musicPlaylistsGrid');
+                if (!grid) return;
+
+                try {
+                    // Get popular music playlists
+                    const playlistsData = await this.makeYouTubeAPIRequest('search', {
+                        q: 'music study focus programming lofi chill',
+                        type: 'playlist',
+                        order: 'viewCount'
+                    });
+
+                    if (!playlistsData.items || playlistsData.items.length === 0) {
+                        this.showFallbackContent();
+                        return;
                     }
 
-                    const searchResult = e.target.closest('.search-result-card');
-                    if (searchResult) {
-                        const videoId = searchResult.dataset.videoId;
-                        const title = searchResult.dataset.title;
-                        const artist = searchResult.dataset.artist;
-                        if (videoId && title) {
-                            this.playSingleVideo(videoId, title, artist);
-                        }
-                    }
-                });
-            }
-
-            // 1. Initialisation de la vue musique
-            initMusicView() {
-                console.log("🎵 Initialisation de la vue musique...");
-
-                if (!this.MUSIC_CONTENT_EL) {
-                    console.error("❌ Élément musicContent non trouvé");
-                    return;
-                }
-
-                // Réinitialiser les vues
-                document.getElementById('playlistDetail')?.classList.add('d-none');
-                this.MUSIC_CONTENT_EL.classList.remove('d-none');
-                document.getElementById('musicInitialMessage')?.classList.add('d-none');
-
-                // Afficher le contenu selon l'authentification
-                if (this.youtubeAccessToken) {
-                    this.showLoading("Chargement de vos playlists privées...", "primary");
-                    this.fetchUserPlaylists();
-                    this.CONNECT_YOUTUBE_BTN?.classList.add('d-none');
-                } else {
-                    this.CONNECT_YOUTUBE_BTN?.classList.remove('d-none');
-                    this.showLoading("Chargement des playlists éducatives populaires...", "info");
-                    this.fetchDefaultContent();
-                }
-
-                this.updatePlayerVisibility();
-            }
-
-            // 2. API YouTube Player
-            onYouTubeIframeAPIReady() {
-                this.player = new YT.Player(this.PLAYER_EMBED_DIV, {
-                    height: '1',
-                    width: '1',
-                    videoId: '',
-                    playerVars: {
-                        'controls': 0,
-                        'disablekb': 1,
-                        'rel': 0,
-                        'showinfo': 0,
-                        'modestbranding': 1,
-                        'fs': 0,
-                    },
-                    events: {
-                        'onReady': () => this.onPlayerReady(),
-                        'onStateChange': (event) => this.onPlayerStateChange(event)
-                    }
-                });
-            }
-
-            onPlayerReady() {
-                console.log("✅ YouTube Player API Ready");
-                if (this.player) {
-                    this.player.setVolume(this.playerState.volume * 100);
-                    document.getElementById('volumeControl').value = this.playerState.volume;
-                }
-            }
-
-            onPlayerStateChange(event) {
-                const btnPlay = document.getElementById('btnPlay');
-                const icon = btnPlay?.querySelector('i');
-
-                if (!icon) return;
-
-                switch (event.data) {
-                    case YT.PlayerState.PLAYING:
-                        icon.classList.replace("bi-play-circle-fill", "bi-pause-circle-fill");
-                        this.startProgressTracking();
-                        break;
-                    case YT.PlayerState.PAUSED:
-                    case YT.PlayerState.ENDED:
-                        icon.classList.replace("bi-pause-circle-fill", "bi-play-circle-fill");
-                        clearInterval(this.intervalProgress);
-                        break;
-                }
-
-                if (event.data === YT.PlayerState.ENDED) {
-                    this.playNextTrack();
-                }
-            }
-
-            // 3. Authentification
-            authenticateYouTube() {
-                if (typeof google === 'undefined' || !google.accounts) {
-                    showToast("Google Identity Services non chargés", "danger");
-                    return;
-                }
-
-                const client = google.accounts.oauth2.initTokenClient({
-                    client_id: this.YOUTUBE_CLIENT_ID,
-                    scope: "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/userinfo.profile",
-                    callback: (response) => {
-                        if (response.access_token) {
-                            this.youtubeAccessToken = response.access_token;
-                            localStorage.setItem("youtubeAccessToken", this.youtubeAccessToken);
-                            showToast("Connexion YouTube réussie !", "success");
-                            this.initMusicView();
-                        } else {
-                            showToast("Échec de la connexion YouTube", "danger");
-                        }
-                    }
-                });
-                client.requestAccessToken();
-            }
-
-            // 4. Contenu par défaut
-            async fetchDefaultContent() {
-                let defaultContent = [];
-
-                const fetchPromises = this.DEFAULT_CONTENT_MUSIC.map(async (item) => {
-                    try {
-                        if (item.source === 'playlist' && item.id) {
-                            const data = await this.youtubeAPI('playlists', { id: item.id });
-                            if (data.items?.[0]) {
-                                defaultContent.push({ ...item, ...data.items[0], isPublic: true });
-                            }
-                        } else if (item.source === 'search' && item.searchKeyword) {
-                            const data = await this.youtubeAPI('search', {
-                                q: item.searchKeyword,
-                                type: 'playlist',
-                                maxResults: 1
-                            });
-                            if (data.items?.[0]) {
-                                defaultContent.push({
-                                    id: data.items[0].id.playlistId,
-                                    title: data.items[0].snippet.title,
-                                    thumbnail: data.items[0].snippet.thumbnails?.medium?.url,
-                                    itemCount: 'N/A',
-                                    isPublic: true
+                    // Get details for each playlist
+                    const playlistsWithDetails = await Promise.all(
+                        playlistsData.items.slice(0, 8).map(async (item) => {
+                            try {
+                                const playlistDetails = await this.makeYouTubeAPIRequest('playlists', {
+                                    id: item.id.playlistId
                                 });
+
+                                return {
+                                    id: item.id.playlistId,
+                                    title: item.snippet.title,
+                                    description: item.snippet.description,
+                                    thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url,
+                                    channel: item.snippet.channelTitle,
+                                    videoCount: playlistDetails.items[0]?.contentDetails?.itemCount || 'N/A'
+                                };
+                            } catch (error) {
+                                console.error('Error fetching playlist details:', error);
+                                return null;
                             }
-                        }
-                    } catch (error) {
-                        console.warn(`Erreur chargement ${item.title}:`, error);
+                        })
+                    );
+
+                    const validPlaylists = playlistsWithDetails.filter(p => p !== null);
+
+                    if (validPlaylists.length === 0) {
+                        this.showFallbackContent();
+                        return;
                     }
-                });
 
-                await Promise.all(fetchPromises);
-                this.renderContent(defaultContent, 'public');
-            }
+                    this.displayPopularPlaylists(validPlaylists);
+                    this.showRecentHistory();
 
-            // 5. Playlists utilisateur
-            async fetchUserPlaylists() {
-                try {
-                    const data = await this.youtubeAPI('playlists', { mine: true, maxResults: 50 }, true);
-                    this.renderContent(data.items, 'private');
-                } catch (err) {
-                    console.error("Erreur récupération playlists:", err);
-                    this.handleAPIError(err);
+                } catch (error) {
+                    console.error('Error loading popular content:', error);
+                    this.showError('Erreur de chargement du contenu populaire', error);
                 }
-            }
+            },
 
-            // 6. API YouTube helper
-            async youtubeAPI(endpoint, params = {}, useAuth = false) {
-                const baseURL = 'https://www.googleapis.com/youtube/v3/';
-                const urlParams = new URLSearchParams(params);
+            displayPopularPlaylists: function (playlists) {
+                const grid = document.getElementById('musicPlaylistsGrid');
+                if (!grid) return;
 
-                if (useAuth && this.youtubeAccessToken) {
-                    urlParams.delete('key');
-                } else if (window.YOUTUBE_API_KEY) {
-                    urlParams.set('key', window.YOUTUBE_API_KEY);
-                }
-
-                const url = `${baseURL}${endpoint}?${urlParams}`;
-                const headers = useAuth && this.youtubeAccessToken
-                    ? { Authorization: `Bearer ${this.youtubeAccessToken}` }
-                    : {};
-
-                const response = await fetch(url, { headers });
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error?.message || `HTTP ${response.status}`);
-                }
-
-                return data;
-            }
-
-            // 7. Gestion des erreurs API
-            handleAPIError(error) {
-                console.error("YouTube API Error:", error);
-
-                if (error.message.includes('401') || error.message.includes('403')) {
-                    localStorage.removeItem('youtubeAccessToken');
-                    this.youtubeAccessToken = null;
-                    showToast("Session expirée. Veuillez vous reconnecter.", "warning");
-                    this.initMusicView();
-                } else {
-                    showToast("Erreur lors du chargement des données YouTube", "danger");
-                    this.MUSIC_CONTENT_EL.innerHTML = this.getErrorHTML("Impossible de charger le contenu");
-                }
-            }
-
-            // 8. Recherche
-            async performMusicSearch(query) {
-                if (query.length < 3) {
-                    showToast("Veuillez entrer au moins 3 caractères", "warning");
-                    return;
-                }
-
-                this.showLoading(`Recherche de "${this.escapeHtml(query)}"...`, "info");
-
-                try {
-                    const data = await this.youtubeAPI('search', {
-                        q: query,
-                        type: 'playlist,video',
-                        maxResults: 15
-                    }, !!this.youtubeAccessToken);
-
-                    const searchResults = data.items.map(item => ({
-                        id: item.id.kind === 'youtube#playlist' ? item.id.playlistId : item.id.videoId,
-                        title: item.snippet.title,
-                        artist: item.snippet.channelTitle,
-                        thumbnail: item.snippet.thumbnails?.medium?.url,
-                        isPlaylist: item.id.kind === 'youtube#playlist',
-                        isPublic: true
-                    }));
-
-                    this.renderSearchResults(searchResults, query);
-                } catch (err) {
-                    console.error("Erreur recherche YouTube:", err);
-                    showToast("Erreur lors de la recherche", "danger");
-                }
-            }
-
-            // 9. Chargement des détails de playlist
-            async loadPlaylistDetails(playlistId, playlistTitle, type) {
-                this.currentPlaylistId = playlistId;
-
-                document.getElementById('playlistTitle').textContent = playlistTitle;
-                document.getElementById('playlistDetail').classList.remove('d-none');
-                this.MUSIC_CONTENT_EL.classList.add('d-none');
-                document.getElementById('playlistVideosGrid').innerHTML = this.getLoadingHTML();
-
-                try {
-                    const data = await this.youtubeAPI('playlistItems', {
-                        playlistId: playlistId,
-                        maxResults: 50
-                    }, type === 'private');
-
-                    this.currentPlaylist = data.items
-                        .map(item => ({
-                            id: item.contentDetails.videoId,
-                            title: item.snippet.title,
-                            artist: item.snippet.videoOwnerChannelTitle || item.snippet.channelTitle || 'YouTube',
-                            thumbnail: item.snippet.thumbnails?.medium?.url || 'https://via.placeholder.com/120x90',
-                            duration: '...'
-                        }))
-                        .filter(item => item.id);
-
-                    this.renderPlaylistVideos(this.currentPlaylist);
-                    this.playTrack(0);
-                } catch (err) {
-                    console.error("Erreur chargement vidéos:", err);
-                    showToast(`Erreur: ${err.message}`, "danger");
-                }
-            }
-
-            // 10. Lecture vidéo unique
-            playSingleVideo(videoId, title, artist) {
-                this.currentPlaylistId = null;
-                this.currentPlaylist = [{
-                    id: videoId,
-                    title,
-                    artist,
-                    thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
-                }];
-                this.currentTrackIndex = 0;
-
-                document.getElementById('playlistDetail')?.classList.add('d-none');
-                this.MUSIC_CONTENT_EL.classList.remove('d-none');
-                this.playTrack(0);
-            }
-
-            // 11. Contrôles de lecture
-            playTrack(index) {
-                if (!this.player || index < 0 || index >= this.currentPlaylist.length) return;
-
-                this.currentTrackIndex = index;
-                const track = this.currentPlaylist[index];
-
-                // Mise à jour UI
-                document.getElementById('trackThumbnail').src = track.thumbnail;
-                document.getElementById('trackThumbnail').style.display = 'block';
-                document.getElementById('trackTitle').textContent = track.title;
-                document.getElementById('trackArtist').textContent = track.artist;
-                this.MUSIC_PLAYER_FIXED_EL.style.display = 'flex';
-
-                // Lecture
-                this.player.loadVideoById(track.id);
-
-                // Highlight de la piste active
-                document.querySelectorAll('.playlist-video-item').forEach((el, i) => {
-                    el.classList.toggle('active', i === index);
-                });
-            }
-
-            togglePlayPause() {
-                if (!this.player || this.currentPlaylist.length === 0) {
-                    showToast("Aucun média chargé", "info");
-                    return;
-                }
-
-                const state = this.player.getPlayerState();
-                if (state === YT.PlayerState.PLAYING) {
-                    this.player.pauseVideo();
-                } else {
-                    this.player.playVideo();
-                }
-            }
-
-            playNextTrack() {
-                if (this.currentPlaylist.length === 0) return;
-                const nextIndex = (this.currentTrackIndex + 1) % this.currentPlaylist.length;
-                this.playTrack(nextIndex);
-            }
-
-            playPrevTrack() {
-                if (this.currentPlaylist.length === 0) return;
-                const prevIndex = (this.currentTrackIndex - 1 + this.currentPlaylist.length) % this.currentPlaylist.length;
-                this.playTrack(prevIndex);
-            }
-
-            // 12. Contrôles volume
-            handleVolumeChange(e) {
-                const volume = parseFloat(e.target.value);
-                if (this.player) {
-                    this.player.setVolume(volume * 100);
-                    this.playerState.volume = volume;
-                    localStorage.setItem('playerVolume', volume);
-
-                    const toggleIcon = document.getElementById('btnVolumeToggle')?.querySelector('i');
-                    if (toggleIcon) {
-                        toggleIcon.className = volume > 0 ? 'bi bi-volume-up' : 'bi bi-volume-mute';
-                    }
-                }
-            }
-
-            toggleMute() {
-                const volumeControl = document.getElementById('volumeControl');
-                const toggleIcon = document.getElementById('btnVolumeToggle')?.querySelector('i');
-
-                if (!this.player || !volumeControl || !toggleIcon) return;
-
-                if (this.playerState.isMuted) {
-                    this.player.unMute();
-                    this.playerState.isMuted = false;
-                    this.player.setVolume(this.playerState.volume * 100);
-                    toggleIcon.className = 'bi bi-volume-up';
-                    volumeControl.value = this.playerState.volume;
-                } else {
-                    this.player.mute();
-                    this.playerState.isMuted = true;
-                    toggleIcon.className = 'bi bi-volume-mute';
-                    volumeControl.value = 0;
-                }
-            }
-
-            // 13. Barre de progression
-            handleSeek(e) {
-                if (!this.player || typeof this.player.getDuration !== 'function') return;
-                const newTime = (e.target.value / 100) * this.player.getDuration();
-                this.player.seekTo(newTime, true);
-            }
-
-            startProgressTracking() {
-                clearInterval(this.intervalProgress);
-
-                this.intervalProgress = setInterval(() => {
-                    if (!this.player || typeof this.player.getCurrentTime !== 'function') return;
-
-                    const currentTime = this.player.getCurrentTime();
-                    const duration = this.player.getDuration();
-
-                    if (duration > 0) {
-                        const progress = (currentTime / duration) * 100;
-                        document.getElementById('progressBar').value = progress;
-                        document.getElementById('currentTime').textContent = this.formatTime(currentTime);
-                        document.getElementById('totalTime').textContent = this.formatTime(duration);
-                    }
-                }, 1000);
-            }
-
-            // 14. Rendu UI
-            renderContent(playlists, type) {
-                if (!playlists.length && type === 'private') {
-                    this.MUSIC_CONTENT_EL.innerHTML = this.getErrorHTML("Aucune playlist trouvée", "bi-x-circle");
-                    return;
-                }
-
-                const html = `
-            <div class="col-12 mb-4">
-                <h4 class="fw-bold">${type === 'private' ? 'Vos Playlists Privées' : 'Playlists Publiques Recommandées'}</h4>
-                <p class="text-muted">${type === 'private' ? `Total: ${playlists.length} playlists` : 'Explorez ce contenu éducatif'}</p>
-            </div>
-            ${playlists.map(playlist => this.getPlaylistCardHTML(playlist, type)).join('')}
-        `;
-
-                this.MUSIC_CONTENT_EL.innerHTML = html;
-            }
-
-            renderSearchResults(results, query) {
-                if (!results.length) {
-                    this.MUSIC_CONTENT_EL.innerHTML = this.getErrorHTML(`Aucun résultat pour "${this.escapeHtml(query)}"`, "bi-search");
-                    return;
-                }
-
-                const html = `
-            <div class="col-12 mb-4">
-                <h4 class="fw-bold">Résultats pour "${this.escapeHtml(query)}"</h4>
-                <p class="text-muted">${results.length} éléments trouvés</p>
-            </div>
-            ${results.map(item => this.getSearchResultCardHTML(item)).join('')}
-        `;
-
-                this.MUSIC_CONTENT_EL.innerHTML = html;
-            }
-
-            renderPlaylistVideos(videos) {
-                const grid = document.getElementById('playlistVideosGrid');
-                grid.innerHTML = videos.map((video, index) => `
-            <div class="col-md-6 col-lg-4">
-                <div class="d-flex align-items-center playlist-video-item ${index === this.currentTrackIndex ? 'active' : ''}" 
-                     data-index="${index}">
-                    <img src="${video.thumbnail}" class="me-3 rounded" width="80" height="60" alt="${this.escapeHtml(video.title)}">
-                    <div class="flex-grow-1">
-                        <div class="fw-semibold text-truncate">${this.escapeHtml(video.title)}</div>
-                        <small class="text-muted">${this.escapeHtml(video.artist)}</small>
+                grid.innerHTML = playlists.map(playlist => `
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                <div class="card card-modern playlist-card h-100" 
+                     onclick="YouTubeMusicController.openPlaylist('${playlist.id}', '${this.escapeString(playlist.title)}')">
+                    <img src="${playlist.thumbnail}" 
+                         class="card-img-top" 
+                         alt="${this.escapeString(playlist.title)}" 
+                         style="height: 200px; object-fit: cover;"
+                         onerror="this.src='https://via.placeholder.com/300x200/6c757d/ffffff?text=Image+Non+Disponible'">
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title" title="${this.escapeString(playlist.title)}">
+                            ${this.truncateText(playlist.title, 50)}
+                        </h6>
+                        <p class="card-text text-muted small flex-grow-1">
+                            ${this.truncateText(playlist.description, 80)}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <small class="text-muted">
+                                <i class="bi bi-music-note-list"></i> 
+                                ${playlist.videoCount} vidéos
+                            </small>
+                            <small class="text-muted" title="${playlist.channel}">
+                                <i class="bi bi-person"></i> 
+                                ${this.truncateText(playlist.channel, 15)}
+                            </small>
+                        </div>
                     </div>
-                    <i class="bi bi-play-circle ms-2 fs-5 text-primary"></i>
                 </div>
             </div>
         `).join('');
-            }
+            },
 
-            // 15. Templates HTML
-            getPlaylistCardHTML(playlist, type) {
-                const title = playlist.snippet?.title || playlist.title;
-                const id = playlist.id.playlistId || playlist.id;
-                const thumb = playlist.snippet?.thumbnails?.medium?.url || playlist.thumbnail || 'https://via.placeholder.com/320x180?text=Playlist';
-                const itemCount = playlist.contentDetails?.itemCount || playlist.itemCount || '??';
-                const publicBadge = type === 'public' ? '<span class="badge bg-info ms-2"><i class="bi bi-globe me-1"></i>Public</span>' : '';
+            async searchMusic(query) {
+                if (!query || query.trim().length < 2) {
+                    this.loadPopularContent();
+                    return;
+                }
 
-                return `
-            <div class="col-md-4 col-lg-3 mb-4">
-                <div class="card card-modern playlist-card h-100" 
-                     data-playlist-id="${id}"
-                     data-playlist-title="${this.escapeHtml(title)}"
-                     data-playlist-type="${type}">
-                    <img src="${thumb}" class="card-img-top rounded-top" alt="${this.escapeHtml(title)}" style="height: 180px; object-fit: cover;">
-                    <div class="card-body d-flex flex-column">
-                        <h6 class="card-title">${this.escapeHtml(title)} ${publicBadge}</h6>
-                        <p class="text-muted small mt-auto">
-                            ${itemCount} vidéo${itemCount > 1 && itemCount !== 'N/A' ? 's' : ''}
-                        </p>
+                const musicContent = document.getElementById('musicContent');
+                if (!musicContent) return;
+
+                musicContent.innerHTML = `
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5>Résultats pour: "${query}"</h5>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="YouTubeMusicController.loadPopularContent()">
+                        <i class="bi bi-arrow-left"></i> Retour
+                    </button>
+                </div>
+                <div class="row g-4" id="searchResultsGrid">
+                    <div class="col-12 text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2">Recherche de "${query}"...</p>
                     </div>
                 </div>
             </div>
         `;
-            }
 
-            getSearchResultCardHTML(item) {
-                const badgeType = item.isPlaylist ? 'Playlist' : 'Vidéo';
-                const badgeClass = item.isPlaylist ? 'bg-primary' : 'bg-success';
+                try {
+                    // Search for both playlists and videos
+                    const [playlistsData, videosData] = await Promise.all([
+                        this.makeYouTubeAPIRequest('search', {
+                            q: query + ' music playlist',
+                            type: 'playlist',
+                            videoCategoryId: '10'
+                        }),
+                        this.makeYouTubeAPIRequest('search', {
+                            q: query + ' music',
+                            type: 'video',
+                            videoCategoryId: '10'
+                        })
+                    ]);
 
-                return `
-            <div class="col-md-4 col-lg-3 mb-4">
-                <div class="card card-modern search-result-card h-100"
-                     data-video-id="${item.id}"
-                     data-title="${this.escapeHtml(item.title)}"
-                     data-artist="${this.escapeHtml(item.artist)}">
-                    <div class="position-relative">
-                        <img src="${item.thumbnail}" class="card-img-top rounded-top" alt="${this.escapeHtml(item.title)}" style="height: 180px; object-fit: cover;">
-                        <span class="badge ${badgeClass} position-absolute top-0 start-0 m-2">${badgeType}</span>
-                        <div class="position-absolute top-50 start-50 translate-middle opacity-75">
-                            <i class="bi bi-play-circle-fill text-white fs-1" style="text-shadow: 0 0 5px rgba(0,0,0,0.8);"></i>
+                    const results = [];
+
+                    // Process playlists
+                    if (playlistsData.items) {
+                        for (const item of playlistsData.items.slice(0, 6)) {
+                            try {
+                                const playlistDetails = await this.makeYouTubeAPIRequest('playlists', {
+                                    id: item.id.playlistId
+                                });
+
+                                results.push({
+                                    type: 'playlist',
+                                    id: item.id.playlistId,
+                                    title: item.snippet.title,
+                                    description: item.snippet.description,
+                                    thumbnail: item.snippet.thumbnails?.medium?.url,
+                                    channel: item.snippet.channelTitle,
+                                    videoCount: playlistDetails.items[0]?.contentDetails?.itemCount || 'N/A'
+                                });
+                            } catch (error) {
+                                console.error('Error fetching playlist details:', error);
+                            }
+                        }
+                    }
+
+                    // Process videos
+                    if (videosData.items) {
+                        videosData.items.slice(0, 6).forEach(item => {
+                            results.push({
+                                type: 'video',
+                                id: item.id.videoId,
+                                title: item.snippet.title,
+                                description: item.snippet.description,
+                                thumbnail: item.snippet.thumbnails?.medium?.url,
+                                channel: item.snippet.channelTitle,
+                                duration: 'Video' // You can get duration from video details API if needed
+                            });
+                        });
+                    }
+
+                    this.displaySearchResults(results, query);
+
+                } catch (error) {
+                    console.error('Search error:', error);
+                    this.showError('Erreur de recherche', error);
+                }
+            },
+
+            displaySearchResults: function (results, query) {
+                const grid = document.getElementById('searchResultsGrid');
+                if (!grid) return;
+
+                if (results.length === 0) {
+                    grid.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-search fs-1 text-muted"></i>
+                    <h5 class="mt-3">Aucun résultat trouvé</h5>
+                    <p class="text-muted">Aucun contenu trouvé pour "${query}"</p>
+                    <button class="btn btn-primary mt-2" onclick="YouTubeMusicController.loadPopularContent()">
+                        Voir le contenu populaire
+                    </button>
+                </div>
+            `;
+                    return;
+                }
+
+                grid.innerHTML = results.map(item => {
+                    const escapedTitle = this.escapeString(item.title);
+                    const truncatedTitle = this.truncateText(item.title, 60);
+                    const truncatedDesc = this.truncateText(item.description, 100);
+
+                    if (item.type === 'playlist') {
+                        return `
+                    <div class="col-xl-4 col-lg-6">
+                        <div class="card card-modern playlist-card h-100" 
+                             onclick="YouTubeMusicController.openPlaylist('${item.id}', '${escapedTitle}')">
+                            <img src="${item.thumbnail}" 
+                                 class="card-img-top" 
+                                 alt="${escapedTitle}"
+                                 style="height: 200px; object-fit: cover;"
+                                 onerror="this.src='https://via.placeholder.com/300x200/6c757d/ffffff?text=Playlist'">
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title">
+                                    <i class="bi bi-music-note-list text-primary me-2"></i>
+                                    ${truncatedTitle}
+                                </h6>
+                                <p class="card-text text-muted small flex-grow-1">
+                                    ${truncatedDesc}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                    <small class="text-muted">
+                                        <i class="bi bi-collection-play"></i> 
+                                        ${item.videoCount} vidéos
+                                    </small>
+                                    <small class="text-muted" title="${item.channel}">
+                                        ${this.truncateText(item.channel, 20)}
+                                    </small>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body d-flex flex-column">
-                        <h6 class="card-title">${this.escapeHtml(item.title)}</h6>
-                        <p class="text-muted small mt-auto">${this.escapeHtml(item.artist)}</p>
+                `;
+                    } else {
+                        return `
+                    <div class="col-xl-4 col-lg-6">
+                        <div class="card card-modern h-100" 
+                             onclick="YouTubeMusicController.playVideo('${item.id}', '${escapedTitle}')">
+                            <img src="${item.thumbnail}" 
+                                 class="card-img-top" 
+                                 alt="${escapedTitle}"
+                                 style="height: 200px; object-fit: cover;"
+                                 onerror="this.src='https://via.placeholder.com/300x200/6c757d/ffffff?text=Video'">
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title">
+                                    <i class="bi bi-play-btn text-danger me-2"></i>
+                                    ${truncatedTitle}
+                                </h6>
+                                <p class="card-text text-muted small flex-grow-1">
+                                    ${truncatedDesc}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                    <small class="text-muted">
+                                        <i class="bi bi-play-circle"></i> Vidéo
+                                    </small>
+                                    <small class="text-muted" title="${item.channel}">
+                                        ${this.truncateText(item.channel, 20)}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                    }
+                }).join('');
+            },
+
+            async openPlaylist(playlistId, playlistTitle) {
+                this.currentPlaylist = { id: playlistId, title: playlistTitle };
+
+                document.getElementById('musicContent').classList.add('d-none');
+                document.getElementById('playlistDetail').classList.remove('d-none');
+                document.getElementById('playlistTitle').textContent = playlistTitle;
+
+                await this.loadPlaylistVideos(playlistId);
+            },
+
+            async loadPlaylistVideos(playlistId) {
+                const grid = document.getElementById('playlistVideosGrid');
+                if (!grid) return;
+
+                grid.innerHTML = `
+            <div class="col-12 text-center py-4">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-2">Chargement des vidéos de la playlist...</p>
+            </div>
+        `;
+
+                try {
+                    const playlistItems = await this.makeYouTubeAPIRequest('playlistItems', {
+                        playlistId: playlistId,
+                        maxResults: 50
+                    });
+
+                    if (!playlistItems.items || playlistItems.items.length === 0) {
+                        grid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="bi bi-music-note-list fs-1 text-muted"></i>
+                        <p class="mt-2">Cette playlist est vide</p>
+                    </div>
+                `;
+                        return;
+                    }
+
+                    this.displayPlaylistVideos(playlistItems.items);
+
+                } catch (error) {
+                    console.error('Playlist load error:', error);
+                    grid.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
+                    <p class="mt-2">Erreur de chargement de la playlist</p>
+                    <button class="btn btn-outline-primary mt-2" onclick="YouTubeMusicController.loadPlaylistVideos('${playlistId}')">
+                        <i class="bi bi-arrow-clockwise"></i> Réessayer
+                    </button>
+                </div>
+            `;
+                }
+            },
+
+            displayPlaylistVideos: function (videos) {
+                const grid = document.getElementById('playlistVideosGrid');
+                if (!grid) return;
+
+                grid.innerHTML = videos.map(item => {
+                    const video = item.snippet;
+                    const escapedTitle = this.escapeString(video.title);
+                    const truncatedTitle = this.truncateText(video.title, 70);
+
+                    return `
+                <div class="col-lg-6">
+                    <div class="playlist-video-item card card-modern" 
+                         onclick="YouTubeMusicController.playVideo('${video.resourceId.videoId}', '${escapedTitle}')">
+                        <div class="card-body d-flex align-items-center">
+                            <img src="${video.thumbnails?.default?.url}" 
+                                 alt="${escapedTitle}"
+                                 style="width: 80px; height: 60px; object-fit: cover; border-radius: 6px;"
+                                 onerror="this.src='https://via.placeholder.com/80x60/6c757d/ffffff?text=Video'">
+                            <div class="ms-3 flex-grow-1">
+                                <h6 class="mb-1 small" title="${escapedTitle}">
+                                    ${truncatedTitle}
+                                </h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-person"></i> ${video.channelTitle}
+                                </small>
+                            </div>
+                            <i class="bi bi-play-circle fs-4 text-primary"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+                }).join('');
+            },
+
+            playVideo: function (videoId, title) {
+                // Add to play history
+                this.addToPlayHistory({
+                    videoId: videoId,
+                    title: title,
+                    thumbnail: `https://img.youtube.com/vi/${videoId}/default.jpg`,
+                    timestamp: new Date().toISOString()
+                });
+
+                // Initialize music player
+                this.initializeMusicPlayer();
+
+                // Load and play the video
+                this.loadVideoInPlayer(videoId, title);
+
+                // Show notification
+                showToast(`🎵 Lecture: ${this.truncateText(title, 40)}`, 'success');
+            },
+
+            initializeMusicPlayer: function () {
+                const playerFixed = document.getElementById('musicPlayerFixed');
+                if (playerFixed) {
+                    playerFixed.style.display = 'flex';
+                }
+                this.attachPlayerControls();
+            },
+
+            loadVideoInPlayer: function (videoId, title) {
+                document.getElementById('trackTitle').textContent = title;
+                document.getElementById('trackArtist').textContent = 'YouTube Music';
+
+                const thumbnail = document.getElementById('trackThumbnail');
+                thumbnail.src = `https://img.youtube.com/vi/${videoId}/default.jpg`;
+                thumbnail.style.display = 'block';
+                thumbnail.onerror = function () {
+                    this.style.display = 'none';
+                };
+
+                // Initialize YouTube IFrame Player API
+                if (!this.player) {
+                    this.player = new YT.Player('playerEmbed', {
+                        height: '0',
+                        width: '0',
+                        videoId: videoId,
+                        events: {
+                            onReady: (event) => event.target.playVideo()
+                        }
+                    });
+                } else {
+                    this.player.loadVideoById(videoId);
+                }
+            },
+
+
+            showMainView: function () {
+                document.getElementById('playlistDetail').classList.add('d-none');
+                document.getElementById('musicContent').classList.remove('d-none');
+                this.currentPlaylist = null;
+                this.loadPopularContent();
+            },
+
+            connectYouTubeAccount: function () {
+                showToast('Fonctionnalité de connexion YouTube à venir...', 'info');
+                // Future implementation for OAuth
+            },
+
+            // Utility functions
+            escapeString: function (str) {
+                return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+            },
+
+            truncateText: function (text, maxLength) {
+                if (text.length <= maxLength) return text;
+                return text.substring(0, maxLength) + '...';
+            },
+
+            showError: function (message, error) {
+                const grid = document.getElementById('searchResultsGrid') || document.getElementById('musicPlaylistsGrid');
+                if (grid) {
+                    grid.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
+                    <h5 class="mt-3">${message}</h5>
+                    <p class="text-muted">${error.message}</p>
+                    <button class="btn btn-outline-primary mt-2" onclick="YouTubeMusicController.loadPopularContent()">
+                        <i class="bi bi-arrow-clockwise"></i> Réessayer
+                    </button>
+                </div>
+            `;
+                }
+            },
+
+            showFallbackContent: function () {
+                const grid = document.getElementById('musicPlaylistsGrid');
+                if (grid) {
+                    grid.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-music-note-beamed fs-1 text-muted"></i>
+                    <h5 class="mt-3">Contenu musical non disponible</h5>
+                    <p class="text-muted">Impossible de charger les playlists pour le moment.</p>
+                    <button class="btn btn-primary mt-2" onclick="YouTubeMusicController.loadPopularContent()">
+                        <i class="bi bi-arrow-clockwise"></i> Réessayer
+                    </button>
+                </div>
+            `;
+                }
+            },
+
+            showRecentHistory: function () {
+                const history = this.getPlayHistory();
+                if (history.length > 0) {
+                    const grid = document.getElementById('musicPlaylistsGrid');
+                    if (grid) {
+                        grid.innerHTML += `
+                    <div class="col-12 mt-5">
+                        <h5 class="mb-3 border-bottom pb-2">
+                            <i class="bi bi-clock-history text-primary me-2"></i>
+                            Récemment écouté
+                        </h5>
+                        <div class="row g-3">
+                            ${history.slice(0, 6).map(item => `
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="card card-modern hover-lift" 
+                                         onclick="YouTubeMusicController.playVideoFromHistory('${item.videoId}', '${this.escapeString(item.title)}')">
+                                        <div class="card-body d-flex align-items-center">
+                                            <img src="${item.thumbnail}" 
+                                                 alt="${this.escapeString(item.title)}"
+                                                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;"
+                                                 onerror="this.style.display='none'">
+                                            <div class="ms-3 flex-grow-1">
+                                                <h6 class="mb-0 small" title="${this.escapeString(item.title)}">
+                                                    ${this.truncateText(item.title, 40)}
+                                                </h6>
+                                                <small class="text-muted">${this.formatTimeAgo(item.timestamp)}</small>
+                                            </div>
+                                            <i class="bi bi-play-circle text-primary fs-5"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                    }
+                }
+            },
+
+            playVideoFromHistory: function (videoId, title) {
+                this.playVideo(videoId, title);
+            },
+
+            // Player controls (simplified for demo)
+            togglePlayPause: function () {
+                const btn = document.getElementById('btnPlay');
+                if (btn) {
+                    const isPlaying = btn.classList.contains('playing');
+                    if (isPlaying) {
+                        btn.innerHTML = '<i class="bi bi-play-circle-fill"></i>';
+                        btn.classList.remove('playing');
+                    } else {
+                        btn.innerHTML = '<i class="bi bi-pause-circle-fill"></i>';
+                        btn.classList.add('playing');
+                    }
+                }
+            },
+
+            // History management
+            addToPlayHistory: function (item) {
+                let history = this.getPlayHistory();
+                history = history.filter(h => h.videoId !== item.videoId);
+                history.unshift(item);
+
+                if (history.length > 50) history = history.slice(0, 50);
+                localStorage.setItem('youtubeMusicHistory', JSON.stringify(history));
+            },
+
+            getPlayHistory: function () {
+                try {
+                    return JSON.parse(localStorage.getItem('youtubeMusicHistory')) || [];
+                } catch {
+                    return [];
+                }
+            },
+
+            formatTimeAgo: function (timestamp) {
+                const now = new Date();
+                const time = new Date(timestamp);
+                const diff = now - time;
+
+                const minutes = Math.floor(diff / 60000);
+                const hours = Math.floor(diff / 3600000);
+                const days = Math.floor(diff / 86400000);
+
+                if (minutes < 60) return `il y a ${minutes} min`;
+                if (hours < 24) return `il y a ${hours} h`;
+                return `il y a ${days} j`;
+            },
+
+            // Simple player controls
+            attachPlayerControls: function () {
+                // These would be connected to YouTube IFrame Player API in production
+                document.getElementById('btnPlay')?.addEventListener('click', () => this.togglePlayPause());
+                document.getElementById('btnPrev')?.addEventListener('click', () => showToast('Précédent', 'info'));
+                document.getElementById('btnNext')?.addEventListener('click', () => showToast('Suivant', 'info'));
+                document.getElementById('volumeControl')?.addEventListener('input', (e) => {
+                    console.log('Volume:', e.target.value);
+                });
+                document.getElementById('btnVolumeToggle')?.addEventListener('click', () => {
+                    const btn = document.getElementById('btnVolumeToggle');
+                    const isMuted = btn.classList.contains('muted');
+                    btn.innerHTML = isMuted ? '<i class="bi bi-volume-up"></i>' : '<i class="bi bi-volume-mute"></i>';
+                    btn.classList.toggle('muted');
+                });
             }
-
-            showLoading(message = "Chargement...", spinnerType = "primary") {
-                this.MUSIC_CONTENT_EL.innerHTML = `
-            <div class="col-12 text-center py-5">
-                <div class="spinner-border text-${spinnerType}"></div>
-                <p class="mt-3">${message}</p>
-            </div>
-        `;
-            }
-
-            getLoadingHTML() {
-                return `<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-3">Chargement des vidéos...</p></div>`;
-            }
-
-            getErrorHTML(message, icon = "bi-exclamation-triangle") {
-                return `
-            <div class="col-12 text-center py-5 text-muted">
-                <i class="bi ${icon} fs-1 d-block mb-3"></i>
-                ${message}
-            </div>
-        `;
-            }
-
-            // 16. Utilitaires
-            updatePlayerVisibility() {
-                if (!this.MUSIC_PLAYER_FIXED_EL) return;
-
-                const isMusicView = document.getElementById('musicView')?.classList.contains('d-none') === false;
-                this.MUSIC_PLAYER_FIXED_EL.style.display = (isMusicView && this.currentPlaylist.length) ? 'flex' : 'none';
-            }
-
-            escapeHtml(unsafe) {
-                return unsafe
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;");
-            }
-
-            formatTime(seconds) {
-                const mins = Math.floor(seconds / 60);
-                const secs = Math.floor(seconds % 60);
-                return `${mins}:${secs.toString().padStart(2, '0')}`;
-            }
-        }
-
-        // Initialisation globale
-        window.YouTubeMusicController = new YouTubeMusicPlayer();
-        window.onYouTubeIframeAPIReady = () => window.YouTubeMusicController.onYouTubeIframeAPIReady();
+        };
 
 
     </script>
