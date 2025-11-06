@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" x-data="{ darkMode: false }" x-bind:class="{ 'dark': darkMode }" class="scroll-smooth">
+<html lang="fr" class="scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
@@ -32,7 +32,8 @@
                         float: 'float 6s ease-in-out infinite',
                         'slide-up': 'slideUp 0.5s ease-out',
                         'fade-in': 'fadeIn 0.6s ease-out',
-                        flow: 'flow 20s linear infinite', // Added flow animation
+                        flow: 'flow 20s linear infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     },
                     keyframes: {
                         float: {
@@ -41,7 +42,7 @@
                         },
                         slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
                         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        flow: { // Defined keyframes for flow
+                        flow: {
                             '0%': { transform: 'translateX(-50%) translateY(0) rotate(0deg)' },
                             '50%': { transform: 'translateX(50%) translateY(20px) rotate(45deg)' },
                             '100%': { transform: 'translateX(-50%) translateY(0) rotate(0deg)' }
@@ -61,9 +62,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
 
     <style>
-        /* Dynamic Glass Class (Handles both Light and Dark) */
+        /* FIX: Assurer le contraste élevé en Dark Mode */
+        body {
+            transition: background-color 0.5s, color 0.5s;
+        }
+
         .dynamic-glass {
-            @apply bg-white/90 backdrop-blur-3xl border border-white/50 shadow-2xl dark:bg-gray-900/95 dark:border-gray-700/70 dark:shadow-xl dark:shadow-black/30;
+            /* Maintient une légèreté en Light mode */
+            @apply bg-white/90 backdrop-blur-3xl border border-white/50 shadow-2xl;
+        }
+
+        .dark .dynamic-glass {
+            /* Rendu beaucoup plus sombre en Dark mode */
+            @apply bg-gray-950/90 border-gray-700/70 shadow-xl shadow-black/50;
         }
 
         .gradient-text {
@@ -77,8 +88,9 @@
         }
 
         .btn-secondary {
-            @apply px-8 py-4 bg-white/10 backdrop-blur-sm text-gray-900 rounded-full font-bold border-2 border-gray-300 hover:border-blue-600 hover:shadow-lg transition-all duration-300;
-            @apply dark:bg-gray-800/50 dark:text-white dark:border-gray-600 dark:hover:border-blue-400;
+            /* Style unifié pour les boutons secondaires */
+            @apply px-8 py-4 bg-transparent text-gray-900 rounded-full font-bold border-2 border-gray-300 hover:border-blue-600 hover:shadow-lg transition-all duration-300;
+            @apply dark:bg-transparent dark:text-gray-100 dark:border-gray-600 dark:hover:border-blue-400;
         }
 
         /* Animated background - LIGHT MODE BASE */
@@ -109,78 +121,40 @@
             }
         }
 
-        .dark .glass-card {
-            @apply bg-gray-800/70 border-gray-700/50 shadow-lg shadow-black/40;
+        /* Styles pour les cartes (features) */
+        .glass-card {
+            /* Unifié pour le mode clair */
+            @apply bg-white/70 border-gray-300 shadow-xl;
         }
 
-        .glass-card {
-            @apply bg-white/70 border-gray-300 shadow-xl;
+        .dark .glass-card {
+            /* Unifié pour le mode sombre */
+            @apply bg-gray-800/70 border-gray-700/50 shadow-lg shadow-black/40;
         }
 
         .glow {
             box-shadow: 0 0 50px rgba(59, 130, 246, 0.2);
         }
 
-        /* Custom style for opaque Auth Modal */
         .auth-modal-content {
             @apply bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700;
         }
 
-        /* --- DEMO SECTION SPECIFIC STYLES --- */
-        .mockup-container {
-            position: relative;
-            transform-style: preserve-3d;
-            perspective: 1500px;
+        /* Testimonial Card effect */
+        .testimonial-card-bg {
+            background: radial-gradient(circle at top left, var(--tw-gradient-stops));
         }
 
-        .mockup-card {
-            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-            transform: translateZ(0);
-        }
-
-        .mockup-card:hover {
-            transform: translateZ(20px) translateY(-5px);
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
-        }
-
-        .mockup-card-bg {
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 1.5rem;
-        }
-
-        .mockup-shadow {
-            /* Custom glowing shadow effect */
-            filter: drop-shadow(0 15px 30px rgba(70, 130, 180, 0.5));
-        }
-
-        .mockup-video-wrapper {
-            position: relative;
-            background: #000;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-        }
-
-        #webgl-bg {
-            position: absolute;
-            inset: 0;
-            z-index: -10;
-            display: block;
-        }
-
-        .content {
-            position: relative;
-            z-index: 10;
-            color: white;
-            text-align: center;
-            padding-top: 200px;
-            font-family: sans-serif;
+        /* Utilité pour cacher les éléments Alpine */
+        [x-cloak] {
+            display: none !important;
         }
     </style>
 </head>
 
 <body
     class="min-h-screen animated-bg text-gray-900 dark:text-gray-100 dark:bg-gray-950 overflow-x-hidden transition-colors duration-500"
-    x-data="app()">
+    x-data="app()" x-init="initAuthCheck()">
 
     <!-- Floating particles -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden opacity-30 dark:opacity-10">
@@ -215,22 +189,30 @@
 
                 <!-- Buttons -->
                 <div class="flex items-center gap-4">
-                    <!-- Dark Mode Toggle -->
-                    <button @click="darkMode = !darkMode"
+                    <!-- Dark Mode Toggle (Corrigé pour utiliser la variable globale) -->
+                    <button @click="$store.auth.toggleTheme()"
                         class="p-2 rounded-full text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                        <template x-if="!darkMode">
+                        <template x-if="!$store.auth.darkMode">
                             <i class="bi bi-sun-fill w-6 h-6"></i>
                         </template>
-                        <template x-if="darkMode">
+                        <template x-if="$store.auth.darkMode">
                             <i class="bi bi-moon-fill w-6 h-6"></i>
                         </template>
                     </button>
 
-                    <!-- Student Access Button -->
-                    <button @click="document.getElementById('modalAuth').classList.remove('hidden')"
-                        class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full text-sm font-bold hover:scale-[1.03] transition-all">
-                        Accès Étudiant
-                    </button>
+                    <!-- Student Access Button (Conditionnel) -->
+                    <template x-if="!$store.auth.loggedIn">
+                        <button @click="document.getElementById('modalAuth').classList.remove('hidden')"
+                            class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full text-sm font-bold hover:scale-[1.03] transition-all">
+                            Accès Étudiant
+                        </button>
+                    </template>
+                    <template x-if="$store.auth.loggedIn">
+                        <button @click="$store.auth.redirectToApp()"
+                            class="px-6 py-2 bg-gradient-to-r from-green-600 to-cyan-600 text-white rounded-full text-sm font-bold hover:scale-[1.03] transition-all">
+                            Aller au Tableau de Bord
+                        </button>
+                    </template>
                 </div>
 
             </div>
@@ -268,14 +250,16 @@
 
                 <p class="text-xl text-gray-700 dark:text-gray-300 leading-relaxed max-w-xl">
                     Votre hub unique pour les supports de cours, outils d'IA, et la collaboration étudiante au sein
-                    de la Division Informatique et Intelligence Artificielle.
+                    de la Division Informatique et Intelligence Airificielle.
                 </p>
 
+                <!-- Boutons d'action conditionnels -->
                 <div class="flex flex-col sm:flex-row gap-4">
                     <template x-if="$store.auth.loggedIn">
                         <div class="flex flex-col sm:flex-row gap-4 animate-fade-in">
-                            <button @click="$store.auth.redirectToApp()" class="btn-primary">
-                                Aller au Tableau de Bord de <span x-text="$store.auth.userName"></span> →
+                            <button @click="$store.auth.redirectToApp()"
+                                class="btn-primary bg-gradient-to-r from-green-500 to-cyan-500">
+                                Tableau de Bord (Connecté) →
                             </button>
                             <a href="#features" class="btn-secondary">Explorer la Landing Page</a>
                         </div>
@@ -291,6 +275,7 @@
                         </div>
                     </template>
                 </div>
+
 
                 <!-- Trust Bar -->
                 <div class="flex items-center gap-6 pt-4 text-gray-700 dark:text-gray-400">
@@ -464,6 +449,7 @@
             </div>
 
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Utilisez dark:text-gray-300 pour le texte de contenu -->
                 <div
                     class="glass-card dynamic-glass rounded-xl p-8 card-glow group cursor-pointer border dark:border-gray-700">
                     <div
@@ -473,7 +459,7 @@
                     <h3
                         class="text-2xl font-bold mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
                         Supports Officiels et Drive</h3>
-                    <p class="text-gray-600 dark:text-gray-400 leading-relaxed">Accès direct et sécurisé à tous les
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Accès direct et sécurisé à tous les
                         documents (PDF, Slides) stockés sur Google Drive (Vue "Tous les cours").</p>
                 </div>
 
@@ -486,7 +472,7 @@
                     <h3
                         class="text-2xl font-bold mb-3 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition">
                         Messagerie & Groupes Projets</h3>
-                    <p class="text-gray-600 dark:text-gray-400 leading-relaxed">Chats privés et groupes de travail avec
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Chats privés et groupes de travail avec
                         indicateurs de présence et réactions pour une collaboration académique efficace.</p>
                 </div>
 
@@ -499,7 +485,7 @@
                     <h3
                         class="text-2xl font-bold mb-3 group-hover:text-green-600 dark:group-hover:text-green-400 transition">
                         Suivi de Progression Détaillé</h3>
-                    <p class="text-gray-600 dark:text-gray-400 leading-relaxed">Visualisez vos cours terminés, en cours,
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Visualisez vos cours terminés, en cours,
                         et votre score d'accomplissement grâce à des graphiques clairs et motivants.</p>
                 </div>
 
@@ -512,7 +498,7 @@
                     <h3
                         class="text-2xl font-bold mb-3 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition">
                         Bibliothèque & Ressources Externes</h3>
-                    <p class="text-gray-600 dark:text-gray-400 leading-relaxed">Recherchez et prévisualisez des livres
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Recherchez et prévisualisez des livres
                         techniques (OpenLibrary) et du contenu vidéo éducatif pertinent (TMDB/YouTube).</p>
                 </div>
 
@@ -525,7 +511,7 @@
                     <h3
                         class="text-2xl font-bold mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
                         Calendrier et Rappels</h3>
-                    <p class="text-gray-600 dark:text-gray-400 leading-relaxed">Gérez vos devoirs et examens dans un
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Gérez vos devoirs et examens dans un
                         calendrier unifié avec un système d'alarme pour ne jamais manquer une échéance.</p>
                 </div>
 
@@ -538,9 +524,77 @@
                     <h3
                         class="text-2xl font-bold mb-3 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">
                         Discussions et Q&A</h3>
-                    <p class="text-gray-600 dark:text-gray-400 leading-relaxed">Posez vos questions complexes dans les
+                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">Posez vos questions complexes dans les
                         forums de discussion pour bénéficier de l'expertise des professeurs et de la communauté
                         étudiante.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW SECTION: Testimonials -->
+    <section id="testimonials" class="py-24 px-6 lg:px-8 bg-gray-100 dark:bg-gray-900 transition-colors duration-500">
+        <div class="mx-auto max-w-7xl">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-black mb-4 text-gray-900 dark:text-white">
+                    Le succès de nos <span class="gradient-text">Étudiants</span>
+                </h2>
+                <p class="text-xl text-gray-700 dark:text-gray-400 max-w-3xl mx-auto">
+                    Découvrez comment la plateforme FPN a transformé l'expérience d'apprentissage.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div
+                    class="dynamic-glass testimonial-card-bg rounded-xl p-8 shadow-2xl h-full border border-blue-200 dark:border-blue-800/50 from-blue-100/30 to-transparent dark:from-blue-900/50 dark:to-transparent">
+                    <p class="text-lg italic text-gray-700 dark:text-gray-300 mb-6">
+                        "L'éditeur UML intégré est une révolution. Je peux dessiner mes diagrammes de classe directement
+                        à côté de mes notes de cours. Plus besoin de jongler entre 5 applications !"
+                    </p>
+                    <div class="flex items-center">
+                        <img src="https://i.pravatar.cc/50?u=user101" alt="Profile" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <div class="font-bold text-gray-900 dark:text-white">Fatima Zohra</div>
+                            <div class="text-sm text-blue-600 dark:text-blue-400">Étudiante S5 - Conception Logiciel
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div
+                    class="dynamic-glass testimonial-card-bg rounded-xl p-8 shadow-2xl h-full border border-purple-200 dark:border-purple-800/50 from-purple-100/30 to-transparent dark:from-purple-900/50 dark:to-transparent">
+                    <p class="text-lg italic text-gray-700 dark:text-gray-300 mb-6">
+                        "Le chat AI est mon meilleur partenaire de révision. Il m'aide à synthétiser des chapitres
+                        entiers
+                        de complexité en quelques secondes. C'est un gain de temps incroyable avant les examens."
+                    </p>
+                    <div class="flex items-center">
+                        <img src="https://i.pravatar.cc/50?u=user102" alt="Profile" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <div class="font-bold text-gray-900 dark:text-white">Yassine E.</div>
+                            <div class="text-sm text-purple-600 dark:text-purple-400">Étudiant S6 - Intelligence
+                                Artificielle</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div
+                    class="dynamic-glass testimonial-card-bg rounded-xl p-8 shadow-2xl h-full border border-green-200 dark:border-green-800/50 from-green-100/30 to-transparent dark:from-green-900/50 dark:to-transparent">
+                    <p class="text-lg italic text-gray-700 dark:text-gray-300 mb-6">
+                        "J'adore la fonction 'Contenu Contribué'. C'est motivant de savoir que mes notes détaillées
+                        aident d'autres étudiants. L'entraide est très forte grâce à cette plateforme."
+                    </p>
+                    <div class="flex items-center">
+                        <img src="https://i.pravatar.cc/50?u=user103" alt="Profile" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <div class="font-bold text-gray-900 dark:text-white">Amina H.</div>
+                            <div class="text-sm text-green-600 dark:text-green-400">Étudiante S4 - Bases de Données
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -684,11 +738,11 @@
             <div
                 class="dynamic-glass rounded-3xl p-12 lg:p-16 text-center relative overflow-hidden glow dark:bg-gray-800/80">
                 <!-- Decorative elements -->
-                <div
-                    class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-3xl">
+                <!-- Utilisation de classes de transparence pour le dark mode -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl animate-pulse-slow">
                 </div>
-                <div
-                    class="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-pink-500/20 to-cyan-500/20 rounded-full blur-3xl">
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-pink-500/20 rounded-full blur-3xl animate-pulse-slow"
+                    style="animation-delay: 2s;">
                 </div>
 
                 <div class="relative">
@@ -782,7 +836,7 @@
     <!-- AUTH MODAL (Opaque Background) -->
     <div id="modalAuth" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/80"
         x-data="{ activeTab: 'signin' }">
-        <div class="w-full max-w-md p-8 rounded-xl shadow-3xl auth-modal-content">
+        <div class="w-full max-w-md p-8 rounded-xl shadow-3xl auth-modal-content relative">
 
             <!-- Close Button -->
             <button onclick="document.getElementById('modalAuth').classList.add('hidden')"
@@ -790,8 +844,18 @@
                 <i class="bi bi-x-lg text-xl"></i>
             </button>
 
+            <!-- Bouton Déconnexion (Affiché seulement si connecté) -->
+            <template x-if="$store.auth.loggedIn">
+                <div class="absolute top-4 left-4">
+                    <button @click="$store.auth.logout()"
+                        class="text-sm text-red-500 hover:text-red-700 transition flex items-center gap-1">
+                        <i class="bi bi-box-arrow-right"></i> Déconnexion
+                    </button>
+                </div>
+            </template>
+
             <!-- Tabs -->
-            <div class="flex border-b border-gray-300 dark:border-gray-700 mb-6">
+            <div class="flex border-b border-gray-300 dark:border-gray-700 mb-6" x-show="!$store.auth.loggedIn" x-cloak>
                 <button @click="activeTab = 'signin'"
                     :class="{'border-blue-500 text-blue-500 dark:border-blue-400 dark:text-blue-400': activeTab === 'signin', 'border-transparent text-gray-500 dark:text-gray-400': activeTab !== 'signin'}"
                     class="flex-1 py-3 text-center font-semibold transition border-b-2">
@@ -804,81 +868,87 @@
                 </button>
             </div>
 
-            <!-- Sign In Tab -->
-            <div x-show="activeTab === 'signin'" x-transition:enter.duration.300>
-                <h4 class="text-center text-2xl font-bold mb-6 text-gray-900 dark:text-white">Connexion Étudiant</h4>
+            <!-- Content Area -->
+            <div x-show="!$store.auth.loggedIn" x-transition:enter.duration.300 x-cloak>
+                <!-- Sign In Tab -->
+                <div x-show="activeTab === 'signin'">
+                    <h4 class="text-center text-2xl font-bold mb-6 text-gray-900 dark:text-white">Connexion Étudiant
+                    </h4>
 
-                <button id="googleSignIn"
-                    class="w-full py-3 mb-4 flex items-center justify-center gap-3 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-800 dark:text-white">
-                    <svg class="w-5 h-5" viewBox="0 0 48 48">
-                        <path fill="#FFC107"
-                            d="M43.61 20.08v3.19h-11.44c.64 2.87 2.37 5.09 4.99 6.83l2.84 2.22C36.96 34.69 33.68 36 30 36c-5.45 0-9.87-4.42-9.87-9.87s4.42-9.87 9.87-9.87c2.83 0 5.37 1.25 7.15 2.96l2.84-2.84C38.31 15.65 34.42 14 30 14c-8.84 0-16 7.16-16 16s7.16 16 16 16c9.23 0 15.11-6.75 15.11-16C45.11 28.53 45.02 26.54 44.75 25.04H32.17z" />
-                        <path fill="#FF3D00" d="M14 26.2c0-1.74 0-3.48 0-5.22H30.43c.09 1.74 0 3.48 0 5.22H14z" />
-                        <path fill="#4CAF50"
-                            d="M30.43 36c-1.89-.52-3.8-1.2-5.7-2.03-3.62-1.63-6.52-4.53-8.15-8.15H14c1.6 8.84 8.8 16 16 16s14.4-7.16 14.4-16h-2.12c-.27 2.08-.66 4.16-1.17 6.24L39.75 41C36.96 44.59 33.68 46 30 46c-5.45 0-9.87-4.42-9.87-9.87s4.42-9.87 9.87-9.87c2.83 0 5.37 1.25 7.15 2.96l2.84-2.84C38.31 15.65 34.42 14 30 14c-8.84 0-16 7.16-16 16s7.16 16 16 16c9.23 0 15.11-6.75 15.11-16C45.11 28.53 45.02 26.54 44.75 25.04H32.17z" />
-                    </svg>
-                    Continuer avec Google
-                </button>
+                    <button id="googleSignIn"
+                        class="w-full py-3 mb-4 flex items-center justify-center gap-3 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-800 dark:text-white">
+                        <svg class="w-5 h-5" viewBox="0 0 48 48">
+                            <path fill="#FFC107"
+                                d="M43.61 20.08v3.19h-11.44c.64 2.87 2.37 5.09 4.99 6.83l2.84 2.22C36.96 34.69 33.68 36 30 36c-5.45 0-9.87-4.42-9.87-9.87s4.42-9.87 9.87-9.87c2.83 0 5.37 1.25 7.15 2.96l2.84-2.84C38.31 15.65 34.42 14 30 14c-8.84 0-16 7.16-16 16s7.16 16 16 16c9.23 0 15.11-6.75 15.11-16C45.11 28.53 45.02 26.54 44.75 25.04H32.17z" />
+                            <path fill="#FF3D00" d="M14 26.2c0-1.74 0-3.48 0-5.22H30.43c.09 1.74 0 3.48 0 5.22H14z" />
+                            <path fill="#4CAF50"
+                                d="M30.43 36c-1.89-.52-3.8-1.2-5.7-2.03-3.62-1.63-6.52-4.53-8.15-8.15H14c1.6 8.84 8.8 16 16 16s14.4-7.16 14.4-16h-2.12c-.27 2.08-.66 4.16-1.17 6.24L39.75 41C36.96 44.59 33.68 46 30 46c-5.45 0-9.87-4.42-9.87-9.87s4.42-9.87 9.87-9.87c2.83 0 5.37 1.25 7.15 2.96l2.84-2.84C38.31 15.65 34.42 14 30 14c-8.84 0-16 7.16-16 16s7.16 16 16 16c9.23 0 15.11-6.75 15.11-16C45.11 28.53 45.02 26.54 44.75 25.04H32.17z" />
+                        </svg>
+                        Continuer avec Google
+                    </button>
 
-                <div class="text-center text-sm text-gray-500 mb-4">ou par email institutionnel</div>
+                    <div class="text-center text-sm text-gray-500 mb-4">ou par email institutionnel</div>
 
-                <form id="signinForm" class="space-y-4">
-                    <input id="signinEmail" type="email" placeholder="Email institutionnel" required
-                        class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
-                    <input id="signinPassword" type="password" placeholder="Mot de passe" required
-                        class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
-                    <button type="submit" class="w-full py-3 btn-primary font-bold text-lg">Se connecter</button>
-                </form>
-                <p id="authError" class="text-red-500 text-sm mt-4 hidden text-center"></p>
+                    <form id="signinForm" class="space-y-4">
+                        <input id="signinEmail" type="email" placeholder="Email institutionnel" required
+                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
+                        <input id="signinPassword" type="password" placeholder="Mot de passe" required
+                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
+                        <button type="submit" class="w-full py-3 btn-primary font-bold text-lg">Se connecter</button>
+                    </form>
+                    <p id="authError" class="text-red-500 text-sm mt-4 hidden text-center"></p>
+                </div>
+
+                <!-- Sign Up Tab -->
+                <div x-show="activeTab === 'signup'">
+                    <h4 class="text-center text-2xl font-bold mb-6 text-gray-900 dark:text-white">Créer un nouveau
+                        compte
+                    </h4>
+
+                    <button id="googleSignup"
+                        class="w-full py-3 mb-4 flex items-center justify-center gap-3 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-800 dark:text-white">
+                        <svg class="w-5 h-5" viewBox="0 0 48 48">
+                            <path fill="#FFC107"
+                                d="M43.61 20.08v3.19h-11.44c.64 2.87 2.37 5.09 4.99 6.83l2.84 2.22C36.96 34.69 33.68 36 30 36c-5.45 0-9.87-4.42-9.87-9.87s4.42-9.87 9.87-9.87c2.83 0 5.37 1.25 7.15 2.96l2.84-2.84C38.31 15.65 34.42 14 30 14c-8.84 0-16 7.16-16 16s7.16 16 16 16c9.23 0 15.11-6.75 15.11-16C45.11 28.53 45.02 26.54 44.75 25.04H32.17z" />
+                            <path fill="#FF3D00" d="M14 26.2c0-1.74 0-3.48 0-5.22H30.43c.09 1.74 0 3.48 0 5.22H14z" />
+                            <path fill="#4CAF50"
+                                d="M30.43 36c-1.89-.52-3.8-1.2-5.7-2.03-3.62-1.63-6.52-4.53-8.15-8.15H14c1.6 8.84 8.8 16 16 16s14.4-7.16 14.4-16h-2.12c-.27 2.08-.66 4.16-1.17 6.24L39.75 41C36.96 44.59 33.68 46 30 46c-5.45 0-9.87-4.42-9.87-9.87s4.42-9.87 9.87-9.87c2.83 0 5.37 1.25 7.15 2.96l2.84-2.84C38.31 15.65 34.42 14 30 14c-8.84 0-16 7.16-16 16s7.16 16 16 16c9.23 0 15.11-6.75 15.11-16C45.11 28.53 45.02 26.54 44.75 25.04H32.17z" />
+                        </svg>
+                        S'inscrire avec Google
+                    </button>
+
+                    <div class="text-center text-sm text-gray-500 mb-4">ou par email et mot de passe</div>
+
+                    <form id="signupForm" class="space-y-4">
+                        <input id="signupName" type="text" placeholder="Nom Complet" required
+                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
+                        <input id="signupEmail" type="email" placeholder="Email institutionnel" required
+                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
+                        <input id="signupPassword" type="password" placeholder="Mot de passe (min 6 caractères)"
+                            required
+                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
+                        <button type="submit" class="w-full py-3 btn-primary font-bold text-lg">Créer mon
+                            compte</button>
+                    </form>
+                    <p id="signupError" class="text-red-500 text-sm mt-4 hidden text-center"></p>
+                </div>
             </div>
 
-            <!-- Sign Up Tab -->
-            <div x-show="activeTab === 'signup'" x-transition:enter.duration.300>
-                <h4 class="text-center text-2xl font-bold mb-6 text-gray-900 dark:text-white">Créer un nouveau compte
-                </h4>
-
-                <button id="googleSignup"
-                    class="w-full py-3 mb-4 flex items-center justify-center gap-3 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-800 dark:text-white">
-                    <svg class="w-5 h-5" viewBox="0 0 48 48">
-                        <path fill="#FFC107"
-                            d="M43.61 20.08v3.19h-11.44c.64 2.87 2.37 5.09 4.99 6.83l2.84 2.22C36.96 34.69 33.68 36 30 36c-5.45 0-9.87-4.42-9.87-9.87s4.42-9.87 9.87-9.87c2.83 0 5.37 1.25 7.15 2.96l2.84-2.84C38.31 15.65 34.42 14 30 14c-8.84 0-16 7.16-16 16s7.16 16 16 16c9.23 0 15.11-6.75 15.11-16C45.11 28.53 45.02 26.54 44.75 25.04H32.17z" />
-                        <path fill="#FF3D00" d="M14 26.2c0-1.74 0-3.48 0-5.22H30.43c.09 1.74 0 3.48 0 5.22H14z" />
-                        <path fill="#4CAF50"
-                            d="M30.43 36c-1.89-.52-3.8-1.2-5.7-2.03-3.62-1.63-6.52-4.53-8.15-8.15H14c1.6 8.84 8.8 16 16 16s14.4-7.16 14.4-16h-2.12c-.27 2.08-.66 4.16-1.17 6.24L39.75 41C36.96 44.59 33.68 46 30 46c-5.45 0-9.87-4.42-9.87-9.87s4.42-9.87 9.87-9.87c2.83 0 5.37 1.25 7.15 2.96l2.84-2.84C38.31 15.65 34.42 14 30 14c-8.84 0-16 7.16-16 16s7.16 16 16 16c9.23 0 15.11-6.75 15.11-16C45.11 28.53 45.02 26.54 44.75 25.04H32.17z" />
-                    </svg>
-                    S'inscrire avec Google
+            <!-- Message si l'utilisateur est déjà connecté -->
+            <div x-show="$store.auth.loggedIn" x-transition:enter.duration.300 class="text-center py-10" x-cloak>
+                <i class="bi bi-person-check-fill text-green-500 text-6xl mb-4"></i>
+                <h4 class="text-2xl font-bold mb-2">Vous êtes déjà connecté(e), <span class="gradient-text"
+                        x-text="$store.auth.userName"></span>.</h4>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">Accédez directement à votre espace de travail.</p>
+                <button @click="$store.auth.redirectToApp()"
+                    class="btn-primary bg-gradient-to-r from-green-500 to-cyan-500 text-lg">
+                    Aller au Tableau de Bord →
                 </button>
-
-                <div class="text-center text-sm text-gray-500 mb-4">ou par email et mot de passe</div>
-
-                <form id="signupForm" class="space-y-4">
-                    <input id="signupName" type="text" placeholder="Nom Complet" required
-                        class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
-                    <input id="signupEmail" type="email" placeholder="Email institutionnel" required
-                        class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
-                    <input id="signupPassword" type="password" placeholder="Mot de passe (min 6 caractères)" required
-                        class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
-                    <button type="submit" class="w-full py-3 btn-primary font-bold text-lg">Créer mon compte</button>
-                </form>
-                <p id="signupError" class="text-red-500 text-sm mt-4 hidden text-center"></p>
             </div>
 
         </div>
     </div>
 
-    <style>
-        /* Custom gradient for glow
-        .bg-gradient-radial {
-            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.25), transparent 70%);
-        }*/
-
-        /* Smooth cursor glow */
-        #cursor-glow {
-            filter: blur(60px);
-            transition: opacity 0.4s ease;
-        }
-    </style>
-    <!-- Alpine.js & Firebase Script -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         // --- Firebase Configuration from your index.html ---
@@ -894,12 +964,12 @@
         };
 
         // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
+        const appInstance = firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
         const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-        // Set persistence to LOCAL so the login persists across the main app
+        // Set persistence to LOCAL
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
             .then(() => {
                 console.log("Persistence set to LOCAL.");
@@ -909,8 +979,96 @@
             });
 
 
-        // --- Utility Functions ---
+        // ----------------------------------------------------
+        // YOUTUBE DEMO PLAYER FIXES
+        // ----------------------------------------------------
 
+        let demoPlayer;
+        let demoPlayerReady = false;
+        const demoOverlay = document.getElementById('videoOverlay');
+        const demoPlayButton = document.getElementById('playButton');
+        const demoVideoIframeId = 'demoVideo';
+
+        function setDemoPlayIcon() {
+            if (!demoPlayButton) return;
+            demoPlayButton.innerHTML = '<i class="bi bi-play-fill text-white text-5xl"></i>';
+        }
+        function setDemoPauseIcon() {
+            if (!demoPlayButton) return;
+            demoPlayButton.innerHTML = '<i class="bi bi-pause-fill text-white text-5xl"></i>';
+        }
+        function hideDemoOverlay() {
+            if (!demoOverlay) return;
+            demoOverlay.classList.add('opacity-0');
+            demoOverlay.classList.add('pointer-events-none');
+        }
+        function showDemoOverlay() {
+            if (!demoOverlay) return;
+            demoOverlay.classList.remove('opacity-0');
+            demoOverlay.classList.remove('pointer-events-none');
+        }
+
+        // Global callback required by YouTube IFrame API
+        window.onYouTubeIframeAPIReady = function () {
+            console.log("YT IFrame API Ready. Creating player.");
+            // Create the player around the existing iframe with id 'demoVideo'
+            demoPlayer = new YT.Player(demoVideoIframeId, {
+                events: {
+                    'onReady': onDemoPlayerReady,
+                    'onStateChange': onDemoPlayerStateChange
+                }
+            });
+        };
+
+        function onDemoPlayerReady(event) {
+            demoPlayerReady = true;
+            setDemoPlayIcon();
+            showDemoOverlay();
+            demoPlayer.mute();
+        }
+
+        function onDemoPlayerStateChange(e) {
+            const state = e.data;
+            if (state === YT.PlayerState.PLAYING) {
+                setDemoPauseIcon();
+                hideDemoOverlay();
+            } else if (state === YT.PlayerState.PAUSED || state === YT.PlayerState.ENDED || state === YT.PlayerState.UNSTARTED) {
+                setDemoPlayIcon();
+                showDemoOverlay();
+            }
+        }
+
+        function toggleVideoPlay() {
+            if (!demoPlayerReady || !demoPlayer) {
+                console.warn('YouTube demo player not ready yet. Trying fallback.');
+                // Fallback: If API hasn't loaded, force reload with autoplay
+                const iframe = document.getElementById(demoVideoIframeId);
+                if (iframe && !iframe.src.includes('autoplay=1')) {
+                    iframe.src = iframe.src.replace('controls=0', 'controls=1').replace('mute=1', 'mute=0') + '&autoplay=1';
+                }
+                return;
+            }
+
+            const state = demoPlayer.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) {
+                demoPlayer.pauseVideo();
+            } else {
+                demoPlayer.playVideo();
+                demoPlayer.unMute();
+            }
+        }
+        window.toggleVideoPlay = toggleVideoPlay;
+
+        // ----------------------------------------------------
+        // THEME FIXES & CORE AUTH LOGIC
+        // ----------------------------------------------------
+
+        // Expose theming logic globally and for Alpine usage
+        window.saveTheme = function (isDark) {
+            localStorage.setItem('fpn_theme_dark', isDark);
+        }
+
+        // --- Utility Functions ---
         function showAuthError(message, elementId = 'authError') {
             const errorEl = document.getElementById(elementId);
             if (errorEl) {
@@ -920,16 +1078,6 @@
             }
         }
 
-        function redirectToDashboard() {
-            // Since persistence is set to LOCAL, the main app (index.html) will automatically
-            // detect the logged-in user state.
-            alert("Connexion réussie ! L'état de connexion est enregistré localement.");
-            document.getElementById('modalAuth').classList.add('hidden');
-            handleSuccessfulLogin(auth.currentUser);
-            // Example of a real redirection: window.location.href = '/dashboard.html';
-        }
-
-        // Function to ensure user document exists in Firestore (for user management/data init)
         async function initializeUserDocument(user) {
             try {
                 await db.collection('users').doc(user.uid).set({
@@ -943,33 +1091,108 @@
             }
         }
 
+        function handleSuccessfulLogin(user) {
 
+            // 1. Update Alpine Store
+            Alpine.store('auth').loggedIn = true;
+            Alpine.store('auth').userName = user.displayName || user.email.split('@')[0];
+
+            // 2. Set Redirection Flag (Used by index.html)
+            localStorage.setItem('fpn_just_logged_in', 'true');
+
+            // 3. Rediriger immédiatement
+            window.location.href = 'index.html';
+        }
+
+        // --- Core Authentication Check ---
+        function initAuthCheck() {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    Alpine.store('auth').loggedIn = true;
+                    Alpine.store('auth').userName = user.displayName || user.email.split('@')[0];
+                    initializeUserDocument(user);
+                } else {
+                    Alpine.store('auth').loggedIn = false;
+                    Alpine.store('auth').userName = 'Utilisateur';
+                }
+            });
+        }
+
+        // --- Alpine App Data ---
+        function app() {
+            // Initialize Alpine Store (must be done in the app function)
+            Alpine.store('auth', {
+                loggedIn: false,
+                userName: 'Utilisateur',
+                // AJOUT: Gestion du thème
+                darkMode: localStorage.getItem('fpn_theme_dark') === 'true',
+
+                redirectToApp: () => {
+                    localStorage.setItem('fpn_just_logged_in', 'true');
+                    window.location.href = 'index.html';
+                },
+                logout: async () => {
+                    await auth.signOut();
+                    localStorage.removeItem('fpn_just_logged_in');
+
+                    document.getElementById('modalAuth').classList.add('hidden');
+                    Alpine.store('auth').loggedIn = false;
+                    Alpine.store('auth').userName = 'Utilisateur';
+
+                    alert("Vous êtes déconnecté.");
+                },
+                // AJOUT: Fonction pour basculer le thème
+                toggleTheme: function () {
+                    this.darkMode = !this.darkMode;
+                    localStorage.setItem('fpn_theme_dark', this.darkMode);
+
+                    // Appliquer la classe dark sur le html
+                    if (this.darkMode) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                }
+            });
+
+            return {
+                // Supprimer l'ancienne gestion du thème
+                initAuthCheck,
+                // Vous pouvez garder cette fonction si nécessaire ailleurs
+                saveTheme: function (isDark) {
+                    localStorage.setItem('fpn_theme_dark', isDark);
+                    if (isDark) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                }
+            }
+        }
         // --- Sign In Handlers ---
 
         document.getElementById('googleSignIn')?.addEventListener('click', async () => {
             try {
                 document.getElementById('authError').classList.add('hidden');
-                localStorage.setItem('fpn_redirect_on_login', 'true'); // Définir le drapeau
+
                 const result = await auth.signInWithPopup(googleProvider);
                 await initializeUserDocument(result.user);
-                handleSuccessfulLogin(result.user); // Appelle la logique de redirection/bouton
+                handleSuccessfulLogin(result.user);
             } catch (error) {
                 showAuthError(error.message, 'authError');
-                localStorage.removeItem('fpn_redirect_on_login');
                 console.error("Google Sign-In Error:", error);
             }
         });
 
         document.getElementById('signinForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Re-hide previous errors
             document.getElementById('authError').classList.add('hidden');
             const email = document.getElementById('signinEmail').value;
             const password = document.getElementById('signinPassword').value;
 
             try {
                 const result = await auth.signInWithEmailAndPassword(email, password);
-                redirectToDashboard();
+                handleSuccessfulLogin(result.user);
             } catch (error) {
                 showAuthError("Email ou mot de passe incorrect.", 'authError');
                 console.error("Email/Password Sign-In Error:", error);
@@ -980,7 +1203,6 @@
 
         document.getElementById('googleSignup')?.addEventListener('click', async () => {
             try {
-                // Re-hide previous errors
                 document.getElementById('signupError').classList.add('hidden');
                 const result = await auth.signInWithPopup(googleProvider);
 
@@ -990,7 +1212,7 @@
                     });
                 }
                 await initializeUserDocument(result.user);
-                redirectToDashboard();
+                handleSuccessfulLogin(result.user);
             } catch (error) {
                 showAuthError(error.message, 'signupError');
                 console.error("Google Sign-Up Error:", error);
@@ -999,7 +1221,6 @@
 
         document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Re-hide previous errors
             document.getElementById('signupError').classList.add('hidden');
             const name = document.getElementById('signupName').value;
             const email = document.getElementById('signupEmail').value;
@@ -1009,7 +1230,7 @@
                 const result = await auth.createUserWithEmailAndPassword(email, password);
                 await result.user.updateProfile({ displayName: name });
                 await initializeUserDocument(result.user);
-                redirectToDashboard();
+                handleSuccessfulLogin(result.user);
             } catch (error) {
                 let errorMessage = error.message;
                 if (error.code === 'auth/weak-password') {
@@ -1024,185 +1245,28 @@
             }
         });
 
-        // --- Global State for Login Status ---
-        let userIsLoggedIn = false;
-        let userDisplayName = '';
+        // --- Theme Initialization ---
+        function initializeTheme() {
+            const isDark = localStorage.getItem('fpn_theme_dark') === 'true';
 
-        function handleSuccessfulLogin(user) {
-            userIsLoggedIn = true;
-            userDisplayName = user.displayName || user.email;
-
-            // 1. Cacher le modal d'authentification
-            document.getElementById('modalAuth').classList.add('hidden');
-
-            // 2. Mettre à jour l'UI pour afficher le bouton de redirection
-            // Cette fonction sera définie dans Alpine.js pour interagir avec le DOM
-            if (window.Alpine) {
-                Alpine.store('auth').loggedIn = true;
-                Alpine.store('auth').userName = userDisplayName;
-            }
-
-            // 3. Rediriger immédiatement si c'est la première connexion, ou afficher le bouton
-            // Nous allons ajouter un paramètre "redirect_on_login" au localStorage pour gérer ça
-            const redirectOnLogin = localStorage.getItem('fpn_redirect_on_login');
-
-            if (redirectOnLogin === 'true' || redirectOnLogin === null) {
-                // Redirection immédiate si c'est la première fois ou si le drapeau n'est pas configuré
-                localStorage.setItem('fpn_redirect_on_login', 'false'); // Pour éviter la redirection sur rafraîchissement ultérieur de la landing page
-                window.location.href = 'app.html'; // Remplacez par 'app.html' si c'est votre fichier d'application principal
+            // Appliquer le thème au chargement
+            if (isDark) {
+                document.documentElement.classList.add('dark');
             } else {
-                // L'utilisateur reste sur la landing page, le bouton Alpine s'affiche.
-                // Nettoyer le drapeau
-                localStorage.removeItem('fpn_redirect_on_login');
+                document.documentElement.classList.remove('dark');
+            }
+
+            // Synchroniser avec Alpine store si disponible
+            if (Alpine.store('auth')) {
+                Alpine.store('auth').darkMode = isDark;
             }
         }
 
-        // --- Alpine App Data ---
-        function app() {
-            return {
-                // Initialisation du mode clair par défaut
-                darkMode: false,
-                // Initialisation des stores Alpine pour l'état d'authentification
-                init() {
-                    // Initialize the store once Alpine is ready
-                    this.$store.auth = {
-                        loggedIn: userIsLoggedIn,
-                        userName: userDisplayName,
-                        redirectToApp: () => {
-                            window.location.href = 'index.html'; // Remplacez par 'app.html'
-                        }
-                    };
-                }
-            }
-        }
-
+        // Appeler cette fonction au chargement
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeTheme();
+        });
     </script>
-
-    <!-- Add this <script> block after your section (before </body>) -->
-    <script>
-        // ---------- Ensure YT API script is loaded only once ----------
-        if (!window.YT) {
-            const tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            document.head.appendChild(tag);
-        }
-
-        // ---------- Player state helpers ----------
-        let player;
-        let playerReady = false;
-        const overlay = document.getElementById('videoOverlay');
-        const playButton = document.getElementById('playButton');
-
-        // These functions update UI (icon + overlay)
-        function setPlayIcon() {
-            if (!playButton) return;
-            playButton.innerHTML = '<i class="bi bi-play-fill text-white text-5xl"></i>';
-        }
-        function setPauseIcon() {
-            if (!playButton) return;
-            playButton.innerHTML = '<i class="bi bi-pause-fill text-white text-5xl"></i>';
-        }
-        function hideOverlay() {
-            if (!overlay) return;
-            overlay.classList.add('opacity-0');
-            overlay.classList.add('pointer-events-none');
-            // keep some transition time if you use CSS transitions
-            setTimeout(() => {
-                overlay.style.backgroundColor = 'transparent';
-            }, 250);
-        }
-        function showOverlay() {
-            if (!overlay) return;
-            overlay.classList.remove('opacity-0');
-            overlay.classList.remove('pointer-events-none');
-            overlay.style.backgroundColor = ''; // revert to css value
-        }
-
-        // ---------- YouTube IFrame API callbacks ----------
-        // This will be called by the YT script when ready
-        function onYouTubeIframeAPIReady() {
-            // Create the player around the existing iframe with id 'demoVideo'
-            player = new YT.Player('demoVideo', {
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
-                // optional: you can pass playerVars if you want to force specific behavior
-                // playerVars: { rel: 0, modestbranding: 1 }
-            });
-            // expose in case you want to debug
-            window._ytPlayerInstance = player;
-        }
-
-        function onPlayerReady(event) {
-            playerReady = true;
-            // Start with overlay visible and play icon (unless you want otherwise)
-            setPlayIcon();
-            showOverlay();
-        }
-
-        function onPlayerStateChange(e) {
-            const state = e.data;
-            // YT player states: -1 unstarted, 0 ended, 1 playing, 2 paused, 3 buffering
-            if (state === YT.PlayerState.PLAYING) {
-                setPauseIcon();
-                hideOverlay();
-            } else if (state === YT.PlayerState.PAUSED || state === YT.PlayerState.ENDED || state === YT.PlayerState.UNSTARTED) {
-                setPlayIcon();
-                showOverlay();
-            } else if (state === YT.PlayerState.BUFFERING) {
-                // Optional: show a loading indicator
-                // keep current UI as-is
-            }
-        }
-
-        // ---------- Toggle handler wired to your overlay onclick ----------
-        function toggleVideoPlay() {
-            if (!playerReady || !player || typeof player.getPlayerState !== 'function') {
-                console.warn('YouTube player not ready yet.');
-                return;
-            }
-
-            const state = player.getPlayerState();
-            if (state === YT.PlayerState.PLAYING) {
-                player.pauseVideo();
-            } else {
-                // playVideo will unmute if the video is already muted or not — browsers block autoplay unless user interacted,
-                // but since this function is called on user click it should work fine.
-                player.playVideo();
-            }
-        }
-
-        // Expose function to the global scope (your markup uses onclick="toggleVideoPlay()")
-        window.toggleVideoPlay = toggleVideoPlay;
-        // Also expose YT callback globally so YouTube can call it
-        window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
-
-        // OPTIONAL: hide overlay after a short delay when clicking play to mimic YouTube's auto-hide
-        if (overlay) {
-            overlay.addEventListener('click', () => {
-                // A click triggers toggleVideoPlay which will start the player; UI updates are handled in onPlayerStateChange.
-                // This listener ensures immediate visual feedback (if you want it)
-                overlay.classList.add('transition', 'duration-200');
-            });
-        }
-    </script>
-
-    <!-- Add this small CSS (optional) to support fade and pointer-events toggling -->
-    <style>
-        #videoOverlay {
-            transition: opacity .25s ease, background-color .25s ease;
-        }
-
-        #videoOverlay.opacity-0 {
-            opacity: 0;
-        }
-
-        #videoOverlay.pointer-events-none {
-            pointer-events: none;
-        }
-    </style>
-
 </body>
 
 </html>
