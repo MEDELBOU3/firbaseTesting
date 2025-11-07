@@ -149,6 +149,11 @@
         [x-cloak] {
             display: none !important;
         }
+
+        .btn-gradient-purple {
+            @apply px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold shadow-lg hover:shadow-2xl hover:scale-[1.03] transition-all duration-300;
+            @apply dark:from-purple-500 dark:to-pink-500;
+        }
     </style>
 </head>
 
@@ -258,10 +263,13 @@
                     <template x-if="$store.auth.loggedIn">
                         <div class="flex flex-col sm:flex-row gap-4 animate-fade-in">
                             <button @click="$store.auth.redirectToApp()"
-                                class="btn-primary bg-gradient-to-r from-green-500 to-cyan-500">
+                                class="px-6 py-3 bg-gradient-to-r from-green-500 to-cyan-500 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 text-base">
                                 Tableau de Bord (Connecté) →
                             </button>
-                            <a href="#features" class="btn-secondary">Explorer la Landing Page</a>
+                            <a href="#features"
+                                class="px-6 py-3 bg-transparent text-gray-900 dark:text-gray-100 rounded-full font-bold border-2 border-gray-300 dark:border-gray-600 hover:border-blue-600 dark:hover:border-blue-400 hover:shadow-lg transition-all duration-300 text-base">
+                                Explorer la Landing Page
+                            </a>
                         </div>
                     </template>
 
@@ -661,6 +669,420 @@
         </div>
     </section>
 
+    <!-- DeepSeek R1 Integration Section -->
+    <!-- ========================= -->
+    <section id="deepseek-r1"
+        class="relative py-24 px-6 lg:px-8 overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-blue-900/30">
+
+        <!-- 🌌 Animated AI Background -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+            <div
+                class="absolute w-[1000px] h-[1000px] bg-gradient-to-r from-purple-500/30 via-blue-400/20 to-cyan-300/10 blur-[150px] rounded-full animate-aiPulse -top-40 -left-64">
+            </div>
+            <div
+                class="absolute w-[800px] h-[800px] bg-gradient-to-r from-cyan-500/20 via-purple-400/20 to-pink-300/10 blur-[180px] rounded-full animate-aiFloat top-1/3 right-0">
+            </div>
+            <canvas id="aiParticles" class="absolute inset-0"></canvas>
+        </div>
+
+        <div class="relative mx-auto max-w-7xl">
+            <!-- === HEADER === -->
+            <header class="text-center mb-20">
+                <div
+                    class="inline-flex items-center gap-3 px-6 py-3 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-lg mb-6 animate-fadeIn backdrop-blur-md">
+                    <i class="bi bi-stars text-2xl text-purple-600 dark:text-purple-400"></i>
+                    <span class="text-lg font-bold text-gray-800 dark:text-white">Nouveauté IA Avancée</span>
+                </div>
+
+                <h2 class="text-5xl lg:text-6xl font-black mb-6 text-gray-900 dark:text-white leading-tight">
+                    Maîtrisez <span class="gradient-text">DeepSeek R1</span>
+                </h2>
+
+                <p class="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                    Découvrez comment utiliser le modèle d'IA le plus performant de notre plateforme grâce à
+                    <strong>OpenRouter</strong>.
+                </p>
+            </header>
+            <!-- ================= MAIN GRID ================= -->
+            <div class="grid lg:grid-cols-2 gap-12 items-start">
+
+                <!-- ================= LEFT CONTENT ================= -->
+                <div class="space-y-10">
+
+                    <!-- === Feature Cards === -->
+                    <div class="grid gap-6">
+                        <!-- Card 1 -->
+                        <article
+                            class="flex items-start gap-4 p-6 dynamic-glass rounded-2xl border border-blue-200 dark:border-blue-800 hover:scale-[1.02] transition-transform duration-300">
+                            <div
+                                class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0">
+                                <i class="bi bi-key"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">Configuration
+                                    OpenRouter</h4>
+                                <p class="text-gray-700 dark:text-gray-300">
+                                    Obtenez votre clé API gratuite sur OpenRouter et configurez-la en quelques clics
+                                    dans
+                                    votre profil FPN.
+                                </p>
+                            </div>
+                        </article>
+
+                        <!-- Card 2 -->
+                        <article
+                            class="flex items-start gap-4 p-6 dynamic-glass rounded-2xl border border-purple-200 dark:border-purple-800 hover:scale-[1.02] transition-transform duration-300">
+                            <div
+                                class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">DeepSeek R1 Avancé</h4>
+                                <p class="text-gray-700 dark:text-gray-300">
+                                    Accédez au modèle de raisonnement 67B le plus performant pour la résolution de
+                                    problèmes
+                                    complexes et l'analyse de code.
+                                </p>
+                            </div>
+                        </article>
+
+                        <!-- Card 3 -->
+                        <article
+                            class="flex items-start gap-4 p-6 dynamic-glass rounded-2xl border border-green-200 dark:border-green-800 hover:scale-[1.02] transition-transform duration-300">
+                            <div
+                                class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0">
+                                <i class="bi bi-lightning-charge"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">Performance Optimisée
+                                </h4>
+                                <p class="text-gray-700 dark:text-gray-300">
+                                    Bénéficiez de réponses rapides et précises pour vos projets académiques et exercices
+                                    de
+                                    programmation.
+                                </p>
+                            </div>
+                        </article>
+                    </div>
+
+                    <!-- === Quick Steps === -->
+                    <div class="dynamic-glass rounded-2xl p-6 border dark:border-gray-700">
+                        <h4 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-3">
+                            <i class="bi bi-list-ol text-blue-600 dark:text-blue-400"></i>
+                            Étapes Rapides
+                        </h4>
+                        <ol class="space-y-4">
+                            <li class="flex items-center gap-4">
+                                <span
+                                    class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
+                                <p class="text-gray-700 dark:text-gray-300">Créez un compte sur
+                                    <strong>OpenRouter</strong>.
+                                </p>
+                            </li>
+                            <li class="flex items-center gap-4">
+                                <span
+                                    class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
+                                <p class="text-gray-700 dark:text-gray-300">Générez votre clé API gratuite.</p>
+                            </li>
+                            <li class="flex items-center gap-4">
+                                <span
+                                    class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">3</span>
+                                <p class="text-gray-700 dark:text-gray-300">Ajoutez la clé dans vos paramètres FPN.</p>
+                            </li>
+                            <li class="flex items-center gap-4">
+                                <span
+                                    class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">4</span>
+                                <p class="text-gray-700 dark:text-gray-300">Activez DeepSeek R1 et commencez !</p>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- ================= RIGHT CONTENT ================= -->
+                <div class="space-y-10">
+
+                    <!-- === AI Chat UI Mockup === -->
+                    <div class="dynamic-glass rounded-2xl p-6 border dark:border-gray-700">
+                        <h4 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-3">
+                            <i class="bi bi-robot text-purple-600 dark:text-purple-400"></i>
+                            Interface Chat IA - Aperçu
+                        </h4>
+
+                        <div class="rounded-xl overflow-hidden shadow-2xl border dark:border-gray-600 group">
+                            <img src="https://github.com/MEDELBOU3/firbaseTesting/blob/main/images/ai-chat.png?raw=true"
+                                alt="Interface Chat IA FPN - DeepSeek R1"
+                                class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer"
+                                onclick="openImageModal(this.src)">
+                        </div>
+
+                        <div class="mt-6 grid md:grid-cols-3 gap-4">
+                            <div
+                                class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                                <i
+                                    class="bi bi-lightning-charge-fill text-blue-600 dark:text-blue-400 text-xl mb-2"></i>
+                                <h6 class="font-semibold text-gray-900 dark:text-white">DeepSeek R1 67B</h6>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Modèle de raisonnement avancé</p>
+                            </div>
+                            <div
+                                class="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                                <i class="bi bi-code-square text-green-600 dark:text-green-400 text-xl mb-2"></i>
+                                <h6 class="font-semibold text-gray-900 dark:text-white">Analyse de Code</h6>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Débogage et explications</p>
+                            </div>
+                            <div
+                                class="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                                <i class="bi bi-chat-dots text-purple-600 dark:text-purple-400 text-xl mb-2"></i>
+                                <h6 class="font-semibold text-gray-900 dark:text-white">Interface Intuitive</h6>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Conversation fluide</p>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-6">
+                            <button
+                                class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 text-base">
+                                Essayer l'Interface Chat IA →
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- === YouTube Tutorial === -->
+                    <div class="dynamic-glass rounded-2xl p-6 border dark:border-gray-700">
+                        <h4 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-3">
+                            <i class="bi bi-play-circle text-red-600 dark:text-red-400"></i>
+                            Tutoriel Vidéo Complet
+                        </h4>
+                        <p class="text-gray-700 dark:text-gray-300 mb-6">
+                            Regardez notre guide détaillé pour maîtriser l'intégration de DeepSeek R1 en moins de 4
+                            minutes.
+                        </p>
+
+                        <div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl group">
+                            <iframe id="deepseekVideo"
+                                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                src="https://www.youtube.com/embed/H8K67-3CIac?enablejsapi=1&mute=1&controls=0"
+                                title="Tutoriel DeepSeek R1 - OpenRouter" frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowfullscreen></iframe>
+
+                            <div onclick="toggleDeepseekVideo()"
+                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/40 transition duration-500 flex items-center justify-center cursor-pointer"
+                                id="deepseekVideoOverlay">
+                                <div
+                                    class="bg-white/20 backdrop-blur-md rounded-full p-6 hover:scale-110 transition flex items-center justify-center">
+                                    <i class="bi bi-play-fill text-white text-5xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center mt-4 text-sm text-gray-600 dark:text-gray-400">
+                            <span class="flex items-center gap-2"><i class="bi bi-clock"></i>4 minutes</span>
+                            <div class="flex gap-2">
+                                <button onclick="toggleDeepseekVideo()"
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition flex items-center gap-2">
+                                    <i class="bi bi-play-fill"></i> Lecture
+                                </button>
+                                <a href="https://youtu.be/H8K67-3CIac" target="_blank"
+                                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-semibold transition flex items-center gap-2">
+                                    <i class="bi bi-box-arrow-up-right"></i> YouTube
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- === Quick Links === -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <a href="https://openrouter.ai" target="_blank"
+                            class="p-4 dynamic-glass rounded-xl border dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition text-center group">
+                            <i class="bi bi-box-arrow-up-right text-blue-600 dark:text-blue-400 text-xl mb-2"></i>
+                            <div
+                                class="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                OpenRouter
+                            </div>
+                        </a>
+                        <a href="https://deepseek.com" target="_blank"
+                            class="p-4 dynamic-glass rounded-xl border dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-400 transition text-center group">
+                            <i class="bi bi-box-arrow-up-right text-purple-600 dark:text-purple-400 text-xl mb-2"></i>
+                            <div
+                                class="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400">
+                                DeepSeek
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= BENEFITS SECTION ================= -->
+            <div class="grid md:grid-cols-3 gap-8 mt-20">
+                <div class="text-center p-6 dynamic-glass rounded-2xl border dark:border-gray-700">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto mb-4">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3 text-gray-900 dark:text-white">Performance Maximale</h4>
+                    <p class="text-gray-700 dark:text-gray-300">
+                        DeepSeek R1 excelle en raisonnement complexe et analyse de code avec ses 67 milliards de
+                        paramètres.
+                    </p>
+                </div>
+
+                <div class="text-center p-6 dynamic-glass rounded-2xl border dark:border-gray-700">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto mb-4">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3 text-gray-900 dark:text-white">Accès Gratuit</h4>
+                    <p class="text-gray-700 dark:text-gray-300">
+                        OpenRouter offre des crédits gratuits pour découvrir les modèles d'IA les plus avancés.
+                    </p>
+                </div>
+
+                <div class="text-center p-6 dynamic-glass rounded-2xl border dark:border-gray-700">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto mb-4">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3 text-gray-900 dark:text-white">Intégration Sécurisée</h4>
+                    <p class="text-gray-700 dark:text-gray-300">
+                        Votre clé API reste sécurisée et n'est utilisée que pour vos sessions de chat personnelles.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ================= FINAL CTA ================= -->
+            <div class="text-center mt-20">
+                <div class="dynamic-glass rounded-2xl p-10 border dark:border-gray-700 max-w-4xl mx-auto">
+                    <h3 class="text-3xl font-black mb-4 text-gray-900 dark:text-white">
+                        Prêt à booster votre productivité avec l'IA ?
+                    </h3>
+                    <p class="text-xl text-gray-700 dark:text-gray-300 mb-8">
+                        Rejoignez les étudiants qui utilisent déjà DeepSeek R1 pour exceller dans leurs projets.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button
+                            class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 text-base">
+                            Activer DeepSeek R1 →
+                        </button>
+                        <a href="#tools"
+                            class="px-6 py-3 bg-transparent text-gray-900 dark:text-gray-100 rounded-full font-bold border-2 border-gray-300 dark:border-gray-600 hover:border-blue-600 dark:hover:border-blue-400 hover:shadow-lg transition-all duration-300 text-base">
+                            Explorer tous les outils IA
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 hidden">
+        <div class="relative max-w-4xl max-h-[90vh] p-4">
+            <button onclick="closeImageModal()"
+                class="absolute -top-12 right-0 text-white hover:text-gray-300 text-2xl z-10 transition-colors duration-300">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <img id="modalImage" src="" alt="" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl">
+        </div>
+    </div>
+
+    <script>
+        // Image Modal Functions
+        function openImageModal(src) {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('imageModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // Close modal on background click
+        document.getElementById('imageModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeImageModal();
+            }
+        });
+
+        // DeepSeek Video Player Functionality
+        let deepseekPlayer;
+        let deepseekPlayerReady = false;
+
+        function onDeepseekPlayerReady(event) {
+            deepseekPlayerReady = true;
+            setDeepseekPlayIcon();
+            showDeepseekOverlay();
+            deepseekPlayer.mute();
+        }
+
+        function onDeepseekPlayerStateChange(e) {
+            const state = e.data;
+            if (state === YT.PlayerState.PLAYING) {
+                setDeepseekPauseIcon();
+                hideDeepseekOverlay();
+            } else if (state === YT.PlayerState.PAUSED || state === YT.PlayerState.ENDED || state === YT.PlayerState.UNSTARTED) {
+                setDeepseekPlayIcon();
+                showDeepseekOverlay();
+            }
+        }
+
+        function setDeepseekPlayIcon() {
+            const playButton = document.getElementById('deepseekPlayButton');
+            if (playButton) {
+                playButton.innerHTML = '<i class="bi bi-play-fill text-white text-5xl"></i>';
+            }
+        }
+
+        function setDeepseekPauseIcon() {
+            const playButton = document.getElementById('deepseekPlayButton');
+            if (playButton) {
+                playButton.innerHTML = '<i class="bi bi-pause-fill text-white text-5xl"></i>';
+            }
+        }
+
+        function hideDeepseekOverlay() {
+            const overlay = document.getElementById('deepseekVideoOverlay');
+            if (overlay) {
+                overlay.classList.add('opacity-0');
+                overlay.classList.add('pointer-events-none');
+            }
+        }
+
+        function showDeepseekOverlay() {
+            const overlay = document.getElementById('deepseekVideoOverlay');
+            if (overlay) {
+                overlay.classList.remove('opacity-0');
+                overlay.classList.remove('pointer-events-none');
+            }
+        }
+
+        function toggleDeepseekVideo() {
+            if (!deepseekPlayerReady || !deepseekPlayer) {
+                // Fallback: If API hasn't loaded, open YouTube directly
+                window.open('https://youtu.be/H8K67-3CIac', '_blank');
+                return;
+            }
+
+            const state = deepseekPlayer.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) {
+                deepseekPlayer.pauseVideo();
+            } else {
+                deepseekPlayer.playVideo();
+                deepseekPlayer.unMute();
+            }
+        }
+
+        // Initialize DeepSeek video player when YouTube API is ready
+        if (typeof YT !== 'undefined') {
+            deepseekPlayer = new YT.Player('deepseekVideo', {
+                events: {
+                    'onReady': onDeepseekPlayerReady,
+                    'onStateChange': onDeepseekPlayerStateChange
+                }
+            });
+        }
+    </script>
+
     <!-- Community Section -->
     <section id="community" class="py-24 px-6 lg:px-8 bg-lightSurface/80 backdrop-blur-sm dark:bg-darkCard/50">
         <div class="mx-auto max-w-7xl">
@@ -833,37 +1255,44 @@
     </footer>
 
 
-    <!-- AUTH MODAL (Opaque Background) -->
-    <div id="modalAuth" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/80"
+    <!-- AUTH MODAL (Colored Gradient Background) -->
+    <div id="modalAuth" class="fixed inset-0 z-50 flex items-center justify-center hidden"
         x-data="{ activeTab: 'signin' }">
-        <div class="w-full max-w-md p-8 rounded-xl shadow-3xl auth-modal-content relative">
+        <!-- Gradient Background Overlay -->
+        <div
+            class="absolute inset-0 bg-gradient-to-br from-blue-600/90 via-purple-600/90 to-pink-600/90 backdrop-blur-sm">
+        </div>
+
+        <!-- Modal Content -->
+        <div
+            class="relative w-full max-w-md p-8 rounded-2xl shadow-3xl bg-white dark:bg-gray-900 border border-white/20 dark:border-gray-700/50 backdrop-blur-md">
 
             <!-- Close Button -->
             <button onclick="document.getElementById('modalAuth').classList.add('hidden')"
-                class="absolute top-4 right-4 text-gray-700 dark:text-gray-400 hover:text-black dark:hover:text-white transition">
-                <i class="bi bi-x-lg text-xl"></i>
+                class="absolute top-4 right-4 w-8 h-8 bg-white/10 dark:bg-gray-800/80 hover:bg-white/20 dark:hover:bg-gray-700/80 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-300 backdrop-blur-sm">
+                <i class="bi bi-x-lg text-lg"></i>
             </button>
 
-            <!-- Bouton Déconnexion (Affiché seulement si connecté) -->
+            <!-- Logout Button (Visible only when logged in) -->
             <template x-if="$store.auth.loggedIn">
                 <div class="absolute top-4 left-4">
                     <button @click="$store.auth.logout()"
-                        class="text-sm text-red-500 hover:text-red-700 transition flex items-center gap-1">
+                        class="text-sm bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 px-3 py-1 rounded-full transition-all duration-300 flex items-center gap-1 backdrop-blur-sm">
                         <i class="bi bi-box-arrow-right"></i> Déconnexion
                     </button>
                 </div>
             </template>
 
             <!-- Tabs -->
-            <div class="flex border-b border-gray-300 dark:border-gray-700 mb-6" x-show="!$store.auth.loggedIn" x-cloak>
+            <div class="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 mb-6" x-show="!$store.auth.loggedIn" x-cloak>
                 <button @click="activeTab = 'signin'"
-                    :class="{'border-blue-500 text-blue-500 dark:border-blue-400 dark:text-blue-400': activeTab === 'signin', 'border-transparent text-gray-500 dark:text-gray-400': activeTab !== 'signin'}"
-                    class="flex-1 py-3 text-center font-semibold transition border-b-2">
+                    :class="{'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm': activeTab === 'signin', 'text-gray-600 dark:text-gray-400': activeTab !== 'signin'}"
+                    class="flex-1 py-3 text-center font-semibold transition-all duration-300 rounded-lg">
                     Se connecter
                 </button>
                 <button @click="activeTab = 'signup'"
-                    :class="{'border-blue-500 text-blue-500 dark:border-blue-400 dark:text-blue-400': activeTab === 'signup', 'border-transparent text-gray-500 dark:text-gray-400': activeTab !== 'signup'}"
-                    class="flex-1 py-3 text-center font-semibold transition border-b-2">
+                    :class="{'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm': activeTab === 'signup', 'text-gray-600 dark:text-gray-400': activeTab !== 'signup'}"
+                    class="flex-1 py-3 text-center font-semibold transition-all duration-300 rounded-lg">
                     Créer un compte
                 </button>
             </div>
@@ -875,26 +1304,42 @@
                     <h4 class="text-center text-2xl font-bold mb-6 text-gray-900 dark:text-white">Connexion Étudiant
                     </h4>
 
+                    <!-- Improved Google Sign In Button -->
                     <button id="googleSignIn"
-                        class="w-full py-3 mb-4 flex items-center justify-center gap-3 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-800 dark:text-white">
-                        <svg class="w-5 h-5" viewBox="0 0 48 48">
-                            <path fill="#FFC107"
-                                d="M43.61 20.08v3.19h-11.44c.64 2.87 2.37 5.09 4.99 6.83l2.84 2.22C36.96 34.69 33.68 36 30 36c-5.45 0-9.87-4.42-9.87-9.87s4.42-9.87 9.87-9.87c2.83 0 5.37 1.25 7.15 2.96l2.84-2.84C38.31 15.65 34.42 14 30 14c-8.84 0-16 7.16-16 16s7.16 16 16 16c9.23 0 15.11-6.75 15.11-16C45.11 28.53 45.02 26.54 44.75 25.04H32.17z" />
-                            <path fill="#FF3D00" d="M14 26.2c0-1.74 0-3.48 0-5.22H30.43c.09 1.74 0 3.48 0 5.22H14z" />
-                            <path fill="#4CAF50"
-                                d="M30.43 36c-1.89-.52-3.8-1.2-5.7-2.03-3.62-1.63-6.52-4.53-8.15-8.15H14c1.6 8.84 8.8 16 16 16s14.4-7.16 14.4-16h-2.12c-.27 2.08-.66 4.16-1.17 6.24L39.75 41C36.96 44.59 33.68 46 30 46c-5.45 0-9.87-4.42-9.87-9.87s4.42-9.87 9.87-9.87c2.83 0 5.37 1.25 7.15 2.96l2.84-2.84C38.31 15.65 34.42 14 30 14c-8.84 0-16 7.16-16 16s7.16 16 16 16c9.23 0 15.11-6.75 15.11-16C45.11 28.53 45.02 26.54 44.75 25.04H32.17z" />
+                        class="w-full py-3 mb-4 flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md transition-all duration-300 text-gray-800 dark:text-white group">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                            <path fill="#4285F4"
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="#34A853"
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="#FBBC05"
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path fill="#EA4335"
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                         </svg>
-                        Continuer avec Google
+                        <span class="group-hover:scale-105 transition-transform duration-300">Continuer avec
+                            Google</span>
                     </button>
 
-                    <div class="text-center text-sm text-gray-500 mb-4">ou par email institutionnel</div>
+                    <div class="relative mb-4">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white dark:bg-gray-900 text-gray-500">ou par email
+                                institutionnel</span>
+                        </div>
+                    </div>
 
                     <form id="signinForm" class="space-y-4">
                         <input id="signinEmail" type="email" placeholder="Email institutionnel" required
-                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
+                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white transition-all duration-300">
                         <input id="signinPassword" type="password" placeholder="Mot de passe" required
-                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
-                        <button type="submit" class="w-full py-3 btn-primary font-bold text-lg">Se connecter</button>
+                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white transition-all duration-300">
+                        <button type="submit"
+                            class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 text-lg">
+                            Se connecter
+                        </button>
                     </form>
                     <p id="authError" class="text-red-500 text-sm mt-4 hidden text-center"></p>
                 </div>
@@ -902,52 +1347,70 @@
                 <!-- Sign Up Tab -->
                 <div x-show="activeTab === 'signup'">
                     <h4 class="text-center text-2xl font-bold mb-6 text-gray-900 dark:text-white">Créer un nouveau
-                        compte
-                    </h4>
+                        compte</h4>
 
+                    <!-- Improved Google Sign Up Button -->
                     <button id="googleSignup"
-                        class="w-full py-3 mb-4 flex items-center justify-center gap-3 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-800 dark:text-white">
-                        <svg class="w-5 h-5" viewBox="0 0 48 48">
-                            <path fill="#FFC107"
-                                d="M43.61 20.08v3.19h-11.44c.64 2.87 2.37 5.09 4.99 6.83l2.84 2.22C36.96 34.69 33.68 36 30 36c-5.45 0-9.87-4.42-9.87-9.87s4.42-9.87 9.87-9.87c2.83 0 5.37 1.25 7.15 2.96l2.84-2.84C38.31 15.65 34.42 14 30 14c-8.84 0-16 7.16-16 16s7.16 16 16 16c9.23 0 15.11-6.75 15.11-16C45.11 28.53 45.02 26.54 44.75 25.04H32.17z" />
-                            <path fill="#FF3D00" d="M14 26.2c0-1.74 0-3.48 0-5.22H30.43c.09 1.74 0 3.48 0 5.22H14z" />
-                            <path fill="#4CAF50"
-                                d="M30.43 36c-1.89-.52-3.8-1.2-5.7-2.03-3.62-1.63-6.52-4.53-8.15-8.15H14c1.6 8.84 8.8 16 16 16s14.4-7.16 14.4-16h-2.12c-.27 2.08-.66 4.16-1.17 6.24L39.75 41C36.96 44.59 33.68 46 30 46c-5.45 0-9.87-4.42-9.87-9.87s4.42-9.87 9.87-9.87c2.83 0 5.37 1.25 7.15 2.96l2.84-2.84C38.31 15.65 34.42 14 30 14c-8.84 0-16 7.16-16 16s7.16 16 16 16c9.23 0 15.11-6.75 15.11-16C45.11 28.53 45.02 26.54 44.75 25.04H32.17z" />
+                        class="w-full py-3 mb-4 flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md transition-all duration-300 text-gray-800 dark:text-white group">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                            <path fill="#4285F4"
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="#34A853"
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="#FBBC05"
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path fill="#EA4335"
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                         </svg>
-                        S'inscrire avec Google
+                        <span class="group-hover:scale-105 transition-transform duration-300">S'inscrire avec
+                            Google</span>
                     </button>
 
-                    <div class="text-center text-sm text-gray-500 mb-4">ou par email et mot de passe</div>
+                    <div class="relative mb-4">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white dark:bg-gray-900 text-gray-500">ou par email et mot de
+                                passe</span>
+                        </div>
+                    </div>
 
                     <form id="signupForm" class="space-y-4">
                         <input id="signupName" type="text" placeholder="Nom Complet" required
-                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
+                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white transition-all duration-300">
                         <input id="signupEmail" type="email" placeholder="Email institutionnel" required
-                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
+                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white transition-all duration-300">
                         <input id="signupPassword" type="password" placeholder="Mot de passe (min 6 caractères)"
                             required
-                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white">
-                        <button type="submit" class="w-full py-3 btn-primary font-bold text-lg">Créer mon
-                            compte</button>
+                            class="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800 dark:text-white transition-all duration-300">
+                        <button type="submit"
+                            class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 text-lg">
+                            Créer mon compte
+                        </button>
                     </form>
                     <p id="signupError" class="text-red-500 text-sm mt-4 hidden text-center"></p>
                 </div>
             </div>
 
-            <!-- Message si l'utilisateur est déjà connecté -->
-            <div x-show="$store.auth.loggedIn" x-transition:enter.duration.300 class="text-center py-10" x-cloak>
-                <i class="bi bi-person-check-fill text-green-500 text-6xl mb-4"></i>
-                <h4 class="text-2xl font-bold mb-2">Vous êtes déjà connecté(e), <span class="gradient-text"
-                        x-text="$store.auth.userName"></span>.</h4>
+            <!-- Message when user is already logged in -->
+            <div x-show="$store.auth.loggedIn" x-transition:enter.duration.300 class="text-center py-8" x-cloak>
+                <div
+                    class="w-20 h-20 bg-gradient-to-br from-green-500 to-cyan-500 rounded-full flex items-center justify-center text-white text-4xl mx-auto mb-4 shadow-lg">
+                    <i class="bi bi-person-check-fill"></i>
+                </div>
+                <h4 class="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Vous êtes déjà connecté(e),</h4>
+                <p class="text-xl gradient-text font-semibold mb-2" x-text="$store.auth.userName"></p>
                 <p class="text-gray-600 dark:text-gray-400 mb-6">Accédez directement à votre espace de travail.</p>
                 <button @click="$store.auth.redirectToApp()"
-                    class="btn-primary bg-gradient-to-r from-green-500 to-cyan-500 text-lg">
+                    class="w-full py-3 bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 text-lg">
                     Aller au Tableau de Bord →
                 </button>
             </div>
 
         </div>
     </div>
+
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
@@ -1097,7 +1560,7 @@
             Alpine.store('auth').loggedIn = true;
             Alpine.store('auth').userName = user.displayName || user.email.split('@')[0];
 
-            // 2. Redirection Flag (Used by app.html)
+            // 2. Set Redirection Flag (Used by app.html)
             localStorage.setItem('fpn_just_logged_in', 'true');
 
             // 3. Rediriger immédiatement
