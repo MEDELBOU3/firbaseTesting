@@ -37,8 +37,10 @@
 </head>
 
 <body data-theme="light">
-    <!-- Thème par défaut -->
-
+    <div id="offline-indicator" class="offline-indicator" style="display: none;">
+        <i class="bi bi-wifi-off"></i>
+        <span>Vous êtes hors ligne. Vérifiez votre connexion.</span>
+    </div>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container-fluid">
@@ -243,8 +245,7 @@
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
-        <!-- Tableau de bord View -->
-        <div id="dashboardView" class="view-content">
+         <div id="dashboardView" class="view-content">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 style="color: var(--brand); font-weight: 700">
@@ -491,25 +492,70 @@
             <div class="row g-4" id="contributedGrid"></div>
         </div>
 
-        <!-- Documents View -->
-        <div id="documentsView" class="view-content d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 style="color: var(--brand); font-weight: 700">
-                    Documents & Matériaux
-                </h2>
 
-                <!-- START: NEW LAYOUT TOGGLE -->
+
+        <!-- ======================================================= -->
+        <!-- ==== DOCUMENTS & MATÉRIAUX VIEW (UPGRADED TIER 1) ==== -->
+        <!-- ======================================================= -->
+        <div id="documentsView" class="view-content d-none">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <h2 style="color: var(--brand); font-weight: 700;">Documents & Matériaux</h2>
                 <div class="btn-group" role="group" aria-label="Layout Toggle">
-                    <button type="button" class="btn btn-outline-primary active" id="btnGridDocuments">
-                        <i class="bi bi-grid-3x3-gap-fill"></i> Grille
+                    <button type="button" class="btn btn-outline-primary active" id="btnGridDocuments"
+                        title="Grid View">
+                        <i class="bi bi-grid-3x3-gap-fill"></i> <span class="d-none d-md-inline">Grille</span>
                     </button>
-                    <button type="button" class="btn btn-outline-primary" id="btnListDocuments">
-                        <i class="bi bi-list"></i> Liste
+                    <button type="button" class="btn btn-outline-primary" id="btnListDocuments" title="List View">
+                        <i class="bi bi-list"></i> <span class="d-none d-md-inline">Liste</span>
                     </button>
                 </div>
-                <!-- END: NEW LAYOUT TOGGLE -->
             </div>
-            <div class="row g-4" id="documentsGrid"></div>
+
+            <!-- NEW: Advanced Controls Bar -->
+            <div class="card card-modern mb-4">
+                <div class="card-body d-flex flex-wrap gap-3 align-items-center">
+                    <!-- Search Input -->
+                    <div class="flex-grow-1 doc-search-wrapper">
+                        <i class="bi bi-search"></i>
+                        <input type="text" class="form-control" id="docSearchInput" placeholder="Rechercher par nom...">
+                    </div>
+                    <!-- Filter Dropdown -->
+                    <div class="doc-controls-group">
+                        <label for="docTypeFilter" class="form-label visually-hidden">Filtrer par type</label>
+                        <select id="docTypeFilter" class="form-select">
+                            <option value="all">Tous les types</option>
+                            <option value="document">Documents</option>
+                            <option value="video">Vidéos</option>
+                            <option value="folder">Dossiers</option>
+                        </select>
+                    </div>
+                    <!-- Sort Dropdown -->
+                    <div class="doc-controls-group">
+                        <label for="docSortBy" class="form-label visually-hidden">Trier par</label>
+                        <select id="docSortBy" class="form-select">
+                            <option value="name">Trier par Nom</option>
+                            <option value="modifiedTime">Trier par Date</option>
+                        </select>
+                    </div>
+                    <!-- Favorites Toggle -->
+                    <div class="form-check form-switch fs-5">
+                        <input class="form-check-input" type="checkbox" role="switch" id="docFavoritesToggle"
+                            title="Afficher uniquement les favoris">
+                        <label class="form-check-label" for="docFavoritesToggle" style="padding-top: 5px;">
+                            <i class="bi bi-star-fill text-warning"></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- This is where the documents will be rendered -->
+            <div id="documentsGrid" class="row g-4">
+                <!-- Grid/List content will be injected here by JS -->
+            </div>
+            <div id="documentsEmptyState" class="text-center text-muted py-5 d-none">
+                <i class="bi bi-folder-x fs-1"></i>
+                <p class="mt-2">Aucun document ne correspond à vos critères.</p>
+            </div>
         </div>
 
         <!-- Bibliothèque FPN View -->
@@ -567,12 +613,98 @@
 
         </div>
 
-        <!-- Devoirs View -->
+        <!-- ======================================================= -->
+        <!-- ==== DEVOIRS VIEW (UPGRADED WITH EXAMPLES) ==== -->
+        <!-- ======================================================= -->
         <div id="assignmentsView" class="view-content d-none">
-            <h2 class="mb-4" style="color: var(--brand); font-weight: 700">
-                Devoirs
-            </h2>
-            <div class="row g-4" id="assignmentsGrid"></div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 style="color: var(--brand); font-weight: 700;">Devoirs & Challenges</h2>
+                    <p class="text-muted mb-0">Testez vos connaissances et complétez les devoirs assignés.</p>
+                </div>
+            </div>
+
+            <!-- Tabs for different assignment types -->
+            <ul class="nav nav-tabs nav-tabs-modern mb-4" id="assignmentsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab-all" data-bs-toggle="tab" data-status-filter="all"
+                        type="button">Tous</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-pending" data-bs-toggle="tab" data-status-filter="À faire"
+                        type="button">À faire</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-completed" data-bs-toggle="tab" data-status-filter="Terminé"
+                        type="button">Terminés</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-challenges" data-bs-toggle="tab" data-status-filter="Challenge"
+                        type="button">Challenges</button>
+                </li>
+            </ul>
+
+            <!-- Container for assignment cards -->
+            <div id="assignmentsGrid" class="row g-4">
+                <!-- Assignment cards will be injected here by JS -->
+            </div>
+
+            <div id="assignmentsEmptyState" class="text-center text-muted py-5 d-none">
+                <i class="bi bi-clipboard-x fs-1"></i>
+                <p class="mt-2">Aucun devoir ne correspond à cette catégorie.</p>
+            </div>
+        </div>
+
+
+        <!-- ======================================================= -->
+        <!-- ====  ASSIGNMENT DETAIL VIEW ==== -->
+        <!-- ======================================================= -->
+        <div id="assignmentDetailView" class="view-content d-none">
+            <div class="container-fluid py-4">
+                <!-- Header with Back Button and Timer -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <button class="btn btn-outline-secondary" id="backToAssignments">
+                        <i class="bi bi-arrow-left me-2"></i>Retour aux devoirs
+                    </button>
+                    <div id="assignmentTimer" class="d-none fs-5 fw-bold text-danger">
+                        <i class="bi bi-clock-history"></i> <span id="timerDisplay">00:00</span>
+                    </div>
+                </div>
+
+                <!-- Main Content Area -->
+                <div class="row g-4">
+                    <!-- Left Column: Instructions & Details -->
+                    <div class="col-lg-4">
+                        <div class="card card-modern sticky-top" style="top: 88px;">
+                            <div class="card-body">
+                                <h3 id="assignmentDetailTitle" class="text-brand">Chargement...</h3>
+                                <p id="assignmentDetailCourse" class="text-muted"></p>
+                                <hr>
+                                <h6><i class="bi bi-card-list me-2"></i>Instructions</h6>
+                                <div id="assignmentDetailInstructions"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Workspace (Code Editor, Quiz, etc.) -->
+                    <div class="col-lg-8">
+                        <div class="card card-modern">
+                            <div class="card-body">
+                                <h6><i class="bi bi-terminal me-2"></i>Espace de Travail</h6>
+                                <div id="assignmentWorkspace" style="min-height: 400px;">
+                                    <!-- Content (Code Editor, Quiz options) is injected here -->
+                                    p
+                                </div>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button id="submitAssignmentBtn" class="btn btn-success btn-lg">
+                                    <i class="bi bi-check-circle-fill me-2"></i>Soumettre le travail
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Calendrier View -->
@@ -750,6 +882,7 @@
                 </div>
             </div>
         </div>
+       
 
 
         <!-- ai-chatsSection-->
@@ -1356,7 +1489,7 @@
 
 
 
-        <!-- Notifications View (Full Page) -->
+        <!-- Notifications View (Full Page)
         <div id="notificationsView" class="view-content d-none">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 style="color: var(--brand); font-weight: 700">
@@ -1366,13 +1499,43 @@
             <div class="card card-modern">
                 <div class="card-body">
                     <div id="fullNotifList" class="list-group list-group-flush">
-                        <!-- Full notification history will be loaded here -->
+                       
+                    </div>
+                </div>
+            </div>
+        </div>-->
+
+
+        <!-- ======================================================= -->
+        <!-- ==== NOTIFICATIONS VIEW (FULL PAGE - UPGRADED) ==== -->
+        <!-- ======================================================= -->
+        <div id="notificationsView" class="view-content d-none">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 style="color: var(--brand); font-weight: 700;">Toutes les notifications</h2>
+                    <p class="text-muted mb-0">Votre centre de notifications personnel.</p>
+                </div>
+                <button class="btn btn-primary" id="fullMarkAllAsReadBtn">
+                    <i class="bi bi-check2-all me-2"></i>Tout marquer comme lu
+                </button>
+            </div>
+            
+            <div class="card card-modern">
+                <div class="card-body p-0">
+                    <div id="fullNotifListContainer">
+                        <!-- Notification groups will be injected here by JS -->
+                        <div class="text-center p-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Chargement de vos notifications...</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-                <!-- ==== ÉDUCATION & MÉDIAS VIEW (TMDB-Enhanced Advanced) ==== -->
+        <!-- ==== ÉDUCATION & MÉDIAS VIEW (TMDB-Enhanced Advanced) ==== -->
         <div id="edu-mediaView" class="view-content d-none">
             <div class="container-fluid py-4">
                 <!-- Advanced Header with Stats -->
@@ -1674,8 +1837,8 @@
                     </div>
                 </div>
             </div>
-        </div>   
-       
+        </div>
+
 
         <!-- ========================== -->
         <!-- MUSIC VIEW -->
@@ -1740,7 +1903,7 @@
         </div>
 
 
-        
+
         <!-- Modal for Creating a New Discussion -->
         <div class="modal fade" id="newDiscussionModal" tabindex="-1" aria-labelledby="newDiscussionModalLabel"
             aria-hidden="true">
@@ -2038,37 +2201,34 @@
         </div>
     </main>
 
-    <!-- Vidéo Modal (Upgraded for Playlists) -->
+    <!-- ======================================================= -->
+    <!-- ==== VIDEO MODAL (UPGRADED WITH FULLSCREEN) ==== -->
+    <!-- ======================================================= -->
     <div class="modal fade video-modal" id="videoModal" tabindex="-1">
-        <!-- Ajout d'ID pour le plein écran -->
-        <div class="modal-dialog modal-fullscreen-lg-down modal-dialog-centered" id="videoModalDialog">
+        <div class="modal-dialog modal-xl modal-dialog-centered" id="videoModalDialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="videoTitle">Tutoriel vidéo</h5>
-
-                    <!-- NOUVEAU BOUTON PLEIN ÉCRAN VIDEO -->
-                    <button class="btn btn-sm btn-outline-secondary me-2 fullscreen-toggle-btn"
-                        data-target-dialog="videoModalDialog" title="Plein écran">
-                        <i class="bi bi-arrows-fullscreen"></i>
-                    </button>
-                    <!-- FIN NOUVEAU BOUTON -->
-
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="ms-auto d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-outline-secondary fullscreen-toggle-btn"
+                            data-target-dialog="videoModalDialog" title="Plein écran">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
                 </div>
-                <div class="modal-body p-2">
-                    <div class="row g-2 h-100">
-                        <!-- Main Video Player Column (80%) -->
-                        <div class="col-lg-9 h-100">
-                            <div class="video-container" id="videoContainer"
-                                style="padding-bottom: 0; min-height: 0; height: 100%">
+                <div class="modal-body p-0">
+                    <div class="row g-0 h-100">
+                        <!-- Main Video Player -->
+                        <div class="col-lg-9 h-100 d-flex flex-column">
+                            <div class="video-container" id="videoContainer">
                                 <!-- Iframe will be inserted here -->
                             </div>
                         </div>
-                        <!-- History Panel Column (20%) -->
-                        <div class="col-lg-3 h-100 d-none flex-column" id="playlistPanel">
-                            <div class="card h-100">
+                        <!-- History Panel -->
+                        <div class="col-lg-3 h-100 d-none d-lg-flex flex-column" id="playlistPanel">
+                            <div class="card h-100 rounded-0 border-0 border-start">
                                 <div class="card-body d-flex flex-column p-2">
-                                    <!-- START: NEW HEADER -->
                                     <div class="d-flex justify-content-between align-items-center px-2 pt-1 mb-2">
                                         <h6 class="card-title mb-0">Historique</h6>
                                         <button class="btn btn-sm btn-outline-danger" id="clearHistoryBtn"
@@ -2076,8 +2236,8 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
-                                    <!-- END: NEW HEADER -->
-                                    <div id="historyQueue" class="list-group list-group-flush flex-grow-1">
+                                    <div id="historyQueue"
+                                        class="list-group list-group-flush flex-grow-1 overflow-auto">
                                         <!-- History items will be loaded here -->
                                     </div>
                                 </div>
@@ -2088,6 +2248,7 @@
             </div>
         </div>
     </div>
+
 
     <!-- Document Modal -->
     <div class="modal fade document-modal" id="documentModal" tabindex="-1">
@@ -2262,7 +2423,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-    <script src="javaScript/media.js"></script>
+    <script src="media.js"></script>
+
     <script type="module">
 
         //deepSeek R1 api: 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
@@ -2637,7 +2799,7 @@
 
         // Requêtes client
 
-        onAuthStateChanged(auth, (user) => {
+        /*onAuthStateChanged(auth, (user) => {
             const profileDropdown = document.getElementById("profileDropdown");
             const btnLogin = document.getElementById("btnLogin");
             const welcomeEl = document.getElementById("welcomeUserName");
@@ -2734,6 +2896,62 @@
                 updateNotificationUI([]);
             }
 
+            loadTheme();
+        });*/
+
+        onAuthStateChanged(auth, (user) => {
+            const profileDropdown = document.getElementById("profileDropdown");
+            const btnLogin = document.getElementById("btnLogin");
+            const welcomeEl = document.getElementById("welcomeUserName");
+
+            if (user) {
+                // --- USER IS LOGGED IN ---
+                profileDropdown.style.display = "block";
+                btnLogin.classList.add("d-none");
+                if (welcomeEl) welcomeEl.textContent = user.displayName || "Utilisateur";
+                document.getElementById("userPhoto").src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email)}`;
+                document.getElementById("userName").innerText = user.displayName || "Utilisateur";
+                document.getElementById("userEmail").innerText = user.email;
+
+                user.getIdTokenResult().then((idTokenResult) => {
+                    isAdmin = !!idTokenResult.claims.admin;
+                });
+
+                loadUserProgress();
+                // This single call will now correctly populate `allFiles` for the stats
+                fetchDriveFolder(currentFolderId);
+                loadContributedContent();
+
+                // Other initializations
+                listenForUserGroups(user.uid);
+                initializeUserPresence(user.uid);
+                listenForNotifications(user.uid);
+                listenForInboxMessages(user.uid);
+                initializeAlarmSystem();
+                renderCalendar();
+
+            } else {
+                // --- USER IS LOGGED OUT ---
+                profileDropdown.style.display = "none";
+                btnLogin.classList.remove("d-none");
+                if (welcomeEl) welcomeEl.textContent = "";
+
+                // Reset state
+                allFiles = [];
+                currentFiles = [];
+                userProgress = {};
+                isAdmin = false;
+
+                document.getElementById("coursesGrid").innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-lock fs-1"></i><p>Veuillez vous connecter pour accéder aux cours.</p></div>';
+
+                // Cleanup listeners
+                if (unsubscribeNotifications) unsubscribeNotifications();
+                if (unsubscribeInbox) unsubscribeInbox();
+                stopAlarmSystem();
+                if (calendar) calendar.destroy();
+
+                updateNotificationUI([]);
+            }
             loadTheme();
         });
 
@@ -2970,6 +3188,430 @@
                 };
             });
         }
+
+        // ===============================================
+        // ==== DOCUMENTS & MATÉRIAUX (UPGRADED TIER 1) ====
+        // ===============================================
+
+        // --- State Management ---
+        let favoriteDocuments = JSON.parse(localStorage.getItem("favoriteDocuments") || "[]");
+        let docSearchQuery = "";
+        let docTypeFilter = "all";
+        let docSortBy = "name";
+        let docShowFavorites = false;
+
+        // --- Event Listeners for New Controls ---
+        document.getElementById("btnGridDocuments").addEventListener("click", () => {
+            documentViewMode = "grid";
+            document.getElementById("btnGridDocuments").classList.add("active");
+            document.getElementById("btnListDocuments").classList.remove("active");
+            renderDocuments();
+        });
+
+        document.getElementById("btnListDocuments").addEventListener("click", () => {
+            documentViewMode = "list";
+            document.getElementById("btnListDocuments").classList.add("active");
+            document.getElementById("btnGridDocuments").classList.remove("active");
+            renderDocuments();
+        });
+
+        document.getElementById("docSearchInput").addEventListener("input", (e) => {
+            docSearchQuery = e.target.value.toLowerCase();
+            renderDocuments();
+        });
+
+        document.getElementById("docTypeFilter").addEventListener("change", (e) => {
+            docTypeFilter = e.target.value;
+            renderDocuments();
+        });
+
+        document.getElementById("docSortBy").addEventListener("change", (e) => {
+            docSortBy = e.target.value;
+            renderDocuments();
+        });
+
+        document.getElementById("docFavoritesToggle").addEventListener("change", (e) => {
+            docShowFavorites = e.target.checked;
+            renderDocuments();
+        });
+
+        // --- Favorite Toggle Function (to be called from HTML) ---
+        window.toggleFavorite = function (fileId, event) {
+            event.stopPropagation(); // Prevents the card click from firing
+            const idStr = String(fileId);
+            const index = favoriteDocuments.indexOf(idStr);
+
+            if (index > -1) {
+                favoriteDocuments.splice(index, 1);
+            } else {
+                favoriteDocuments.push(idStr);
+            }
+
+            localStorage.setItem("favoriteDocuments", JSON.stringify(favoriteDocuments));
+            showToast("Favoris mis à jour !", "info");
+            renderDocuments(); // Re-render to update the star's appearance
+        };
+
+        // --- Main Render Function (Replaces your old renderDocuments) ---
+        function renderDocuments() {
+            const grid = document.getElementById("documentsGrid");
+            const emptyState = document.getElementById("documentsEmptyState");
+            if (!grid || !emptyState) return;
+
+            let documents = allFiles.filter(f => f.mimeType?.includes("application/"));
+
+            // 1. Apply Filters
+            if (docShowFavorites) {
+                documents = documents.filter(doc => favoriteDocuments.includes(doc.id));
+            }
+            if (docTypeFilter !== "all") {
+                documents = documents.filter(doc => getFileMeta(doc.mimeType).kind === docTypeFilter);
+            }
+            if (docSearchQuery) {
+                documents = documents.filter(doc => doc.name.toLowerCase().includes(docSearchQuery));
+            }
+
+            // 2. Apply Sorting
+            documents.sort((a, b) => {
+                if (docSortBy === 'modifiedTime') {
+                    return new Date(b.modifiedTime) - new Date(a.modifiedTime);
+                }
+                return a.name.localeCompare(b.name); // Default sort by name
+            });
+
+            // 3. Render the view
+            grid.innerHTML = "";
+            grid.className = "row g-4"; // Reset classes
+
+            if (documents.length === 0) {
+                emptyState.classList.remove("d-none");
+                grid.classList.add("d-none");
+                return;
+            }
+
+            emptyState.classList.add("d-none");
+            grid.classList.remove("d-none");
+
+            if (documentViewMode === 'list') {
+                grid.classList.add("list-view-active"); // Use single container for both views
+                documents.forEach(file => {
+                    grid.innerHTML += createDocumentListItemHTML(file);
+                });
+            } else { // Grid view
+                documents.forEach(file => {
+                    grid.innerHTML += createDocumentGridItemHTML(file);
+                });
+            }
+        }
+
+        function createDocumentGridItemHTML(file) {
+            const meta = getFileMeta(file.mimeType);
+            const isFavorite = favoriteDocuments.includes(file.id);
+            return `
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="card card-modern h-100 course-card" style="cursor: pointer;" onclick="viewDocument('${file.id}', '${escapeHtml(file.name)}')">
+                        <i class="bi ${isFavorite ? 'bi-star-fill' : 'bi-star'} doc-favorite-btn ${isFavorite ? 'is-favorite' : ''}" onclick="toggleFavorite('${file.id}', event)"></i>
+                        <div class="course-thumbnail d-flex align-items-center justify-content-center" style="background-color: ${meta.color}20;">
+                            <i class="${meta.icon}" style="font-size: 64px; color: ${meta.color};"></i>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate">${escapeHtml(file.name)}</h6>
+                            <small class="text-muted">${meta.label}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createDocumentListItemHTML(file) {
+            const meta = getFileMeta(file.mimeType);
+            const isFavorite = favoriteDocuments.includes(file.id);
+            const modifiedDate = new Date(file.modifiedTime).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+            return `
+                <div class="doc-list-item">
+                    <div class="doc-list-item-icon" style="color: ${meta.color}; background-color: ${meta.color}20;">
+                        <i class="${meta.icon}"></i>
+                    </div>
+                    <div class="doc-list-item-main">
+                        <div class="doc-list-item-name">${escapeHtml(file.name)}</div>
+                        <div class="doc-list-item-meta">
+                            <span>${meta.label}</span>
+                            <span>•</span>
+                            <span>Modifié le: ${modifiedDate}</span>
+                        </div>
+                    </div>
+                    <div class="doc-list-item-actions d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-link p-1" onclick="toggleFavorite('${file.id}', event)" title="Ajouter aux favoris">
+                            <i class="bi ${isFavorite ? 'bi-star-fill' : 'bi-star'} fs-5 ${isFavorite ? 'text-warning' : 'text-muted'}"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewDocument('${file.id}', '${escapeHtml(file.name)}')">
+                            <i class="bi bi-eye"></i> Voir
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ===============================================
+        // ==== DEVOIRS & CHALLENGES (UPGRADED TIER 1) ====
+        // ===============================================
+        // --- State Management for Assignments ---
+        let allAssignments = [];
+        let userAssignmentProgress = {};
+
+        // --- Event Listeners for Tabs ---
+        document.querySelectorAll('#assignmentsTabs .nav-link').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const statusFilter = e.target.getAttribute('data-status-filter');
+                renderAssignments(statusFilter);
+            });
+        });
+
+        // --- Fetch Data from Firestore ---
+        async function fetchAssignments() {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            // Fetch all assignments
+            const assignmentsQuery = query(collection(db, "assignments"), orderBy("dueDate", "desc"));
+            const assignmentsSnapshot = await getDocs(assignmentsQuery);
+            allAssignments = assignmentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // Fetch user's progress on these assignments
+            const progressQuery = query(collection(db, "users", user.uid, "assignmentProgress"));
+            const progressSnapshot = await getDocs(progressQuery);
+            userAssignmentProgress = {};
+            progressSnapshot.forEach(doc => {
+                userAssignmentProgress[doc.id] = doc.data();
+            });
+
+            // Initial render
+            renderAssignments();
+        }
+
+        // --- Main Render Function (Replaces mockup logic) ---
+        function renderAssignments(statusFilter = "all") {
+            const grid = document.getElementById("assignmentsGrid");
+            const emptyState = document.getElementById("assignmentsEmptyState");
+            if (!grid || !emptyState) return;
+
+            let assignmentsToRender = allAssignments.map(assignment => {
+                const progress = userAssignmentProgress[assignment.id];
+                const now = new Date();
+                let status = "À faire";
+
+                if (assignment.type === "Challenge") {
+                    status = "Challenge";
+                }
+                if (progress?.status === "Terminé") {
+                    status = "Terminé";
+                } else if (assignment.dueDate && assignment.dueDate.toDate() < now) {
+                    status = "En retard";
+                }
+
+                return { ...assignment, status };
+            });
+
+            // Apply filter
+            if (statusFilter !== "all") {
+                assignmentsToRender = assignmentsToRender.filter(a => a.status === statusFilter);
+            }
+
+            // Render
+            if (assignmentsToRender.length === 0) {
+                grid.innerHTML = "";
+                emptyState.classList.remove("d-none");
+                return;
+            }
+
+            emptyState.classList.add("d-none");
+            grid.innerHTML = ""; // Clear previous content
+
+            assignmentsToRender.forEach(assignment => {
+                grid.innerHTML += createAssignmentCardHTML(assignment);
+            });
+        }
+
+        function createAssignmentCardHTML(assignment) {
+            const progress = userAssignmentProgress[assignment.id];
+            const dueDate = assignment.dueDate ? assignment.dueDate.toDate() : null;
+
+            const dueDateFormatted = dueDate
+                ? `À rendre avant le: ${dueDate.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' })}`
+                : 'Pas de date limite';
+
+            const difficultyDots = Array.from({ length: 3 }, (_, i) =>
+                `<div class="difficulty-dot ${i < assignment.difficulty ? 'filled' : ''}"></div>`
+            ).join('');
+
+            // Determine button text and action
+            let buttonHTML = '';
+            if (assignment.status === "Terminé") {
+                buttonHTML = `<button class="btn btn-outline-success w-100 mt-3" disabled><i class="bi bi-check-circle-fill me-2"></i>Terminé</button>`;
+            } else if (assignment.status === "Challenge" || assignment.type.includes("Quiz")) {
+                buttonHTML = `<button class="btn btn-primary w-100 mt-3" onclick="startAssignment('${assignment.id}')"><i class="bi bi-play-circle me-2"></i>Commencer</button>`;
+            } else {
+                buttonHTML = `<button class="btn btn-primary w-100 mt-3" onclick="startAssignment('${assignment.id}')"><i class="bi bi-eye me-2"></i>Voir le devoir</button>`;
+            }
+
+            return `
+                <div class="col-lg-4 col-md-6">
+                    <div class="card assignment-card">
+                        <div class="assignment-card-header">
+                            <span class="badge" data-status="${assignment.status}">${assignment.status}</span>
+                            <small class="text-muted">${assignment.type}</small>
+                        </div>
+                        <div class="assignment-card-body">
+                            <div>
+                                <i class="assignment-icon ${assignment.icon}"></i>
+                                <h5 class="assignment-title">${escapeHtml(assignment.title)}</h5>
+                                <p class="assignment-course">${escapeHtml(assignment.course)}</p>
+                            </div>
+                            <div class="assignment-details">
+                                <div class="difficulty-level" title="Difficulté">${difficultyDots}</div>
+                                <small>${dueDateFormatted}</small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 p-3 pt-0">
+                            ${buttonHTML}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        let activeAssignment = null; // Holds the currently viewed assignment data
+
+        document.getElementById("backToAssignments").addEventListener("click", () => {
+            switchView('assignments');
+        });
+
+        // Overwrite the placeholder startAssignment function
+        window.startAssignment = function (assignmentId) {
+            activeAssignment = allAssignments.find(a => a.id === assignmentId);
+            if (!activeAssignment) {
+                showToast("Erreur: Devoir introuvable.", "danger");
+                return;
+            }
+
+            // THIS IS THE FIX: Call switchView with the CORRECT view ID name.
+            switchView('assignmentDetail');
+
+            // Populate the view with content
+            document.getElementById("assignmentDetailTitle").textContent = activeAssignment.title;
+            document.getElementById("assignmentDetailCourse").textContent = activeAssignment.course;
+
+            renderAssignmentWorkspace(activeAssignment);
+        };
+
+        async function markAssignmentAsComplete(assignmentId) {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const progressRef = doc(db, "users", user.uid, "assignmentProgress", assignmentId);
+            try {
+                await setDoc(progressRef, {
+                    status: "Terminé",
+                    completedAt: Timestamp.now()
+                });
+
+                // Update local state and re-render
+                userAssignmentProgress[assignmentId] = { status: "Terminé" };
+                renderAssignments(document.querySelector('#assignmentsTabs .nav-link.active').getAttribute('data-status-filter'));
+
+                showToast("Devoir marqué comme terminé !", "success");
+            } catch (error) {
+                console.error("Error marking assignment complete:", error);
+                showToast("Erreur lors de la mise à jour.", "danger");
+            }
+        }
+
+
+
+
+
+        function renderAssignmentWorkspace(assignment) {
+            const workspace = document.getElementById("assignmentWorkspace");
+            const instructions = document.getElementById("assignmentDetailInstructions");
+            workspace.innerHTML = ""; // Clear previous content
+
+            // Render content based on assignment type
+            switch (assignment.type) {
+                case "Challenge de Code":
+                    instructions.innerHTML = `
+                        <p>Résolvez le problème de programmation suivant. Votre solution sera évaluée automatiquement.</p>
+                        <p><strong>Problème:</strong> Implémentez une fonction qui inverse une chaîne de caractères sans utiliser de méthodes intégrées.</p>
+                    `;
+                    workspace.innerHTML = `<div id="code-editor-container"></div>`;
+                    initializeCodeEditor();
+                    break;
+
+                case "Quiz":
+                    instructions.innerHTML = `<p>Répondez à la question à choix multiples suivante. Une seule réponse est correcte.</p>`;
+                    workspace.innerHTML = `
+                        <p class="fw-bold">Quelle est la complexité temporelle de l'algorithme de tri rapide (Quick Sort) dans le pire des cas ?</p>
+                        <div class="quiz-options-container">
+                            <label class="quiz-option"><input type="radio" name="quiz_question_1" value="O(n)"> O(n)</label>
+                            <label class="quiz-option"><input type="radio" name="quiz_question_1" value="O(n log n)"> O(n log n)</label>
+                            <label class="quiz-option"><input type="radio" name="quiz_question_1" value="O(n^2)"> O(n²)</label>
+                            <label class="quiz-option"><input type="radio" name="quiz_question_1" value="O(log n)"> O(log n)</label>
+                        </div>
+                    `;
+                    // Add interactivity to quiz options
+                    document.querySelectorAll('.quiz-option').forEach(el => {
+                        el.addEventListener('click', () => {
+                            document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+                            el.classList.add('selected');
+                        });
+                    });
+                    break;
+
+                default: // For "Rapport", "Exercice", etc.
+                    instructions.innerHTML = `
+                        <p>Veuillez lire les instructions et soumettre votre travail lorsque vous avez terminé.</p>
+                        <p><strong>Tâche:</strong> Rédigez un rapport de 2 pages sur l'impact des algorithmes de tri sur les performances des bases de données.</p>
+                    `;
+                    workspace.innerHTML = `<div class="text-muted text-center p-5"><i class="bi bi-upload fs-1"></i><p>La fonctionnalité de téléversement de fichiers sera ajoutée ici.</p></div>`;
+                    break;
+            }
+        }
+
+        function initializeCodeEditor() {
+            // Ensure CodeMirror is loaded
+            if (!window.CodeMirror) {
+                console.error("CodeMirror is not loaded!");
+                return;
+            }
+            // Clear any previous editor instance
+            const editorContainer = document.getElementById('code-editor-container');
+            editorContainer.innerHTML = '';
+
+            new window.CodeMirror.view.EditorView({
+                state: window.CodeMirror.view.EditorState.create({
+                    doc: `// Écrivez votre solution ici\nfunction reverseString(str) {\n  \n}`,
+                    extensions: [
+                        window.CodeMirror.view.basicSetup,
+                        window.CodeMirror.langJavascript.javascript(),
+                        window.CodeMirror.themeOneDark.oneDark
+                    ],
+                }),
+                parent: editorContainer,
+            });
+        }
+
+        // Handle Submission
+        document.getElementById("submitAssignmentBtn").addEventListener('click', () => {
+            if (!activeAssignment) return;
+            // In a real app, you would collect the data from the workspace
+            // For now, we just mark it as complete.
+            showToast(`Soumission pour "${activeAssignment.title}"...`, "info");
+            markAssignmentAsComplete(activeAssignment.id);
+            // Go back to the list after submission
+            setTimeout(() => {
+                switchView('assignments');
+            }, 1500);
+        });
+
 
         async function setBackgroundImage(imageId) {
             localStorage.setItem("backgroundImage", imageId);
@@ -3449,6 +4091,10 @@
             }
 
 
+            if (view === "dashboard") {
+                // This call will now populate your existing HTML with dynamic content
+                renderDashboard();
+            }
 
             if (view === "videos") {
                 renderVideos();
@@ -3465,7 +4111,12 @@
                     document.getElementById("bookDetailView").classList.add("d-none");
                 }
             }
-            if (view === "assignments") renderAssignments();
+
+            if (view === "assignments") {
+                //renderAssignments();
+                fetchAssignments();
+            }
+
             if (view === "calendar") renderCalendar();
             if (view === "inbox") {
                 listenForInboxMessages(auth.currentUser.uid);
@@ -3541,56 +4192,35 @@
             document.getElementById("loader").style.display = "block";
             const coursesGrid = document.getElementById("coursesGrid");
 
-            try {
-                // Multiple fallback methods for Drive access
-                let url;
+            // If we are fetching the root folder, this list represents our "courses"
+            const isFetchingRoot = (folderId === DRIVE_FOLDER_ID);
 
-                // Method 1: Try with API key first (most reliable for public files)
-                if (DRIVE_API_KEY) {
-                    url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name,mimeType,webViewLink,thumbnailLink,iconLink,webContentLink,description,createdTime,modifiedTime)&pageSize=200&key=${DRIVE_API_KEY}`;
-                }
-                // Method 2: Try with access token if available
-                else if (googleAccessToken) {
-                    url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name,mimeType,webViewLink,thumbnailLink,iconLink,webContentLink,description,createdTime,modifiedTime)&pageSize=200&access_token=${googleAccessToken}`;
-                } else {
-                    throw new Error("No Drive API access configured");
-                }
+            try {
+                const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name,mimeType,webViewLink,thumbnailLink,iconLink,webContentLink,description,createdTime,modifiedTime)&pageSize=1000&key=${DRIVE_API_KEY}`;
 
                 const res = await fetch(url);
-
                 if (!res.ok) {
-                    // If first method fails, try alternative approach for public files
-                    if (res.status === 403 || res.status === 401) {
-                        url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name,mimeType,webViewLink,thumbnailLink,iconLink)&pageSize=100&key=${DRIVE_API_KEY}`;
-                        const fallbackRes = await fetch(url);
-                        if (!fallbackRes.ok) throw new Error("Drive access denied");
-                        const json = await fallbackRes.json();
-                        currentFiles = json.files || [];
-                    } else {
-                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-                    }
-                } else {
-                    const json = await res.json();
-                    currentFiles = json.files || [];
+                    throw new Error(`Google Drive API Error (${res.status})`);
                 }
+
+                const json = await res.json();
+                currentFiles = json.files || []; // This is the content of the CURRENT folder
+
+                // --- THIS IS THE KEY CHANGE ---
+                // If we are at the top level, THIS is our definitive course list for stats.
+                if (isFetchingRoot) {
+                    allFiles = currentFiles;
+                }
+                // --- END OF KEY CHANGE ---
 
                 document.getElementById("loader").style.display = "none";
 
-                if (currentFiles.length === 0) {
-                    coursesGrid.innerHTML = `
-                <div class="col-12 text-center text-muted py-5">
-                    <i class="bi bi-folder-x fs-1"></i>
-                    <p class="mt-2">Aucun contenu trouvé dans ce dossier.</p>
-                    <small class="text-muted">Assurez-vous que les fichiers sont partagés publiquement</small>
-                </div>
-            `;
-                    return;
-                }
+                renderCourses(); // Renders the content of the current folder
 
-                renderCourses();
+                // These should always run after a fetch to update the UI
                 renderFolderContributed();
                 renderDashboard();
-                updateStats();
+                updateStats(); // Now this will have the correct `allFiles` list
                 renderBreadcrumb();
                 populateCourseSelect();
 
@@ -3598,16 +4228,16 @@
                 console.error("Erreur de fetch Drive:", err);
                 document.getElementById("loader").style.display = "none";
                 coursesGrid.innerHTML = `
-            <div class="col-12 text-center text-danger py-5">
-                <i class="bi bi-exclamation-triangle fs-1"></i>
-                <p class="mt-2">Erreur de chargement: ${err.message}</p>
-                <button class="btn btn-outline-primary mt-2" onclick="fetchDriveFolder('${folderId}')">
-                    <i class="bi bi-arrow-clockwise"></i> Réessayer
-                </button>
-            </div>
-        `;
+                    <div class="col-12 text-center text-danger py-5">
+                        <i class="bi bi-exclamation-triangle fs-1"></i>
+                        <p class="mt-2">Erreur de chargement: ${err.message}</p>
+                        <button class="btn btn-outline-primary mt-2" onclick="fetchDriveFolder('${folderId}')">
+                            <i class="bi bi-arrow-clockwise"></i> Réessayer
+                        </button>
+                    </div>`;
             }
         }
+
 
         function populateCourseSelect() {
             contentCourseSelect.innerHTML =
@@ -3979,7 +4609,7 @@
         }
 
 
-        function renderDashboard() {
+        /* function renderDashboard() {
             const continueSection = document.getElementById("continueSection");
             const inProgress = allFiles
                 .filter((f) => {
@@ -4030,52 +4660,127 @@
                 continueSection.appendChild(col);
             });
         }
+        */
 
+         function renderDashboard() {
+            // 1. Populate the "Continue Learning" section
+            const continueSection = document.getElementById("continueSection");
+            const inProgressFiles = allFiles
+                .filter(f => userProgress[f.id] > 0 && userProgress[f.id] < 100)
+                .slice(0, 3); // Show a maximum of 3
+
+            if (inProgressFiles.length === 0) {
+                continueSection.innerHTML = `
+                    <div class="col-12 text-center text-muted py-3">
+                        <i class="bi bi-play-circle fs-1"></i>
+                        <p class="mt-2">Commencez un cours pour le voir ici.</p>
+                    </div>`;
+            } else {
+                continueSection.innerHTML = ""; // Clear loader
+                inProgressFiles.forEach(file => {
+                    continueSection.innerHTML += createDashboardContinueCard(file);
+                });
+            }
+            
+            // 2. Populate the "À venir" (Upcoming) section from Firestore assignments
+            renderUpcomingDeadlinesForDashboard();
+            
+            // 3. Populate the "Activité Récente" (Recent Activity) section (placeholder)
+            renderRecentActivityForDashboard();
+            
+            // 4. Update the main stat cards at the top
+            updateDashboardStats();
+        }
+
+        // Helper function to create the "Continue Learning" cards
+        function createDashboardContinueCard(file) {
+            const meta = getFileMeta(file.mimeType);
+            const progress = userProgress[file.id] || 0;
+            return `
+                <div class="col-md-4">
+                    <div class="card card-modern h-100">
+                        <div class="card-body">
+                            <div class="d-flex gap-3">
+                                <div class="text-primary fs-2"><i class="${meta.icon}"></i></div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 text-truncate">${escapeHtml(file.name)}</h6>
+                                    <small class="text-muted">${meta.label}</small>
+                                    <div class="progress mt-2" style="height: 6px;">
+                                        <div class="progress-bar" style="width:${progress}%"></div>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">${progress}% complété</small>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-3" onclick="resumeCourse('${file.id}')">
+                                <i class="bi bi-play-fill me-1"></i>Continuer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Helper function for the "À venir" widget
+        function renderUpcomingDeadlinesForDashboard() {
+            const container = document.querySelector("#dashboardView .col-lg-4 .d-flex.flex-column.gap-3");
+            if (!container) return;
+
+            const now = new Date();
+            // Assuming 'allAssignments' is populated from Firestore as we did before
+            const upcoming = allAssignments
+                .filter(a => a.dueDate && a.dueDate.toDate() > now && (userAssignmentProgress[a.id]?.status !== 'Terminé'))
+                .sort((a, b) => a.dueDate.toDate() - b.dueDate.toDate())
+                .slice(0, 2); // Show the next 2 deadlines
+
+            if (upcoming.length === 0) {
+                container.innerHTML = `<div class="text-center text-muted p-4"><i class="bi bi-calendar-check fs-2"></i><p class="mt-2">Aucune échéance à venir.</p></div>`;
+                return;
+            }
+
+            container.innerHTML = upcoming.map(assignment => {
+                const dueDate = assignment.dueDate.toDate();
+                const colors = { "Quiz": "bg-primary", "Rapport": "bg-warning", "Exercice": "bg-info" };
+                const bgColorClass = colors[assignment.type] || 'bg-secondary';
+                return `
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="${bgColorClass} text-white p-2 rounded" style="min-width: 48px; text-align: center;">
+                            <div style="font-size: 20px; font-weight: 700;">${dueDate.getDate()}</div>
+                            <div style="font-size: 10px;">${dueDate.toLocaleDateString('fr-FR', { month: 'short' }).toUpperCase()}</div>
+                        </div>
+                        <div>
+                            <strong style="font-size: 14px;">${escapeHtml(assignment.title)}</strong>
+                            <p class="text-muted small mb-0">${dueDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Helper function for the "Activité Récente" widget
+        function renderRecentActivityForDashboard() {
+            // This remains a placeholder as we don't have activity logs yet.
+            const container = document.getElementById("activityTimeline");
+            if (!container) return;
+            container.innerHTML = `
+                <div class="timeline-item">
+                    <div class="timeline-dot"><i class="bi bi-book-half"></i></div>
+                    <div>
+                        <strong>Consulté : Introduction à l'IA</strong>
+                        <p class="text-muted small mb-0">Il y a 30 minutes</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"><i class="bi bi-patch-check-fill"></i></div>
+                    <div>
+                        <strong>Terminé : Quiz: Chapitres 1-3</strong>
+                        <p class="text-muted small mb-0">Hier</p>
+                    </div>
+                </div>
+            `;
+        }
         // ============================
         // QUILL EDITOR INITIALIZATION (FIXED HLJS)
         // ============================
-
-        /*function imageHandler() {
-            // Demander à l'utilisateur de coller une URL d'image
-            const url = prompt('Entrez l\'URL de l\'image (doit être accessible publiquement) :');
-            if (url) {
-                const range = this.quill.getSelection(true);
-                // Insérer l'image à la position du curseur
-                this.quill.insertEmbed(range.index, 'image', url, Quill.sources.USER);
-            }
-        }
-
-        function initializeQuill(selector) {
-            const container = document.querySelector(selector);
-            if (!container) { return null; }
-            if (container.__quill) { return container.__quill; }
-
-            const modules = {
-                toolbar: {
-                    container: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'color': [] }, { 'background': [] }],
-                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                        [{ 'indent': '-1' }, { 'indent': '+1' }],
-                        [{ 'align': [] }],
-                        ['link', 'image'],
-                        ['code-block'],
-                        ['clean']
-                    ],
-                    handlers: {
-                        'image': imageHandler
-                    }
-                },
-                // FIX: Vérifie si hljs est chargé avant d'initialiser le module syntaxe
-                syntax: window.hljs ? { highlight: window.hljs.highlightAll } : false
-            };
-
-            const quill = new Quill(selector, { theme: "snow", modules: modules });
-            container.__quill = quill;
-            return quill;
-        }*/
-
         // Enhanced Quill Editor Configuration
         function initializeQuill(selector) {
             const container = document.querySelector(selector);
@@ -5037,7 +5742,7 @@
             <div class="text-center p-3">
                 <div class="loader"></div>
             </div>
-        `;
+            `;
 
                 const repliesQuery = query(collection(db, "discussions", threadId, "replies"));
                 const repliesSnapshot = await getDocs(repliesQuery);
@@ -5113,6 +5818,8 @@
             initializeProfilePopovers();
         }
 
+       
+      
 
         // =================================================================
         // 🤖 ADVANCED AI ASSISTANT INTEGRATION (v5.0 - With Media Support)
@@ -6715,7 +7422,7 @@
                 ?.addEventListener("click", backToLibrary);
 
             // Écouteur global pour le bouton plein écran des modaux
-            document.addEventListener('click', (e) => {
+            /*document.addEventListener('click', (e) => {
                 const toggleBtn = e.target.closest('.fullscreen-toggle-btn');
                 if (toggleBtn) {
                     e.preventDefault();
@@ -6746,8 +7453,84 @@
                         }
                     }
                 }
+            });*/
+
+            document.addEventListener('click', (e) => {
+                const toggleBtn = e.target.closest('.fullscreen-toggle-btn');
+                if (!toggleBtn) return;
+
+                e.preventDefault();
+
+                // Find the parent .modal element
+                const modalElement = toggleBtn.closest('.modal');
+                const icon = toggleBtn.querySelector('i');
+
+                if (modalElement && icon) {
+                    // Toggle the custom fullscreen class on the .modal itself
+                    modalElement.classList.toggle('is-fullscreen');
+
+                    const isFullscreen = modalElement.classList.contains('is-fullscreen');
+
+                    if (isFullscreen) {
+                        icon.className = 'bi bi-fullscreen-exit';
+                        toggleBtn.title = "Quitter le plein écran";
+                    } else {
+                        icon.className = 'bi bi-arrows-fullscreen';
+                        toggleBtn.title = "Plein écran";
+                    }
+                }
             });
+
+
+
+            // Apply the cleanup to both modals
+            setupModalCleanup('videoModal');
+            setupModalCleanup('documentModal');
         });
+
+        // Universal cleanup function for all modals with this feature
+        function setupModalCleanup(modalId) {
+            const modalEl = document.getElementById(modalId);
+            if (!modalEl) return;
+
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                // Reset fullscreen state
+                if (modalEl.classList.contains('is-fullscreen')) {
+                    modalEl.classList.remove('is-fullscreen');
+                    const toggleBtn = modalEl.querySelector('.fullscreen-toggle-btn i');
+                    if (toggleBtn) toggleBtn.className = 'bi bi-arrows-fullscreen';
+                }
+
+                // Stop media playback
+                const iframeContainer = modalEl.querySelector('.video-container, .document-container');
+                if (iframeContainer) {
+                    iframeContainer.innerHTML = '';
+                }
+            });
+        }
+
+        function toggleFullscreen(modalElement) {
+            const isFullscreen = modalElement.classList.contains('is-fullscreen');
+
+            if (isFullscreen) {
+                // Exit fullscreen
+                modalElement.classList.remove('is-fullscreen');
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+            } else {
+                // Enter fullscreen
+                modalElement.classList.add('is-fullscreen');
+                document.body.classList.add('modal-open');
+                document.body.style.overflow = 'hidden';
+
+                // Force browser to recalculate layout
+                setTimeout(() => {
+                    modalElement.style.display = 'none';
+                    modalElement.offsetHeight; // Trigger reflow
+                    modalElement.style.display = 'block';
+                }, 10);
+            }
+        }
 
         document
             .getElementById("editReplyForm")
@@ -6815,6 +7598,11 @@
 
                 // 2. Mettre à jour le compteur de réponses de manière atomique (FIXED)
                 await updateDoc(threadRef, { replyCount: increment(1) });
+                await triggerNotificationEvent(threadData.authorId, {
+                    message: `<strong>${user.displayName}</strong> a répondu à votre discussion : <em>"${threadData.title}"</em>`,
+                    type: "new_reply",
+                    link: "discussions" // Or a deep link if you build one
+                });
 
                 showToast("Réponse publiée !", "success");
 
@@ -7716,7 +8504,7 @@
         };
 
         // 1. Add these variables at the top
-        let favoriteDocuments =
+        /*let favoriteDocuments =
             JSON.parse(localStorage.getItem("favoriteDocuments")) || [];
 
         // 2. Add this new function to handle toggling favorites
@@ -7740,15 +8528,8 @@
                 JSON.stringify(favoriteDocuments)
             );
             showToast("Favoris mis à jour !", "info");
-        };
+        };*/
 
-        function renderAssignments() {
-            const grid = document.getElementById("assignmentsGrid");
-            grid.innerHTML =
-                `<div class="col-12 text-center text-muted py-5"><i class="bi bi-tools fs-1"></i>
-                    <p class="mt-2"> Cette fonctionnalité est en cours de développement.</p>
-                </div >`;
-        }
 
         const eventModal = new bootstrap.Modal(
             document.getElementById("eventModal")
@@ -7776,31 +8557,46 @@
             const II = ten(date.getMinutes()); return `${YYYY}-${MM}-${DD}T${HH}:${II}`;
         } // --- CORE
         async function renderCalendar() {
-            const
-                calendarEl = document.getElementById("calendar"); if (!calendarEl) return; if (calendar)
-                calendar.destroy(); const user = auth.currentUser; if (!user) {
-                    calendarEl.innerHTML = '<div class="text-center text-muted p-5"><i class="bi bi-lock fs-1"></i><p>Connectez-vous pour voir le calendrier.</p></div>'
-                        ; return;
-                } calendar = new FullCalendar.Calendar(calendarEl, {
-                    themeSystem: "bootstrap5",
-                    locale: "fr", headerToolbar: {
-                        left: "prev,next today", center: "title",
-                        right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-                    }, initialView: "dayGridMonth",
-                    editable: true, selectable: true, slotMinTime: "06:00:00", slotMaxTime: "23:00:00",
-                    slotDuration: "00:30:00", height: "auto", nowIndicator: true, displayEventTime: true,
-                    displayEventEnd: true, eventDisplay: "block", events: async (fetchInfo, successCallback) => {
-                        const eventsCol = collection(db, "users", user.uid, "events");
-                        const eventSnapshot = await getDocs(query(eventsCol)); // No need to order here,
+            const calendarEl = document.getElementById("calendar");
+            if (!calendarEl) return;
+            if (calendar) calendar.destroy();
 
+            const user = auth.currentUser;
+            if (!user) {
+                calendarEl.innerHTML = '<div class="text-center text-muted p-5"><i class="bi bi-lock fs-1"></i><p>Connectez-vous pour voir le calendrier.</p></div>';
+                return;
+            }
+
+            // --- RESPONSIVE CONFIGURATION ---
+            const isMobile = window.innerWidth < 768;
+            const initialView = isMobile ? 'listWeek' : 'dayGridMonth';
+            const headerToolbar = isMobile ? {
+                left: 'prev,next',
+                center: 'title',
+                right: 'dayGridMonth,listWeek' // Keep options available
+            } : {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            };
+            // --- END RESPONSIVE CONFIG ---
+
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                themeSystem: "bootstrap5",
+                locale: "fr",
+                headerToolbar: headerToolbar,
+                initialView: initialView,
+                editable: true,
+                selectable: true,
+                height: 'auto', // Let the container control the height
+                events: async (fetchInfo, successCallback, failureCallback) => {
+                    try {
+                        const eventsCol = collection(db, "users", user.uid, "events");
+                        const eventSnapshot = await getDocs(eventsCol);
                         const events = eventSnapshot.docs.map((doc) => {
                             const data = doc.data();
-
-                            // This is the logic that adds the class for the alarm icon
-                            const classNames =
-                                data.alarm && data.alarm !== "none" ? ["has-alarm"] : [];
-
-                            const event = {
+                            const hasAlarm = data.alarm && data.alarm !== "none";
+                            return {
                                 id: doc.id,
                                 title: data.title,
                                 start: data.start.toDate(),
@@ -7808,101 +8604,99 @@
                                 allDay: data.allDay,
                                 backgroundColor: data.color || "var(--brand)",
                                 borderColor: data.color || "var(--brand)",
-                                classNames: classNames, // Assign the class here
+                                classNames: hasAlarm ? ["has-alarm"] : [],
                                 extendedProps: {
                                     alarm: data.alarm,
                                     sound: data.sound,
                                     color: data.color,
                                 },
                             };
-
-                            // This handles correct multi-day display
-                            if (event.allDay && event.end) {
-                                event.end.setDate(event.end.getDate() + 1);
-                            }
-                            return event;
                         });
                         successCallback(events);
-                    },
+                    } catch (error) {
+                        console.error("Error fetching calendar events:", error);
+                        failureCallback(error);
+                    }
+                },
 
-                    select: (selectionInfo) => {
-                        document.getElementById("eventForm").reset();
-                        document.getElementById("eventId").value = "";
-                        document.getElementById("deleteEventButton").style.display = "none";
-                        document.getElementById("eventModalLabel").innerText =
-                            "Ajouter un événement";
+                select: (selectionInfo) => {
+                    document.getElementById("eventForm").reset();
+                    document.getElementById("eventId").value = "";
+                    document.getElementById("deleteEventButton").style.display = "none";
+                    document.getElementById("eventModalLabel").innerText =
+                        "Ajouter un événement";
 
-                        document.getElementById("eventStart").value = formatDateTimeLocal(
-                            selectionInfo.start
-                        );
-                        document.getElementById("eventEnd").value = formatDateTimeLocal(
-                            selectionInfo.end
-                        );
-                        document.getElementById("eventAllDay").checked =
-                            selectionInfo.allDay;
-                        document.getElementById("eventColor").value = "#0b3b61";
-                        document.getElementById("eventAlarm").value = "none";
-                        document.getElementById("eventSound").value = "chime";
+                    document.getElementById("eventStart").value = formatDateTimeLocal(
+                        selectionInfo.start
+                    );
+                    document.getElementById("eventEnd").value = formatDateTimeLocal(
+                        selectionInfo.end
+                    );
+                    document.getElementById("eventAllDay").checked =
+                        selectionInfo.allDay;
+                    document.getElementById("eventColor").value = "#0b3b61";
+                    document.getElementById("eventAlarm").value = "none";
+                    document.getElementById("eventSound").value = "chime";
 
-                        eventModal.show();
-                    },
+                    eventModal.show();
+                },
 
-                    eventClick: (clickInfo) => {
-                        const event = clickInfo.event;
-                        document.getElementById("eventForm").reset();
-                        document.getElementById("eventId").value = event.id;
-                        document.getElementById("eventModalLabel").innerText =
-                            "Modifier l'événement";
+                eventClick: (clickInfo) => {
+                    const event = clickInfo.event;
+                    document.getElementById("eventForm").reset();
+                    document.getElementById("eventId").value = event.id;
+                    document.getElementById("eventModalLabel").innerText =
+                        "Modifier l'événement";
 
-                        document.getElementById("eventTitle").value = event.title;
-                        document.getElementById("eventStart").value = formatDateTimeLocal(
-                            event.start
-                        );
-                        document.getElementById("eventEnd").value = formatDateTimeLocal(
-                            event.end || event.start
-                        );
-                        document.getElementById("eventAllDay").checked = event.allDay;
-                        document.getElementById("eventAlarm").value =
-                            event.extendedProps.alarm || "none";
-                        document.getElementById("eventSound").value =
-                            event.extendedProps.sound || "chime";
-                        document.getElementById("eventColor").value =
-                            event.extendedProps.color || "#0b3b61";
+                    document.getElementById("eventTitle").value = event.title;
+                    document.getElementById("eventStart").value = formatDateTimeLocal(
+                        event.start
+                    );
+                    document.getElementById("eventEnd").value = formatDateTimeLocal(
+                        event.end || event.start
+                    );
+                    document.getElementById("eventAllDay").checked = event.allDay;
+                    document.getElementById("eventAlarm").value =
+                        event.extendedProps.alarm || "none";
+                    document.getElementById("eventSound").value =
+                        event.extendedProps.sound || "chime";
+                    document.getElementById("eventColor").value =
+                        event.extendedProps.color || "#0b3b61";
 
-                        document.getElementById("deleteEventButton").style.display =
-                            "block";
-                        eventModal.show();
-                    },
+                    document.getElementById("deleteEventButton").style.display =
+                        "block";
+                    eventModal.show();
+                },
 
-                    eventResize: async (resizeInfo) => {
-                        const { id, start, end } = resizeInfo.event;
-                        try {
-                            await updateDoc(doc(db, "users", user.uid, "events", id), {
-                                start: Timestamp.fromDate(start),
-                                end: Timestamp.fromDate(end),
-                            });
-                            showToast("Durée de l'événement mise à jour !", "success");
-                        } catch (error) {
-                            showToast("Erreur lors du redimensionnement.", "danger");
-                            resizeInfo.revert();
-                        }
-                    },
+                eventResize: async (resizeInfo) => {
+                    const { id, start, end } = resizeInfo.event;
+                    try {
+                        await updateDoc(doc(db, "users", user.uid, "events", id), {
+                            start: Timestamp.fromDate(start),
+                            end: Timestamp.fromDate(end),
+                        });
+                        showToast("Durée de l'événement mise à jour !", "success");
+                    } catch (error) {
+                        showToast("Erreur lors du redimensionnement.", "danger");
+                        resizeInfo.revert();
+                    }
+                },
 
-                    eventDrop: async (dropInfo) => {
-                        const { id, start, end, allDay } = dropInfo.event;
-                        try {
-                            await updateDoc(doc(db, "users", user.uid, "events", id), {
-                                start: Timestamp.fromDate(start),
-                                end: Timestamp.fromDate(end || start),
-                                allDay: allDay,
-                            });
-                            showToast("Événement déplacé !", "success");
-                        } catch (error) {
-                            showToast("Erreur lors du déplacement.", "danger");
-                            dropInfo.revert();
-                        }
-                    },
-                });
+                eventDrop: async (dropInfo) => {
+                    const { id, start, end, allDay } = dropInfo.event;
+                    try {
+                        await updateDoc(doc(db, "users", user.uid, "events", id), {
+                            start: Timestamp.fromDate(start),
+                            end: Timestamp.fromDate(end || start),
+                            allDay: allDay,
+                        });
+                        showToast("Événement déplacé !", "success");
+                    } catch (error) {
+                        showToast("Erreur lors du déplacement.", "danger");
+                        dropInfo.revert();
+                    }
+                },
+            });
 
             calendar.render();
         }
@@ -8526,6 +9320,7 @@
                     senderAvatar = senderData.photoURL || senderData.avatar || null;
                 }
 
+            
                 // Transaction pour créer le thread et supprimer l'invitation
                 await runTransaction(db, async (transaction) => {
                     const inviteSnapInTransaction = await transaction.get(inviteRef);
@@ -8573,6 +9368,14 @@
                     senderName: senderName,
                     createdAt: Timestamp.now()
                 });
+
+                // --- 🔔 NOTIFICATION TRIGGER ---
+                await triggerNotificationEvent(senderId, {
+                    message: `<strong>${user.displayName}</strong> a accepté votre invitation à discuter.`,
+                    type: "invite_accepted",
+                    link: "inbox"
+                });
+                // --- END OF TRIGGER ---
 
                 console.log('✅ Thread and message created!');
                 showToast("Invitation acceptée ! Démarrage de la conversation...", "success");
@@ -9021,129 +9824,7 @@
                 showToast("Erreur: " + error.message, "danger");
             }
         }
-
-        // Reply message form handler
-        /*document.getElementById("replyMessageForm")?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const content = document.getElementById("messageInput").value.trim();
-            if (!content || !currentInboxThreadId) return;
-
-            const user = auth.currentUser;
-            const threadId = currentInboxThreadId;
-
-            try {
-                const threadRef = doc(db, "messages", threadId);
-                const threadSnap = await getDoc(threadRef);
-
-                if (!threadSnap.exists()) {
-                    throw new Error("Thread introuvable.");
-                }
-
-                const threadData = threadSnap.data();
-                const recipientId = threadData.participants.find(id => id !== user.uid);
-
-                await addDoc(collection(threadRef, "thread"), {
-                    content: content,
-                    senderId: user.uid,
-                    senderName: user.displayName || 'Anonyme',
-                    createdAt: Timestamp.now()
-                });
-
-                await updateDoc(threadRef, {
-                    lastMessageContent: content,
-                    lastMessageTime: Timestamp.now(),
-                    lastMessageSenderId: user.uid,
-                    lastMessageRecipientId: recipientId,
-                    lastMessageRead: false
-                });
-
-                if (typeof triggerNotificationEvent === "function") {
-                    await triggerNotificationEvent(recipientId, {
-                        message: `Nouveau message de <strong>${user.displayName || 'Anonyme'}</strong>`,
-                        type: "new_message",
-                        link: `/inbox/${threadId}`
-                    });
-                }
-
-                document.getElementById("messageInput").value = '';
-                showToast("Message envoyé!", "success");
-
-            } catch (error) {
-                console.error("Error sending message:", error);
-                showToast("Erreur: " + error.message, "danger");
-            }
-        });
-         // ============================================
-        // GESTION DU FORMULAIRE D'ENVOI DE MESSAGE
-        // ============================================
-        document.getElementById("replyMessageForm")?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const content = document.getElementById("messageInput").value.trim();
-            if (!content || !currentInboxThreadId) return;
-
-            const user = auth.currentUser;
-            const threadId = currentInboxThreadId;
-
-            // Arrêter l'indicateur de frappe
-            notifyTyping(threadId, user.uid, false);
-
-            try {
-                const threadRef = doc(db, "messages", threadId);
-                const threadSnap = await getDoc(threadRef);
-
-                if (!threadSnap.exists()) {
-                    throw new Error("Thread introuvable.");
-                }
-
-                const threadData = threadSnap.data();
-                const recipientId = threadData.participants.find(id => id !== user.uid);
-
-                // Ajouter le message
-                await addDoc(collection(threadRef, "thread"), {
-                    content: content,
-                    senderId: user.uid,
-                    senderName: user.displayName || 'Anonyme',
-                    createdAt: Timestamp.now(),
-                    reactions: {} // Initialiser avec un objet vide pour les réactions
-                });
-
-                // Mettre à jour les métadonnées du thread
-                await updateDoc(threadRef, {
-                    lastMessageContent: content,
-                    lastMessageTime: Timestamp.now(),
-                    lastMessageSenderId: user.uid,
-                    lastMessageRecipientId: recipientId,
-                    lastMessageRead: false
-                });
-
-                // Notification au destinataire
-                if (typeof triggerNotificationEvent === "function") {
-                    await triggerNotificationEvent(recipientId, {
-                        message: `Nouveau message de <strong>${user.displayName || 'Anonyme'}</strong>`,
-                        type: "new_message",
-                        link: `/inbox/${threadId}`
-                    });
-                }
-
-                // Réinitialiser le champ
-                document.getElementById("messageInput").value = '';
-
-                // Animation subtile d'envoi
-                showToast("Message envoyé !", "success");
-                playChatSound('send');
-
-
-            } catch (error) {
-                console.error("Error sending message:", error);
-                showToast("Erreur: " + error.message, "danger");
-            }
-        });
-        */
-
-
-
+      
         // User search functionality
         const recipientSearch = document.getElementById("recipientSearch");
         const recipientSearchResults = document.getElementById("recipientSearchResults");
@@ -9934,6 +10615,12 @@
                     });
                 }
 
+                // --- 🔔 NOTIFICATION TRIGGER ---
+                await triggerNotificationEvent(recipientId, {
+                    message: `Nouveau message de <strong>${user.displayName}</strong> dans <em>"${threadData.subject}"</em>`,
+                    type: "new_message",
+                    link: "inbox"
+                });
                 // Reset input
                 document.getElementById("messageInput").value = '';
                 showToast("Message envoyé !", "success");
@@ -12230,6 +12917,13 @@
                 await addDoc(collection(db, "groupInvitations"), invitationData);
                 console.log('✅ Group invitation sent!');
 
+                // --- 🔔THIS NOTIFICATION TRIGGER ---
+                await triggerNotificationEvent(recipientId, {
+                    message: `<strong>${user.displayName}</strong> vous invite à rejoindre le groupe <strong>${groupData.name}</strong>`,
+                    type: "group_invitation",
+                    link: "inbox" // Direct user to the inbox groups tab
+                });
+
                 // Notifier le destinataire
                 if (typeof triggerNotificationEvent === "function") {
                     await triggerNotificationEvent(recipientId, {
@@ -12685,23 +13379,30 @@
             }
         }
 
-        // END: NEW FUNCTION
 
         function updateStats() {
-            const total = allFiles.length;
-            const completed = Object.values(userProgress).filter(
-                (p) => p === 100
+            // "Courses" are the top-level folders.
+            const courseFolders = allFiles.filter(f => f.mimeType === 'application/vnd.google-apps.folder');
+
+            const total = courseFolders.length;
+
+            // Note: Progress is tracked on individual files, not folders.
+            // We can't easily calculate "completed folders", so we'll count completed *files*.
+            // Let's count all files (excluding folders) to calculate progress stats.
+            const allContentFiles = allFiles.filter(f => f.mimeType !== 'application/vnd.google-apps.folder');
+
+            const completed = Object.keys(userProgress).filter(
+                fileId => userProgress[fileId] === 100 && allContentFiles.some(f => f.id === fileId)
             ).length;
-            const inProgress = Object.values(userProgress).filter(
-                (p) => p > 0 && p < 100
+
+            const inProgress = Object.keys(userProgress).filter(
+                fileId => userProgress[fileId] > 0 && userProgress[fileId] < 100 && allContentFiles.some(f => f.id === fileId)
             ).length;
 
             document.getElementById("totalCourses").innerText = total;
             document.getElementById("completedCourses").innerText = completed;
             document.getElementById("inProgressCourses").innerText = inProgress;
-
         }
-
 
         function filterCourses(query) {
             const cards = document.querySelectorAll(
@@ -12760,6 +13461,63 @@
             // Show the toast!
             bsToast.show();
         }
+
+         const offlineIndicator = document.getElementById('offline-indicator');
+        let wasOffline = !navigator.onLine;
+
+        function updateOnlineStatus() {
+            const isOnline = navigator.onLine;
+
+            if (isOnline) {
+                // User came back online
+                if (wasOffline) {
+                    offlineIndicator.style.display = 'none';
+                    showToast("✅ De retour en ligne ! Synchronisation...", "success");
+                    
+                    // Automatically refresh the current view's data
+                    refreshCurrentViewData();
+                }
+                wasOffline = false;
+            } else {
+                // User went offline
+                offlineIndicator.style.display = 'flex';
+                wasOffline = true;
+            }
+        }
+
+        // A function to refresh data based on the currently active view
+        function refreshCurrentViewData() {
+            const activeView = document.querySelector('.view-content:not(.d-none)');
+            if (!activeView) return;
+
+            const viewId = activeView.id.replace('View', '').replace('Section', '');
+            
+            console.log(`Re-syncing data for view: ${viewId}`);
+
+            // Call the appropriate refresh function for each view
+            switch(viewId) {
+                case 'dashboard':
+                case 'courses':
+                    fetchDriveFolder(currentFolderId);
+                    break;
+                case 'edu-media':
+                    if (window.EduMediaAPI?.refresh) {
+                        window.EduMediaAPI.refresh();
+                    }
+                    break;
+                case 'discussions':
+                    showDiscussionsList();
+                    break;
+                // Add cases for other views that fetch data, like inbox, etc.
+            }
+        }
+
+        // Listen for online/offline events
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Check status on initial load
+        updateOnlineStatus();
 
         // Fonctions globales
         window.playVideo = function (fileId, title, url) {
@@ -12860,6 +13618,7 @@
                 saveUserProgress(fileId, 1);
             }
         };
+
 
         window.markComplete = function (fileId) {
             saveUserProgress(fileId, 100);
@@ -13132,7 +13891,7 @@
             });
         }
 
-        function getNotificationIcon(type) {
+        /*function getNotificationIcon(type) {
             switch (type) {
                 case "new_reply":
                     return {
@@ -13154,6 +13913,23 @@
                         html: '<i class="bi bi-info-circle-fill"></i>',
                         color: "var(--muted)",
                     };
+            }
+        }*/ 
+
+         function getNotificationIcon(type) {
+            switch (type) {
+                case "new_message":
+                    return { html: '<i class="bi bi-chat-dots-fill"></i>', color: "var(--info)" };
+                case "group_invitation":
+                    return { html: '<i class="bi bi-people-fill"></i>', color: "var(--success)" };
+                case "invite_accepted":
+                    return { html: '<i class="bi bi-person-check-fill"></i>', color: "var(--success)" };
+                case "assignment_due":
+                    return { html: '<i class="bi bi-exclamation-triangle-fill"></i>', color: "var(--warning)" };
+                case "new_reply":
+                     return { html: '<i class="bi bi-chat-quote-fill"></i>', color: "var(--brand)" };
+                default:
+                    return { html: '<i class="bi bi-info-circle-fill"></i>', color: "var(--muted)" };
             }
         }
 
@@ -13357,99 +14133,159 @@
             * @param {object} payload The notification data (message,
             type, link).
             */
-        async function triggerNotificationEvent(targetUserId,
-            payload) {
-            if (!targetUserId || !auth.currentUser) return;
-            try {
-                await addDoc(collection(db, "notification_inbox"), {
-                    ...payload,
-                    targetUserId: targetUserId,
-                    creatorName: auth.currentUser.displayName || "Anonyme",
-                    createdAt: Timestamp.now(),
-                });
-            } catch (error) {
-                console.error(`Failed to trigger notification event:`,
-                    error);
-            }
-        }
-
-        async function renderFullNotificationPage() {
-            const container = document.getElementById("fullNotifList");
-            if (!container) return;
-
-            container.innerHTML =
-                `<div class="text-center p-5">
-                < div class="loader" ></div >
-            </div > `;
-
-            const user = auth.currentUser;
-            if (!user) {
-                container.innerHTML =
-                    `<div class="text-center text-muted p-5"><iclass="bi bi-lock fs-1" ></i >
-                    <p class="mt-2">Veuillez vous connecter pour voir vos
-                        notifications.</p>
-                                                            </div > `;
+        async function triggerNotificationEvent(targetUserId, payload) {
+            if (!targetUserId || !auth.currentUser || targetUserId === auth.currentUser.uid) {
+                // Do not send notifications to yourself
                 return;
             }
 
             try {
-                // Fetch ALL notifications for the user, ordered by date
-                const notifQuery = query(
-                    collection(db, "users", user.uid, "notifications"),
-                    orderBy("createdAt", "desc")
-                );
-                const snapshot = await getDocs(notifQuery);
-
-                if (snapshot.empty) {
-                    container.innerHTML =
-                        `<div class="text-center text-muted p-5"><i
-                    class="bi bi-bell-slash fs-1" ></i >
-                        <p class="mt-2">Vous n\'avez aucune notification pour le
-                            moment.</p>
-                                                            </div > `;
-                    return;
-                }
-
-                container.innerHTML = ""; // Clear the loader
-
-                snapshot.docs.forEach((doc) => {
-                    const notif = { id: doc.id, ...doc.data() };
-
-                    const itemEl = document.createElement("a");
-                    itemEl.href = "#";
-                    // Use the same CSS classes as the dropdown for a consistent
-                    look
-                    itemEl.className = `list-group-item notification-item
-            ${notif.read ? "" : "unread"
-                        }`;
-                    itemEl.onclick = (e) => {
-                        e.preventDefault();
-                        handleNotificationClick(notif);
-                        renderFullNotificationPage();
-                    };
-
-                    const icon = getNotificationIcon(notif.type);
-
-                    itemEl.innerHTML = `
-            <div class="icon" style="color: ${icon.color};">${icon.html}</div>
-            <div class="content flex-grow-1">
-                ${notif.message}
-                <div class="timestamp">${timeAgo(notif.createdAt.toDate())}</div>
-            </div>
-                            <!-- Add a chevron to indicate it's clickable -->
-            <i class="bi bi-chevron-right ms-auto text-muted"></i>
-            `;
-                    container.appendChild(itemEl);
+                // This collection is watched by a Cloud Function (or another backend process)
+                // that will create the actual notification in the user's subcollection.
+                await addDoc(collection(db, "notification_inbox"), {
+                    ...payload, // contains message, type, link
+                    targetUserId: targetUserId,
+                    senderId: auth.currentUser.uid,
+                    senderName: auth.currentUser.displayName || "Un utilisateur",
+                    createdAt: Timestamp.now(),
                 });
+                console.log(`🔔 Notification event triggered for user ${targetUserId}`);
             } catch (error) {
-                console.error("Error fetching full notification list:",
-                    error);
-                container.innerHTML =
-                    `<div class="text-center text-danger p-5"><i class="bi bi-exclamation-triangle-fill fs-1" ></i >
-                <p class="mt-2">Impossible de charger les notifications.
-                </p>
-            </div > `;
+                console.error(`Failed to trigger notification event:`, error);
             }
+        }
+
+         document.getElementById("fullMarkAllAsReadBtn")?.addEventListener("click", markAllNotificationsAsRead);
+
+        async function markAllNotificationsAsRead() {
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            showToast("Mise à jour en cours...", "info");
+
+            const notifQuery = query(collection(db, "users", user.uid, "notifications"), where("read", "==", false));
+            const snapshot = await getDocs(notifQuery);
+
+            if (snapshot.empty) {
+                showToast("Toutes les notifications sont déjà lues.", "info");
+                return;
+            }
+
+            const batch = writeBatch(db);
+            snapshot.docs.forEach(doc => {
+                batch.update(doc.ref, { read: true });
+            });
+            await batch.commit();
+
+            showToast("Toutes les notifications ont été marquées comme lues.", "success");
+            // The real-time listener will automatically update the UI.
+        }
+
+          async function renderFullNotificationPage() {
+            const container = document.getElementById("fullNotifListContainer");
+            if (!container) return;
+
+            container.innerHTML = `<div class="text-center p-5"><div class="spinner-border text-primary"></div><p class="mt-3 text-muted">Chargement...</p></div>`;
+
+            const user = auth.currentUser;
+            if (!user) {
+                container.innerHTML = `<div class="text-center text-muted p-5"><i class="bi bi-lock fs-1"></i><p class="mt-2">Veuillez vous connecter pour voir vos notifications.</p></div>`;
+                return;
+            }
+            
+            // We use getDocs for a one-time full fetch instead of the real-time listener
+            const notifQuery = query(collection(db, "users", user.uid, "notifications"), orderBy("createdAt", "desc"));
+            const snapshot = await getDocs(notifQuery);
+            const notifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            if (snapshot.empty) {
+                container.innerHTML = `<div class="text-center text-muted p-5"><i class="bi bi-bell-slash fs-1"></i><p class="mt-2">Vous n'avez aucune notification pour le moment.</p></div>`;
+                return;
+            }
+
+            // Group notifications by date
+            const groupedNotifications = groupNotificationsByDate(notifications);
+            
+            container.innerHTML = ""; // Clear loader
+            
+            for (const groupTitle in groupedNotifications) {
+                // Create group header (e.g., "Aujourd'hui")
+                const groupHeader = document.createElement('div');
+                groupHeader.className = 'notification-group-header';
+                groupHeader.textContent = groupTitle;
+                container.appendChild(groupHeader);
+
+                // Render notifications within that group
+                groupedNotifications[groupTitle].forEach(notif => {
+                    container.innerHTML += createNotificationItemHTML(notif);
+                });
+            }
+        }
+
+        // Helper function to create the HTML for a single notification item
+        function createNotificationItemHTML(notif) {
+            const iconInfo = getNotificationIcon(notif.type);
+            const time = notif.createdAt ? timeAgo(notif.createdAt.toDate()) : '';
+            // The onclick will mark as read and navigate
+            return `
+                <div class="notification-item ${notif.read ? '' : 'unread'}" onclick="handleNotificationClick('${notif.id}', '${notif.link || '#'}')">
+                    <div class="icon" style="color: ${iconInfo.color};">${iconInfo.html}</div>
+                    <div class="content flex-grow-1">
+                        <div>${notif.message}</div>
+                        <div class="timestamp">${time}</div>
+                    </div>
+                    <i class="bi bi-chevron-right ms-auto text-muted"></i>
+                </div>
+            `;
+        }
+
+        // Helper function to group notifications by date
+        function groupNotificationsByDate(notifications) {
+            const groups = { "Aujourd'hui": [], "Hier": [], "Plus Ancien": [] };
+            const today = new Date();
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            notifications.forEach(notif => {
+                const notifDate = notif.createdAt.toDate();
+                if (notifDate.toDateString() === today.toDateString()) {
+                    groups["Aujourd'hui"].push(notif);
+                } else if (notifDate.toDateString() === yesterday.toDateString()) {
+                    groups["Hier"].push(notif);
+                } else {
+                    groups["Plus Ancien"].push(notif);
+                }
+            });
+
+            // Remove empty groups
+            if(groups["Aujourd'hui"].length === 0) delete groups["Aujourd'hui"];
+            if(groups["Hier"].length === 0) delete groups["Hier"];
+            if(groups["Plus Ancien"].length === 0) delete groups["Plus Ancien"];
+
+            return groups;
+        }
+        
+        // REWRITE handleNotificationClick to accept an ID and link
+        window.handleNotificationClick = async function(notificationId, link) {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            // Mark as read in Firestore
+            const notifRef = doc(db, "users", user.uid, "notifications", notificationId);
+            await updateDoc(notifRef, { read: true });
+
+            // In a real SPA, you would use a router here. For now, we can simulate.
+            if (link && link !== '#') {
+                showToast(`Navigation vers: ${link}`, "info");
+                // Example navigation:
+                const view = link.replace('/', '');
+                if (document.getElementById(view + 'View') || document.getElementById(view + 'Section')) {
+                    switchView(view);
+                }
+            }
+            
+            // Re-render the full page to reflect the 'read' state
+            renderFullNotificationPage();
         }
 
         function setTheme(theme) {
@@ -13512,7 +14348,7 @@
                 });
 
                 if (searchInput && !searchInput.value) {
-                    searchInput.value = 'musique chill maroc 2025';
+                    searchInput.value = 'musique pour etudier';
                     searchMusic();
                 }
             };
