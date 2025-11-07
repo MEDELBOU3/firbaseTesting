@@ -669,308 +669,269 @@
         </div>
     </section>
 
-    <!-- DeepSeek R1 Integration Section -->
-    <!-- ========================= -->
-    <section id="deepseek-r1"
-        class="relative py-24 px-6 lg:px-8 overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-blue-900/30">
+    <section id="deepseek-r1" class="relative py-16 md:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-blue-900/30">
 
-        <!-- 🌌 Animated AI Background -->
-        <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-            <div
-                class="absolute w-[1000px] h-[1000px] bg-gradient-to-r from-purple-500/30 via-blue-400/20 to-cyan-300/10 blur-[150px] rounded-full animate-aiPulse -top-40 -left-64">
-            </div>
-            <div
-                class="absolute w-[800px] h-[800px] bg-gradient-to-r from-cyan-500/20 via-purple-400/20 to-pink-300/10 blur-[180px] rounded-full animate-aiFloat top-1/3 right-0">
-            </div>
-            <canvas id="aiParticles" class="absolute inset-0"></canvas>
-        </div>
+    <!-- 🌌 Animated AI Background -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div class="absolute w-[600px] h-[600px] md:w-[1000px] md:h-[1000px] bg-gradient-to-r from-purple-500/30 via-blue-400/20 to-cyan-300/10 blur-[100px] md:blur-[150px] rounded-full animate-aiPulse -top-20 -left-32 md:-top-40 md:-left-64"></div>
+        <div class="absolute w-[400px] h-[400px] md:w-[800px] md:h-[800px] bg-gradient-to-r from-cyan-500/20 via-purple-400/20 to-pink-300/10 blur-[120px] md:blur-[180px] rounded-full animate-aiFloat top-1/4 right-0 md:top-1/3"></div>
+        <canvas id="aiParticles" class="absolute inset-0"></canvas>
+    </div>
 
-        <div class="relative mx-auto max-w-7xl">
-            <!-- === HEADER === -->
-            <header class="text-center mb-20">
-                <div
-                    class="inline-flex items-center gap-3 px-6 py-3 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-lg mb-6 animate-fadeIn backdrop-blur-md">
-                    <i class="bi bi-stars text-2xl text-purple-600 dark:text-purple-400"></i>
-                    <span class="text-lg font-bold text-gray-800 dark:text-white">Nouveauté IA Avancée</span>
+    <div class="relative mx-auto max-w-7xl">
+        <!-- === HEADER === -->
+        <header class="text-center mb-12 md:mb-20">
+            <div class="inline-flex items-center gap-2 md:gap-3 px-4 md:px-6 py-2 md:py-3 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-lg mb-4 md:mb-6 animate-fadeIn backdrop-blur-md">
+                <i class="bi bi-stars text-xl md:text-2xl text-purple-600 dark:text-purple-400"></i>
+                <span class="text-sm md:text-lg font-bold text-gray-800 dark:text-white">Nouveauté IA Avancée</span>
+            </div>
+
+            <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 md:mb-6 text-gray-900 dark:text-white leading-tight">
+                Maîtrisez <span class="gradient-text">DeepSeek R1</span>
+            </h2>
+
+            <p class="text-base sm:text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed px-4">
+                Découvrez comment utiliser le modèle d'IA le plus performant de notre plateforme grâce à
+                <strong>OpenRouter</strong>.
+            </p>
+        </header>
+
+        <!-- ================= MAIN GRID ================= -->
+        <div class="grid lg:grid-cols-2 gap-8 md:gap-12 items-start">
+
+            <!-- ================= LEFT CONTENT ================= -->
+            <div class="space-y-8 md:space-y-10">
+
+                <!-- === Feature Cards === -->
+                <div class="grid gap-4 md:gap-6">
+                    <!-- Card 1 -->
+                    <article class="flex items-start gap-3 md:gap-4 p-4 md:p-6 dynamic-glass rounded-xl md:rounded-2xl border border-blue-200 dark:border-blue-800 hover:scale-[1.02] transition-transform duration-300">
+                        <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg md:rounded-xl flex items-center justify-center text-white text-lg md:text-xl flex-shrink-0">
+                            <i class="bi bi-key"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-lg md:text-xl font-bold mb-2 text-gray-900 dark:text-white">Configuration OpenRouter</h4>
+                            <p class="text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                                Obtenez votre clé API gratuite sur OpenRouter et configurez-la en quelques clics dans votre profil FPN.
+                            </p>
+                        </div>
+                    </article>
+
+                    <!-- Card 2 -->
+                    <article class="flex items-start gap-3 md:gap-4 p-4 md:p-6 dynamic-glass rounded-xl md:rounded-2xl border border-purple-200 dark:border-purple-800 hover:scale-[1.02] transition-transform duration-300">
+                        <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg md:rounded-xl flex items-center justify-center text-white text-lg md:text-xl flex-shrink-0">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-lg md:text-xl font-bold mb-2 text-gray-900 dark:text-white">DeepSeek R1 Avancé</h4>
+                            <p class="text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                                Accédez au modèle de raisonnement 67B le plus performant pour la résolution de problèmes complexes et l'analyse de code.
+                            </p>
+                        </div>
+                    </article>
+
+                    <!-- Card 3 -->
+                    <article class="flex items-start gap-3 md:gap-4 p-4 md:p-6 dynamic-glass rounded-xl md:rounded-2xl border border-green-200 dark:border-green-800 hover:scale-[1.02] transition-transform duration-300">
+                        <div class="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg md:rounded-xl flex items-center justify-center text-white text-lg md:text-xl flex-shrink-0">
+                            <i class="bi bi-lightning-charge"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-lg md:text-xl font-bold mb-2 text-gray-900 dark:text-white">Performance Optimisée</h4>
+                            <p class="text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                                Bénéficiez de réponses rapides et précises pour vos projets académiques et exercices de programmation.
+                            </p>
+                        </div>
+                    </article>
                 </div>
 
-                <h2 class="text-5xl lg:text-6xl font-black mb-6 text-gray-900 dark:text-white leading-tight">
-                    Maîtrisez <span class="gradient-text">DeepSeek R1</span>
-                </h2>
-
-                <p class="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                    Découvrez comment utiliser le modèle d'IA le plus performant de notre plateforme grâce à
-                    <strong>OpenRouter</strong>.
-                </p>
-            </header>
-            <!-- ================= MAIN GRID ================= -->
-            <div class="grid lg:grid-cols-2 gap-12 items-start">
-
-                <!-- ================= LEFT CONTENT ================= -->
-                <div class="space-y-10">
-
-                    <!-- === Feature Cards === -->
-                    <div class="grid gap-6">
-                        <!-- Card 1 -->
-                        <article
-                            class="flex items-start gap-4 p-6 dynamic-glass rounded-2xl border border-blue-200 dark:border-blue-800 hover:scale-[1.02] transition-transform duration-300">
-                            <div
-                                class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0">
-                                <i class="bi bi-key"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">Configuration
-                                    OpenRouter</h4>
-                                <p class="text-gray-700 dark:text-gray-300">
-                                    Obtenez votre clé API gratuite sur OpenRouter et configurez-la en quelques clics
-                                    dans
-                                    votre profil FPN.
-                                </p>
-                            </div>
-                        </article>
-
-                        <!-- Card 2 -->
-                        <article
-                            class="flex items-start gap-4 p-6 dynamic-glass rounded-2xl border border-purple-200 dark:border-purple-800 hover:scale-[1.02] transition-transform duration-300">
-                            <div
-                                class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0">
-                                <i class="bi bi-robot"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">DeepSeek R1 Avancé</h4>
-                                <p class="text-gray-700 dark:text-gray-300">
-                                    Accédez au modèle de raisonnement 67B le plus performant pour la résolution de
-                                    problèmes
-                                    complexes et l'analyse de code.
-                                </p>
-                            </div>
-                        </article>
-
-                        <!-- Card 3 -->
-                        <article
-                            class="flex items-start gap-4 p-6 dynamic-glass rounded-2xl border border-green-200 dark:border-green-800 hover:scale-[1.02] transition-transform duration-300">
-                            <div
-                                class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0">
-                                <i class="bi bi-lightning-charge"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-xl font-bold mb-2 text-gray-900 dark:text-white">Performance Optimisée
-                                </h4>
-                                <p class="text-gray-700 dark:text-gray-300">
-                                    Bénéficiez de réponses rapides et précises pour vos projets académiques et exercices
-                                    de
-                                    programmation.
-                                </p>
-                            </div>
-                        </article>
-                    </div>
-
-                    <!-- === Quick Steps === -->
-                    <div class="dynamic-glass rounded-2xl p-6 border dark:border-gray-700">
-                        <h4 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-3">
-                            <i class="bi bi-list-ol text-blue-600 dark:text-blue-400"></i>
-                            Étapes Rapides
-                        </h4>
-                        <ol class="space-y-4">
-                            <li class="flex items-center gap-4">
-                                <span
-                                    class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
-                                <p class="text-gray-700 dark:text-gray-300">Créez un compte sur
-                                    <strong>OpenRouter</strong>.
-                                </p>
-                            </li>
-                            <li class="flex items-center gap-4">
-                                <span
-                                    class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
-                                <p class="text-gray-700 dark:text-gray-300">Générez votre clé API gratuite.</p>
-                            </li>
-                            <li class="flex items-center gap-4">
-                                <span
-                                    class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">3</span>
-                                <p class="text-gray-700 dark:text-gray-300">Ajoutez la clé dans vos paramètres FPN.</p>
-                            </li>
-                            <li class="flex items-center gap-4">
-                                <span
-                                    class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">4</span>
-                                <p class="text-gray-700 dark:text-gray-300">Activez DeepSeek R1 et commencez !</p>
-                            </li>
-                        </ol>
-                    </div>
-                </div>
-
-                <!-- ================= RIGHT CONTENT ================= -->
-                <div class="space-y-10">
-
-                    <!-- === AI Chat UI Mockup === -->
-                    <div class="dynamic-glass rounded-2xl p-6 border dark:border-gray-700">
-                        <h4 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-3">
-                            <i class="bi bi-robot text-purple-600 dark:text-purple-400"></i>
-                            Interface Chat IA - Aperçu
-                        </h4>
-
-                        <div class="rounded-xl overflow-hidden shadow-2xl border dark:border-gray-600 group">
-                            <img src="https://github.com/MEDELBOU3/firbaseTesting/blob/main/images/ai-chat.png?raw=true"
-                                alt="Interface Chat IA FPN - DeepSeek R1"
-                                class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer"
-                                onclick="openImageModal(this.src)">
-                        </div>
-
-                        <div class="mt-6 grid md:grid-cols-3 gap-4">
-                            <div
-                                class="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                                <i
-                                    class="bi bi-lightning-charge-fill text-blue-600 dark:text-blue-400 text-xl mb-2"></i>
-                                <h6 class="font-semibold text-gray-900 dark:text-white">DeepSeek R1 67B</h6>
-                                <p class="text-xs text-gray-600 dark:text-gray-400">Modèle de raisonnement avancé</p>
-                            </div>
-                            <div
-                                class="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                                <i class="bi bi-code-square text-green-600 dark:text-green-400 text-xl mb-2"></i>
-                                <h6 class="font-semibold text-gray-900 dark:text-white">Analyse de Code</h6>
-                                <p class="text-xs text-gray-600 dark:text-gray-400">Débogage et explications</p>
-                            </div>
-                            <div
-                                class="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
-                                <i class="bi bi-chat-dots text-purple-600 dark:text-purple-400 text-xl mb-2"></i>
-                                <h6 class="font-semibold text-gray-900 dark:text-white">Interface Intuitive</h6>
-                                <p class="text-xs text-gray-600 dark:text-gray-400">Conversation fluide</p>
-                            </div>
-                        </div>
-
-                        <div class="text-center mt-6">
-                            <button
-                                class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 text-base">
-                                Essayer l'Interface Chat IA →
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- === YouTube Tutorial === -->
-                    <div class="dynamic-glass rounded-2xl p-6 border dark:border-gray-700">
-                        <h4 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-3">
-                            <i class="bi bi-play-circle text-red-600 dark:text-red-400"></i>
-                            Tutoriel Vidéo Complet
-                        </h4>
-                        <p class="text-gray-700 dark:text-gray-300 mb-6">
-                            Regardez notre guide détaillé pour maîtriser l'intégration de DeepSeek R1 en moins de 4
-                            minutes.
-                        </p>
-
-                        <div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl group">
-                            <iframe id="deepseekVideo"
-                                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                src="https://www.youtube.com/embed/H8K67-3CIac?enablejsapi=1&mute=1&controls=0"
-                                title="Tutoriel DeepSeek R1 - OpenRouter" frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowfullscreen></iframe>
-
-                            <div onclick="toggleDeepseekVideo()"
-                                class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/40 transition duration-500 flex items-center justify-center cursor-pointer"
-                                id="deepseekVideoOverlay">
-                                <div
-                                    class="bg-white/20 backdrop-blur-md rounded-full p-6 hover:scale-110 transition flex items-center justify-center">
-                                    <i class="bi bi-play-fill text-white text-5xl"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex justify-between items-center mt-4 text-sm text-gray-600 dark:text-gray-400">
-                            <span class="flex items-center gap-2"><i class="bi bi-clock"></i>4 minutes</span>
-                            <div class="flex gap-2">
-                                <button onclick="toggleDeepseekVideo()"
-                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition flex items-center gap-2">
-                                    <i class="bi bi-play-fill"></i> Lecture
-                                </button>
-                                <a href="https://youtu.be/H8K67-3CIac" target="_blank"
-                                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-semibold transition flex items-center gap-2">
-                                    <i class="bi bi-box-arrow-up-right"></i> YouTube
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- === Quick Links === -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <a href="https://openrouter.ai" target="_blank"
-                            class="p-4 dynamic-glass rounded-xl border dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition text-center group">
-                            <i class="bi bi-box-arrow-up-right text-blue-600 dark:text-blue-400 text-xl mb-2"></i>
-                            <div
-                                class="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                                OpenRouter
-                            </div>
-                        </a>
-                        <a href="https://deepseek.com" target="_blank"
-                            class="p-4 dynamic-glass rounded-xl border dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-400 transition text-center group">
-                            <i class="bi bi-box-arrow-up-right text-purple-600 dark:text-purple-400 text-xl mb-2"></i>
-                            <div
-                                class="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400">
-                                DeepSeek
-                            </div>
-                        </a>
-                    </div>
+                <!-- === Quick Steps === -->
+                <div class="dynamic-glass rounded-xl md:rounded-2xl p-4 md:p-6 border dark:border-gray-700">
+                    <h4 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-900 dark:text-white flex items-center gap-3">
+                        <i class="bi bi-list-ol text-blue-600 dark:text-blue-400"></i>
+                        Étapes Rapides
+                    </h4>
+                    <ol class="space-y-3 md:space-y-4">
+                        <li class="flex items-center gap-3 md:gap-4">
+                            <span class="w-7 h-7 md:w-8 md:h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs md:text-sm flex-shrink-0">1</span>
+                            <p class="text-sm md:text-base text-gray-700 dark:text-gray-300">Créez un compte sur <strong>OpenRouter</strong>.</p>
+                        </li>
+                        <li class="flex items-center gap-3 md:gap-4">
+                            <span class="w-7 h-7 md:w-8 md:h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs md:text-sm flex-shrink-0">2</span>
+                            <p class="text-sm md:text-base text-gray-700 dark:text-gray-300">Générez votre clé API gratuite.</p>
+                        </li>
+                        <li class="flex items-center gap-3 md:gap-4">
+                            <span class="w-7 h-7 md:w-8 md:h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs md:text-sm flex-shrink-0">3</span>
+                            <p class="text-sm md:text-base text-gray-700 dark:text-gray-300">Ajoutez la clé dans vos paramètres FPN.</p>
+                        </li>
+                        <li class="flex items-center gap-3 md:gap-4">
+                            <span class="w-7 h-7 md:w-8 md:h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs md:text-sm flex-shrink-0">4</span>
+                            <p class="text-sm md:text-base text-gray-700 dark:text-gray-300">Activez DeepSeek R1 et commencez !</p>
+                        </li>
+                    </ol>
                 </div>
             </div>
 
-            <!-- ================= BENEFITS SECTION ================= -->
-            <div class="grid md:grid-cols-3 gap-8 mt-20">
-                <div class="text-center p-6 dynamic-glass rounded-2xl border dark:border-gray-700">
-                    <div
-                        class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto mb-4">
-                        <i class="bi bi-graph-up-arrow"></i>
-                    </div>
-                    <h4 class="text-xl font-bold mb-3 text-gray-900 dark:text-white">Performance Maximale</h4>
-                    <p class="text-gray-700 dark:text-gray-300">
-                        DeepSeek R1 excelle en raisonnement complexe et analyse de code avec ses 67 milliards de
-                        paramètres.
-                    </p>
-                </div>
+            <!-- ================= RIGHT CONTENT ================= -->
+            <div class="space-y-8 md:space-y-10">
 
-                <div class="text-center p-6 dynamic-glass rounded-2xl border dark:border-gray-700">
-                    <div
-                        class="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto mb-4">
-                        <i class="bi bi-wallet2"></i>
-                    </div>
-                    <h4 class="text-xl font-bold mb-3 text-gray-900 dark:text-white">Accès Gratuit</h4>
-                    <p class="text-gray-700 dark:text-gray-300">
-                        OpenRouter offre des crédits gratuits pour découvrir les modèles d'IA les plus avancés.
-                    </p>
-                </div>
+                <!-- === AI Chat UI Mockup === -->
+                <div class="dynamic-glass rounded-xl md:rounded-2xl p-4 md:p-6 border dark:border-gray-700">
+                    <h4 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-900 dark:text-white flex items-center gap-3">
+                        <i class="bi bi-robot text-purple-600 dark:text-purple-400"></i>
+                        Interface Chat IA
+                    </h4>
 
-                <div class="text-center p-6 dynamic-glass rounded-2xl border dark:border-gray-700">
-                    <div
-                        class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto mb-4">
-                        <i class="bi bi-shield-check"></i>
+                    <div class="rounded-lg md:rounded-xl overflow-hidden shadow-xl md:shadow-2xl border dark:border-gray-600 group">
+                        <img src="https://github.com/MEDELBOU3/firbaseTesting/blob/main/images/ai-chat.png?raw=true"
+                            alt="Interface Chat IA FPN - DeepSeek R1"
+                            class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer"
+                            onclick="openImageModal(this.src)">
                     </div>
-                    <h4 class="text-xl font-bold mb-3 text-gray-900 dark:text-white">Intégration Sécurisée</h4>
-                    <p class="text-gray-700 dark:text-gray-300">
-                        Votre clé API reste sécurisée et n'est utilisée que pour vos sessions de chat personnelles.
-                    </p>
-                </div>
-            </div>
 
-            <!-- ================= FINAL CTA ================= -->
-            <div class="text-center mt-20">
-                <div class="dynamic-glass rounded-2xl p-10 border dark:border-gray-700 max-w-4xl mx-auto">
-                    <h3 class="text-3xl font-black mb-4 text-gray-900 dark:text-white">
-                        Prêt à booster votre productivité avec l'IA ?
-                    </h3>
-                    <p class="text-xl text-gray-700 dark:text-gray-300 mb-8">
-                        Rejoignez les étudiants qui utilisent déjà DeepSeek R1 pour exceller dans leurs projets.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button
-                            class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 text-base">
-                            Activer DeepSeek R1 →
+                    <div class="mt-4 md:mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+                        <div class="text-center p-3 md:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg md:rounded-xl border border-blue-200 dark:border-blue-800">
+                            <i class="bi bi-lightning-charge-fill text-blue-600 dark:text-blue-400 text-lg md:text-xl mb-1 md:mb-2"></i>
+                            <h6 class="font-semibold text-gray-900 dark:text-white text-sm md:text-base">DeepSeek R1 67B</h6>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Modèle avancé</p>
+                        </div>
+                        <div class="text-center p-3 md:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg md:rounded-xl border border-green-200 dark:border-green-800">
+                            <i class="bi bi-code-square text-green-600 dark:text-green-400 text-lg md:text-xl mb-1 md:mb-2"></i>
+                            <h6 class="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Analyse de Code</h6>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Débogage expert</p>
+                        </div>
+                        <div class="text-center p-3 md:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg md:rounded-xl border border-purple-200 dark:border-purple-800">
+                            <i class="bi bi-chat-dots text-purple-600 dark:text-purple-400 text-lg md:text-xl mb-1 md:mb-2"></i>
+                            <h6 class="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Interface Intuitive</h6>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">Conversation fluide</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4 md:mt-6">
+                        <button @click="document.getElementById('modalAuth').classList.remove('hidden')"
+                            class="px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 text-sm md:text-base w-full sm:w-auto">
+                            Essayer l'Interface Chat IA →
                         </button>
-                        <a href="#tools"
-                            class="px-6 py-3 bg-transparent text-gray-900 dark:text-gray-100 rounded-full font-bold border-2 border-gray-300 dark:border-gray-600 hover:border-blue-600 dark:hover:border-blue-400 hover:shadow-lg transition-all duration-300 text-base">
-                            Explorer tous les outils IA
-                        </a>
                     </div>
+                </div>
+
+                <!-- === YouTube Tutorial === -->
+                <div class="dynamic-glass rounded-xl md:rounded-2xl p-4 md:p-6 border dark:border-gray-700">
+                    <h4 class="text-xl md:text-2xl font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-3">
+                        <i class="bi bi-play-circle text-red-600 dark:text-red-400"></i>
+                        Tutoriel Vidéo
+                    </h4>
+                    <p class="text-sm md:text-base text-gray-700 dark:text-gray-300 mb-4 md:mb-6">
+                        Guide détaillé pour maîtriser DeepSeek R1 en moins de 4 minutes.
+                    </p>
+
+                    <div class="relative w-full aspect-video rounded-lg md:rounded-xl overflow-hidden shadow-xl md:shadow-2xl group">
+                        <iframe id="deepseekVideo"
+                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            src="https://www.youtube.com/embed/H8K67-3CIac?enablejsapi=1&mute=1&controls=0"
+                            title="Tutoriel DeepSeek R1 - OpenRouter" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen></iframe>
+
+                        <div onclick="toggleDeepseekVideo()"
+                            class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/40 transition duration-500 flex items-center justify-center cursor-pointer"
+                            id="deepseekVideoOverlay">
+                            <div class="bg-white/20 backdrop-blur-md rounded-full p-4 md:p-6 hover:scale-110 transition flex items-center justify-center">
+                                <i class="bi bi-play-fill text-white text-3xl md:text-5xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-3 md:mt-4 text-sm text-gray-600 dark:text-gray-400">
+                        <span class="flex items-center gap-2"><i class="bi bi-clock"></i>4 minutes</span>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button onclick="toggleDeepseekVideo()"
+                                class="flex-1 sm:flex-none px-3 md:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition flex items-center justify-center gap-2 text-sm">
+                                <i class="bi bi-play-fill"></i> Lecture
+                            </button>
+                            <a href="https://youtu.be/H8K67-3CIac" target="_blank"
+                                class="flex-1 sm:flex-none px-3 md:px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg font-semibold transition flex items-center justify-center gap-2 text-sm">
+                                <i class="bi bi-box-arrow-up-right"></i> YouTube
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Quick Links === -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                    <a href="https://openrouter.ai" target="_blank"
+                        class="p-3 md:p-4 dynamic-glass rounded-lg md:rounded-xl border dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition text-center group">
+                        <i class="bi bi-box-arrow-up-right text-blue-600 dark:text-blue-400 text-lg md:text-xl mb-1 md:mb-2"></i>
+                        <div class="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 text-sm md:text-base">
+                            OpenRouter
+                        </div>
+                    </a>
+                    <a href="https://deepseek.com" target="_blank"
+                        class="p-3 md:p-4 dynamic-glass rounded-lg md:rounded-xl border dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-400 transition text-center group">
+                        <i class="bi bi-box-arrow-up-right text-purple-600 dark:text-purple-400 text-lg md:text-xl mb-1 md:mb-2"></i>
+                        <div class="font-semibold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 text-sm md:text-base">
+                            DeepSeek
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
-    </section>
+
+        <!-- ================= BENEFITS SECTION ================= -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-12 md:mt-20">
+            <div class="text-center p-4 md:p-6 dynamic-glass rounded-xl md:rounded-2xl border dark:border-gray-700">
+                <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl md:rounded-2xl flex items-center justify-center text-white text-xl md:text-2xl mx-auto mb-3 md:mb-4">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+                <h4 class="text-lg md:text-xl font-bold mb-2 md:mb-3 text-gray-900 dark:text-white">Performance Maximale</h4>
+                <p class="text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                    DeepSeek R1 excelle en raisonnement complexe avec ses 67 milliards de paramètres.
+                </p>
+            </div>
+
+            <div class="text-center p-4 md:p-6 dynamic-glass rounded-xl md:rounded-2xl border dark:border-gray-700">
+                <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl md:rounded-2xl flex items-center justify-center text-white text-xl md:text-2xl mx-auto mb-3 md:mb-4">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <h4 class="text-lg md:text-xl font-bold mb-2 md:mb-3 text-gray-900 dark:text-white">Accès Gratuit</h4>
+                <p class="text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                    OpenRouter offre des crédits gratuits pour les modèles d'IA avancés.
+                </p>
+            </div>
+
+            <div class="text-center p-4 md:p-6 dynamic-glass rounded-xl md:rounded-2xl border dark:border-gray-700">
+                <div class="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl md:rounded-2xl flex items-center justify-center text-white text-xl md:text-2xl mx-auto mb-3 md:mb-4">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <h4 class="text-lg md:text-xl font-bold mb-2 md:mb-3 text-gray-900 dark:text-white">Intégration Sécurisée</h4>
+                <p class="text-sm md:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                    Votre clé API reste sécurisée pour vos sessions personnelles.
+                </p>
+            </div>
+        </div>
+
+        <!-- ================= FINAL CTA ================= -->
+        <div class="text-center mt-12 md:mt-20">
+            <div class="dynamic-glass rounded-xl md:rounded-2xl p-6 md:p-10 border dark:border-gray-700 max-w-4xl mx-auto">
+                <h3 class="text-2xl md:text-3xl font-black mb-3 md:mb-4 text-gray-900 dark:text-white">
+                    Prêt à booster votre productivité avec l'IA ?
+                </h3>
+                <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-6 md:mb-8">
+                    Rejoignez les étudiants qui utilisent déjà DeepSeek R1 pour exceller dans leurs projets.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
+                    <button @click="document.getElementById('modalAuth').classList.remove('hidden')"
+                        class="px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 text-sm md:text-base w-full sm:w-auto">
+                        Activer DeepSeek R1 →
+                    </button>
+                    <a href="#tools"
+                        class="px-4 md:px-6 py-2 md:py-3 bg-transparent text-gray-900 dark:text-gray-100 rounded-full font-bold border-2 border-gray-300 dark:border-gray-600 hover:border-blue-600 dark:hover:border-blue-400 hover:shadow-lg transition-all duration-300 text-sm md:text-base w-full sm:w-auto text-center">
+                        Explorer tous les outils IA
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 
     <!-- Image Modal -->
