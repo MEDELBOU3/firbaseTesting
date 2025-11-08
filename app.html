@@ -4609,7 +4609,7 @@
         }
 
 
-        /* function renderDashboard() {
+        function renderDashboard() {
             const continueSection = document.getElementById("continueSection");
             const inProgress = allFiles
                 .filter((f) => {
@@ -4660,37 +4660,9 @@
                 continueSection.appendChild(col);
             });
         }
-        */
+        
 
-         function renderDashboard() {
-            // 1. Populate the "Continue Learning" section
-            const continueSection = document.getElementById("continueSection");
-            const inProgressFiles = allFiles
-                .filter(f => userProgress[f.id] > 0 && userProgress[f.id] < 100)
-                .slice(0, 3); // Show a maximum of 3
-
-            if (inProgressFiles.length === 0) {
-                continueSection.innerHTML = `
-                    <div class="col-12 text-center text-muted py-3">
-                        <i class="bi bi-play-circle fs-1"></i>
-                        <p class="mt-2">Commencez un cours pour le voir ici.</p>
-                    </div>`;
-            } else {
-                continueSection.innerHTML = ""; // Clear loader
-                inProgressFiles.forEach(file => {
-                    continueSection.innerHTML += createDashboardContinueCard(file);
-                });
-            }
-            
-            // 2. Populate the "À venir" (Upcoming) section from Firestore assignments
-            renderUpcomingDeadlinesForDashboard();
-            
-            // 3. Populate the "Activité Récente" (Recent Activity) section (placeholder)
-            renderRecentActivityForDashboard();
-            
-            // 4. Update the main stat cards at the top
-            updateDashboardStats();
-        }
+        
 
         // Helper function to create the "Continue Learning" cards
         function createDashboardContinueCard(file) {
